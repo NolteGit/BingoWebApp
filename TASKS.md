@@ -3,7 +3,7 @@
 A short, ordered list of implementation steps. Work **top to bottom**, keeping each step small enough to build and test before moving on. For details, see [the full roadmap](docs/11-roadmap.md), [the specification](docs/01-product-spec.md), and [current implementation status](PROJECT_STATUS.md).
 
 ## 1. Project foundation
-- [ ] Scaffold **Vite + Preact + TypeScript + CSS** with working `dev`, `build`, and `test` commands.
+- [ ] Scaffold **Vite + Preact + TypeScript + CSS** with working `dev`, `build`, and `test` commands. *(Code added; check off after local Windows verification.)*
 - [ ] Load and validate the **10 cards** from `data/cards.json` (5×5 layout, immutable free center).
 - [ ] Implement and unit-test the **12 bingo lines**, checked-square totals, and first-bingo detection.
 

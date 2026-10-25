@@ -2,7 +2,28 @@
 
 A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 World vs. World (WvW)*. Friends join the same room, select one of ten predefined German bingo cards, tick off events while playing, and see each other's progress live. The interface is designed for Alt-Tab and second-monitor use.
 
-> **Project status (2026-10-25): documentation-first / no application implemented yet.** This commit defines the target behavior and proposed architecture. Commands, API routes, and file layouts in the docs are specifications, **not evidence that code exists**.
+> **Project status (2026-10-25): frontend scaffold added, not yet locally verified.** A German local-only starter page and build/test configuration now exist. The ten-card gameplay, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
+
+## Run the local frontend (first implementation step)
+
+From the repository root, with Node.js 24 and npm installed:
+
+```powershell
+npm install
+npm run dev
+```
+
+Open the URL Vite prints (normally `http://localhost:5173/`). This is only a **local starter page**, not yet a working game.
+
+After installation, verify the project with:
+
+```powershell
+npm run typecheck
+npm test
+npm run build
+```
+
+`npm install` generates a `package-lock.json`: **commit this lockfile** along with the scaffold for reproducible installs. The Cloudflare Worker, Durable Object and associated configuration are intentionally deferred to the backend milestone.
 
 ## Core experience
 
@@ -58,4 +79,4 @@ The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten 
 
 ## Next step
 
-**Milestone 1:** scaffold the Preact/Vite + Cloudflare Worker project, add local card rendering and pure bingo-logic tests, without creating a second source of card data. See [roadmap](docs/11-roadmap.md). Once implementation begins, update `PROJECT_STATUS.md` in each substantive commit.
+**Next foundation task:** load and validate `data/cards.json` from the frontend, then implement pure bingo rules and tests before building the playable UI. See [roadmap](docs/11-roadmap.md). Once implementation begins, update `PROJECT_STATUS.md` in each substantive commit.

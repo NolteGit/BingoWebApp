@@ -1,0 +1,152 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f1f5fa;
+  background: #0d1520;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: clamp(16px, 3vw, 44px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    radial-gradient(circle at 85% 12%, #21435988, transparent 34%),
+    radial-gradient(circle at 14% 80%, #15413c66, transparent 37%),
+    #0d1520;
+}
+
+.app-frame {
+  width: min(100%, 920px);
+  border: 1px solid #314353;
+  background: #142130ee;
+  border-radius: 20px;
+  box-shadow: 0 20px 70px #050a1255;
+  overflow: hidden;
+}
+
+.topbar {
+  padding: 16px clamp(18px, 4vw, 32px);
+  border-bottom: 1px solid #314353;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  background: #c19c5e;
+  color: #111b26;
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  font-weight: 900;
+}
+
+.brand-name {
+  font-size: 0.94rem;
+  font-weight: 750;
+}
+
+.status-pill {
+  margin-left: auto;
+  border: 1px solid #52705d;
+  background: #163d32;
+  color: #b5ead4;
+  border-radius: 99px;
+  padding: 6px 10px;
+  font-size: 0.73rem;
+}
+
+.hero {
+  padding: clamp(30px, 7vw, 68px) clamp(18px, 7vw, 72px);
+}
+
+.eyebrow {
+  color: #c5a56d;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 750;
+}
+
+h1 {
+  font-size: clamp(2.75rem, 7vw, 5.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+  margin: 16px 0 18px;
+}
+
+.lead {
+  max-width: 580px;
+  color: #c6d3df;
+  line-height: 1.7;
+  font-size: 1.06rem;
+}
+
+.info-panel {
+  margin-top: 38px;
+  border: 1px solid #375569;
+  border-radius: 14px;
+  background: #192d3c;
+  padding: 20px;
+  max-width: 640px;
+}
+
+.info-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #74d7ae;
+}
+
+.info-panel p {
+  margin-bottom: 0;
+  line-height: 1.65;
+  color: #becfdd;
+  font-size: 0.91rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px clamp(18px, 4vw, 32px);
+  border-top: 1px solid #314353;
+  color: #91a7ba;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 540px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .status-pill {
+    font-size: 0.65rem;
+  }
+
+  .info-panel {
+    margin-top: 26px;
+  }
+}

@@ -8,15 +8,23 @@ Last documentation review: **2026-10-25**.
 | --- | --- | --- |
 | Documentation baseline | Complete | README, documentation files, ADR |
 | Ten source cards transcribed | Complete (data/documentation) | `data/cards.json`, `docs/13-card-catalog.md` |
-| Frontend scaffold | Not started | No frontend source committed in this documentation package |
+| Frontend scaffold | Code added; awaiting Windows verification | `package.json`, `vite.config.ts`, `src/client/` and `index.html`; run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, `npm run dev` |
 | 5×5 playable card | Not started | — |
 | Pure bingo detection | Not started | — |
 | Lobby / join flow | Not started | — |
 | Backend Durable Object | Not started | — |
 | Persistence and sessions | Not started | — |
 | Realtime connections | Not started | — |
-| Automated tests | Not started | — |
+| Automated tests | One smoke test added; not yet executed | `src/client/App.test.tsx` (Preact server rendering) |
 | Cloudflare deployment | Not started | — |
+
+## Scaffold handoff (2026-10-25)
+
+- Added Vite + Preact + TypeScript, plain CSS and a clearly marked **local-only** German starter screen.
+- Added typecheck/build/test scripts and a small UI render smoke test.
+- **Environment limitation:** package installation, TypeScript compilation, browser rendering and Vitest execution could not be performed in the patch-authoring environment (npm registry access unavailable). Do **not** mark the first checkbox in `TASKS.md` done until the commands below pass on Windows.
+- On Windows: `npm install`, `npm run typecheck`, `npm test`, `npm run build`, then `npm run dev`. Commit the resulting `package-lock.json`.
+- No Cloudflare backend, Worker configuration, card loader or bingo game logic has been implemented.
 
 ## Verified facts
 
@@ -30,4 +38,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Milestone 1 from `docs/11-roadmap.md`: bootstrap Vite + Preact, Worker binding, card rendering and unit-tested bingo logic.
+Verify the frontend scaffold locally on Windows, then check off the first item in `TASKS.md`. Next, load and validate `data/cards.json` without duplicating card content.
