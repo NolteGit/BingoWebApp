@@ -476,3 +476,164 @@ h1 {
     min-height: 150px;
   }
 }
+
+/* Step 5: playable, local-only bingo board. The read-only lobby preview stays separate. */
+.play-area {
+  margin-top: 16px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 9px;
+  color: #d5e2ec;
+  font-size: 0.9rem;
+}
+
+.progress-header strong {
+  color: #f6d79a;
+}
+
+.game-progress-bar {
+  display: block;
+  width: 100%;
+  height: 12px;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  appearance: none;
+  background: #283b4c;
+  accent-color: #65c99a;
+}
+
+.game-progress-bar::-webkit-progress-bar { background: #283b4c; }
+.game-progress-bar::-webkit-progress-value { background: #65c99a; border-radius: 12px; }
+.game-progress-bar::-moz-progress-bar { background: #65c99a; border-radius: 12px; }
+
+.bingo-message {
+  min-height: 48px;
+  margin: 13px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #3b5266;
+  border-radius: 9px;
+  background: #192d3c;
+  color: #c8dae6;
+  font-size: 0.87rem;
+  display: flex;
+  align-items: center;
+}
+
+.bingo-message strong {
+  color: #ffe4a3;
+  font-size: 1.04rem;
+}
+
+.play-board-scroll {
+  overflow-x: auto;
+}
+
+.board-play {
+  min-width: 450px;
+}
+
+.play-square {
+  appearance: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 108px;
+  padding: 23px 7px 10px;
+  border: 1px solid #4b6075;
+  border-radius: 10px;
+  background: #263649;
+  color: #e3edf5;
+  text-align: center;
+  font: inherit;
+  font-size: clamp(0.64rem, 1.3vw, 0.79rem);
+  line-height: 1.35;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.play-square:not(:disabled):hover {
+  background: #324b62;
+  border-color: #90a9ba;
+}
+
+.play-square:focus-visible {
+  outline: 3px solid #f3cb80;
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.play-square--checked,
+.play-square--checked:not(:disabled):hover {
+  background: #205444;
+  border-color: #74d5a7;
+  color: #edfff5;
+}
+
+.play-square--winning,
+.play-square--winning:not(:disabled):hover {
+  border: 2px solid #ecc376;
+  background: #28644a;
+}
+
+.play-square--free,
+.play-square--free:disabled {
+  background: #315147;
+  border-color: #83b797;
+  color: #e5fff1;
+  cursor: default;
+  opacity: 1;
+  font-weight: 750;
+}
+
+.play-square--winning.play-square--free {
+  border-color: #ecc376;
+}
+
+.play-square__mark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #a6f6c8;
+}
+
+.play-square__text {
+  display: block;
+}
+
+.play-square small {
+  color: #b8f3d1;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+}
+
+.play-hint {
+  color: #aabccc;
+  font-size: 0.83rem;
+  line-height: 1.55;
+  margin-top: 13px;
+}
+
+@media (max-width: 650px) {
+  .board-play { gap: 3px; }
+  .play-square { min-height: 98px; padding: 19px 4px 7px; border-radius: 6px; font-size: 0.63rem; }
+  .play-square small { font-size: 0.49rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-square { transition: none; }
+}

@@ -73,10 +73,16 @@ See the [architecture](docs/04-architecture.md) and [hosting guide](docs/10-depl
 | [data/cards.json](data/cards.json) | Machine-readable card content (canonical) |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Tracks what is actually implemented and verified |
 
+## Local prototype (Step 5)
+
+Run `npm install` (if needed), then `npm run dev` in the repository root. In the lobby, enter a name and pick any of the ten original cards. Click **Bingo starten** to play locally. Click any regular square to check/uncheck it, while the center remains permanently checked. Progress and complete rows/columns/diagonals update instantly. **Zur Lobby** asks before discarding your current marks.
+
+**This remains a single-browser prototype.** Progress is in memory only: refreshing/closing the tab loses it, and no other browser can see the player yet. The room backend, live player list, comparison drawer and durable sessions are future tasks. Run `npm run typecheck`, `npm test`, and `npm run build` before committing.
+
 ## Source content
 
 The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten pages, one card per page). Their square positions and the free center are preserved. Obvious spelling and quote-style issues are normalized; see [card catalog](docs/13-card-catalog.md) for provenance and change policy. The PDF itself is not bundled in this repository package.
 
 ## Next step
 
-**Next milestone:** verify the lobby locally, then implement the clickable player board and local progress updates. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.
+**Next milestone:** verify the interactive local 5×5 board (mark/undo, live counters, bingo warning, confirmed return), then add the comparison drawer and a styled exit dialog. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.

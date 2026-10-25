@@ -1,6 +1,8 @@
 import { useState } from 'preact/hooks'
 import { getCardById, presetCards } from '../shared/cards'
+import { createInitialCheckedMask, isSquareChecked, setSquareChecked } from '../shared/bingo'
 import { CardPreview } from './CardPreview'
+import { PlayableBoard } from './PlayableBoard'
 import { createLocalPlayer, MAX_PLAYER_NAME_LENGTH, type LocalPlayer } from './lobby'
 
 export function App() {
@@ -8,6 +10,8 @@ export function App() {
   const [selectedCardId, setSelectedCardId] = useState(1)
   const [activePlayer, setActivePlayer] = useState<LocalPlayer | null>(null)
   const [formError, setFormError] = useState('')
+  // Local-only for Step 5. Backend-owned state will replace this in multiplayer.
+  const [checkedMask, setCheckedMask] = useState(createInitialCheckedMask())
 
   const selectedCard = getCardById(selectedCardId)
   const canStart = draftName.trim().length > 0 && draftName.trim().length <= MAX_PLAYER_NAME_LENGTH
@@ -15,11 +19,24 @@ export function App() {
   function startLocalPreview(event: Event) {
     event.preventDefault()
     try {
-      setActivePlayer(createLocalPlayer(draftName, selectedCardId))
+      const player = createLocalPlayer(draftName, selectedCardId)
+      setCheckedMask(createInitialCheckedMask())
+      setActivePlayer(player)
       setFormError('')
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Spiel konnte nicht gestartet werden.')
     }
+  }
+
+  function toggleSquare(index: number) {
+    setCheckedMask((previous) => setSquareChecked(previous, index, !isSquareChecked(previous, index)))
+  }
+
+  function leaveLocalGame() {
+    // Native confirmation supplies an accessible, keyboard-operable warning.
+    if (!window.confirm('Bingo wirklich verlassen? Deine abgehakten Felder gehen verloren.')) return
+    setActivePlayer(null)
+    setCheckedMask(createInitialCheckedMask())
   }
 
   return (
@@ -95,31 +112,31 @@ export function App() {
             <CardPreview card={selectedCard} titleId="preview-title" />
             <div class="info-panel" role="note">
               <strong>Lokaler Prototyp</strong>
-              <p>Der Start öffnet derzeit nur deine persönliche Kartenvorschau. Es werden noch keine Felder abgehakt oder Daten gespeichert. Andere Spieler können deine Sitzung noch nicht sehen.</p>
+              <p>Du kannst deine Karte jetzt lokal spielen. Der Fortschritt wird noch nicht gespeichert oder mit anderen Spielern geteilt. Beim Neuladen gehen Häkchen verloren.</p>
             </div>
           </section>
         ) : (
           <section class="player-view" aria-labelledby="page-title">
             <div class="player-heading">
               <div>
-                <p class="eyebrow">Deine Karte · Lokale Vorschau</p>
+                <p class="eyebrow">Deine Karte · Lokales Spiel</p>
                 <h1 id="page-title">WvW Bingo</h1>
                 <p class="lead">{activePlayer.name} · {getCardById(activePlayer.cardId).name}</p>
               </div>
-              <button class="secondary-button" type="button" onClick={() => setActivePlayer(null)}>
+              <button class="secondary-button" type="button" onClick={leaveLocalGame}>
                 Zur Lobby
               </button>
             </div>
-            <CardPreview card={getCardById(activePlayer.cardId)} titleId="preview-title" />
+            <PlayableBoard card={getCardById(activePlayer.cardId)} checkedMask={checkedMask} onToggleSquare={toggleSquare} />
             <div class="info-panel" role="note">
-              <strong>Spielansicht in Vorbereitung</strong>
-              <p>Die Felder können noch nicht abgehakt werden. In Schritt 5 wird diese Vorschau zum klickbaren Bingo-Spiel. „Zur Lobby“ wechselt nur die Ansicht; es gibt noch keinen gespeicherten Fortschritt.</p>
+              <strong>Lokales Spiel · kein Mehrspieler</strong>
+              <p>Deine Häkchen gelten nur in diesem Browserfenster und gehen beim Neuladen verloren. „Zur Lobby“ fragt nach, bevor es die aktuelle Karte zurücksetzt.</p>
             </div>
           </section>
         )}
 
         <footer class="footer">
-          <span>Frontend · Lokale Vorschau</span>
+          <span>Frontend · Lokales Spiel</span>
           <span>Oberfläche: Deutsch</span>
         </footer>
       </div>

@@ -10,7 +10,7 @@ Last documentation review: **2026-10-25**.
 | Ten source cards transcribed | Complete (data/documentation) | `data/cards.json`, `docs/13-card-catalog.md` |
 | Frontend scaffold | Local development page shown running on Windows; typecheck/test/build not yet confirmed | `package.json`, `vite.config.ts`, `src/client/` and `index.html`; run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, `npm run dev` |
 | Ten-card validation and read-only preview | Code added; local tests pending | `src/shared/cards.ts`, `src/shared/cards.test.ts`, preview in `src/client/App.tsx` |
-| 5×5 playable card | Not started | Read-only preview only; marking not implemented |
+| 5×5 playable card | Local gameplay code added; browser verification pending | `src/client/PlayableBoard.tsx`, `App.tsx`, and UI tests; marked states in browser memory only |
 | Pure bingo detection | Rules module + test cases added; project-wide Vitest verification pending | `src/shared/bingo.ts`, `src/shared/bingo.test.ts`; standalone TypeScript compile and runtime smoke tests passed |
 | Lobby / join flow | Local-only lobby, card picker, name form and preview navigation added; browser verification pending | `src/client/App.tsx`, `src/client/lobby.ts`, local tests. No room API or multiplayer yet |
 | Backend Durable Object | Not started | — |
@@ -54,6 +54,15 @@ Last documentation review: **2026-10-25**.
 - **Not verified here:** full `npm run typecheck`, `npm test`, `npm run build`, or interactive browser behavior (npm registry unavailable). Run those on Windows and test submitting a name, changing cards, opening the preview, and returning to the lobby.
 - No database, sessions, real player list, clickable marks, persistence, or live synchronization. Next milestone: make the player screen clickable with progress/bingo counters.
 
+## Local gameplay milestone handoff (2026-10-25)
+
+- Added `PlayableBoard.tsx` as a controlled 25-button board, separate from the lobby's read-only `CardPreview`. Regular squares can be toggled; the center Bonusfeld remains checked and is disabled. Keyboard navigation works via native buttons.
+- The player screen shows checked squares (including the free center), total completed bingo lines, an accessible progress bar, and a live BINGO notice. Squares belonging to a completed line receive a distinct highlight. The display derives exclusively from the existing shared bingo rules.
+- **Zur Lobby** now asks for confirmation before deleting local progress. Starting another local game resets the board. Refresh/close still loses progress because this milestone deliberately has no persistence.
+- Added SSR markup tests for checked/free squares, winning-line highlighting, and loss of the BINGO notice after undo. Existing shared-rule tests cover the actual mask mutation, all 12 lines and center invariants.
+- **Verified in patch environment:** source/patch structure and the original shared bingo rules. **Not verified here:** full Vitest, Vite build, or interactive browser actions due to unavailable project npm dependencies. Run `npm run typecheck`, `npm test`, `npm run build`, then test actual clicks and exit cancellation locally.
+- No real players, comparisons, server sessions, or synchronized progress yet. Next task: comparison drawer and polished exit dialog using explicitly local demo state.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.
@@ -66,4 +75,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Run the local typecheck, tests and build on Windows, verify the local lobby form and navigation, and check off verified tasks. Next: implement the clickable bingo board and local progress.
+Run the local typecheck, tests and build on Windows; verify the local bingo board, checked/unchecked state, completed row/column/diagonal, and confirmed return. Check off validated tasks. Next: comparison drawer and styled exit confirmation.

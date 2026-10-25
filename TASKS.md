@@ -9,7 +9,7 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 ## 2. Playable UI (local only)
 - [ ] Build the **German lobby UI** with name entry, card selection, and card preview. *(Implemented locally in Step 4, with a read-only player screen; run local checks and verify navigation before checking off.)*
-- [ ] Build the **clickable 5×5 bingo page** with checked-state styling, progress, and a return button.
+- [ ] Build the **clickable 5×5 bingo page** with checked-state styling, progress, and a return button. *(Step 5 implemented locally; verify browser interaction, `npm test`, typecheck and build before checking off.)*
 - [ ] Add the **comparison drawer** and exit confirmation using mock player data. Label the demo as local-only.
 
 ## 3. Persistent multiplayer backend
@@ -31,4 +31,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** verify the local lobby and all earlier tests, then implement clickable squares in the personal bingo screen (Step 5).
+**Suggested next action:** verify Step 5 locally (click/undo, first bingo, free center, return confirmation) and run all checks. Then implement the comparison drawer and enhanced exit dialog in Step 6.
