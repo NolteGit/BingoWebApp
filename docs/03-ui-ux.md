@@ -33,6 +33,16 @@ Room codes in the example are illustrative, not a live room. Progress indicators
 - Display first recorded winner unobtrusively: **Erstes Bingo: Mira**.
 - New players should not cause the list to jump abruptly while someone types in the join form.
 
+## Compact local lobby (Step 6.5 UI refinement)
+
+- Use **GW2 Bingo** in the top bar and one small **Lobby** page heading, not an oversized duplicate game title.
+- Keep the name field, preset selector and **Bingo starten** visible without needing to scroll on typical desktop sizes.
+- **Regeln & Infos** is a click-open dialog for the four game rules, independent use of the same card by multiple players, and local-mode limitations.
+- **Karte ansehen** opens the selected preset's 5×5 board on demand in a read-only dialog. Switching selection affects the preview the next time it is opened; the preview should not occupy the lobby by default.
+- Modals must work with mouse, keyboard and touch. Escape and **Schließen** both dismiss them, and focus returns to the initiating button. Hover may add decoration but must not be required to discover the rules.
+- The local-only lobby must continue to warn briefly about losing progress on refresh. Do not fabricate online players or connection indicators before the backend exists.
+- Multiplayer implementation should replace the empty player overview with real room state without making the lobby visually noisy.
+
 ## Bingo screen wireframe
 
 ```text

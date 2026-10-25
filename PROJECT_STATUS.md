@@ -10,9 +10,10 @@ Last documentation review: **2026-10-25**.
 | Ten source cards transcribed | Complete (data/documentation) | `data/cards.json`, `docs/13-card-catalog.md` |
 | Frontend scaffold | Local development page shown running on Windows; typecheck/test/build not yet confirmed | `package.json`, `vite.config.ts`, `src/client/` and `index.html`; run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, `npm run dev` |
 | Ten-card validation and read-only preview | Code added; local tests pending | `src/shared/cards.ts`, `src/shared/cards.test.ts`, preview in `src/client/App.tsx` |
-| 5×5 playable card | Local gameplay code added; browser verification pending | `src/client/PlayableBoard.tsx`, `App.tsx`, and UI tests; marked states in browser memory only |
+| 5×5 playable card | Browser verified by user: mark/unmark, progress and BINGO display | `src/client/PlayableBoard.tsx`, `App.tsx`, and UI tests; marked states in browser memory only |
 | Pure bingo detection | Rules module + test cases added; project-wide Vitest verification pending | `src/shared/bingo.ts`, `src/shared/bingo.test.ts`; standalone TypeScript compile and runtime smoke tests passed |
 | Lobby / join flow | Local-only lobby, card picker, name form and preview navigation added; browser verification pending | `src/client/App.tsx`, `src/client/lobby.ts`, local tests. No room API or multiplayer yet |
+| Comparison & leave dialogs | Code added; local verification pending | `ComparisonDrawer.tsx`, `ReadOnlyBoard.tsx`, `ExitDialog.tsx`, demo data and SSR/unit tests; no live comparison yet |
 | Backend Durable Object | Not started | — |
 | Persistence and sessions | Not started | — |
 | Realtime connections | Not started | — |
@@ -63,6 +64,24 @@ Last documentation review: **2026-10-25**.
 - **Verified in patch environment:** source/patch structure and the original shared bingo rules. **Not verified here:** full Vitest, Vite build, or interactive browser actions due to unavailable project npm dependencies. Run `npm run typecheck`, `npm test`, `npm run build`, then test actual clicks and exit cancellation locally.
 - No real players, comparisons, server sessions, or synchronized progress yet. Next task: comparison drawer and polished exit dialog using explicitly local demo state.
 
+## Local comparison and exit milestone handoff (2026-10-25)
+
+- Step 6 adds the **Spielervergleich** modal side drawer. It includes the actual current browser player's checked mask plus two immutable, **clearly marked sample players** (`Mira`, `Tom`) for layout/testing only. Sample data does not appear in the real lobby or claim online presence.
+- Selecting another entry shows the exact original 5×5 card with that entry's marks and completed-line borders in a **non-interactive** display. No other player's squares can be modified from this UI.
+- Replaced native `window.confirm` with an explicit **Bingokarte verlassen?** confirmation dialog. Cancelling leaves local state untouched; **Verlassen und löschen** resets only the current local game. Both dialogs use native `<dialog>` and implement Escape dismissal and focus restoration after closing.
+- Added demo-data unit tests and render-level tests for read-only squares and the two dialogs.
+- **Verified here:** patch structure, canonical card data, comparison mask calculations, and static validation. **Still requires user verification:** complete `npm run typecheck`, `npm test`, `npm run build`, and keyboard/browser behavior including focus restoration and confirming exit. No multiplayer, persistence, or backend has been built.
+- **Next:** Cloudflare Worker + SQLite Durable Object local backend, then sessions and realtime updates.
+
+
+## Compact lobby UX refinement handoff (2026-10-25)
+
+- Step 6.5 reduces the lobby to a single compact GW2 Bingo header, a short Lobby heading, join form, and a real-but-empty player overview. The large hero, always-visible 5×5 card preview, repeated explanatory notes and redundant lobby footer are removed.
+- **Regeln & Infos** opens a native modal with the source game rules and the explanation that multiple people can independently pick the same card. **Karte ansehen** opens a separate native modal showing the currently selected 5×5 card. Both can be closed via Escape or Schließen and return focus to the trigger. No hover-only interaction is required.
+- A short visible notice continues to warn that local progress is lost on refresh. The existing clickable game board, comparison drawer, and exit confirmation remain unchanged. There is no added storage or multiplayer backend.
+- Added SSR tests for the compact lobby, hidden-until-open preview content, German rules, and the selected-card grid. **Pending Windows verification:** `npm run typecheck`, `npm test`, `npm run build`, and manual dialog/keyboard/browser checks.
+- Next: review any additional UI/UX refinements, then implement persistent multiplayer.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.
@@ -75,4 +94,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Run the local typecheck, tests and build on Windows; verify the local bingo board, checked/unchecked state, completed row/column/diagonal, and confirmed return. Check off validated tasks. Next: comparison drawer and styled exit confirmation.
+Run typecheck, tests and build on Windows; verify compact lobby, rules/preview dialogs and existing Step 6 comparison/exit flows. Gather remaining UI refinements before Cloudflare work.

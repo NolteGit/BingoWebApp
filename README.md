@@ -2,7 +2,7 @@
 
 A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 World vs. World (WvW)*. Friends join the same room, select one of ten predefined German bingo cards, tick off events while playing, and see each other's progress live. The interface is designed for Alt-Tab and second-monitor use.
 
-> **Project status (2026-10-25): frontend scaffold running locally on Windows, German lobby and read-only personal card preview added, pure bingo rules implemented.** The unit tests and complete build still need to be verified locally. Interactive marking, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
+> **Project status (2026-10-25): frontend scaffold running locally on Windows, German lobby, clickable local bingo board, and comparison/exit UI added; pure bingo rules implemented.** The unit tests and complete build still need to be verified locally. Multiplayer backend, persistence, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
 
 ## Run the local frontend
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local-only lobby and read-only personal card preview**, not yet a playable game. Enter a name, select one of the ten WvW cards, and select **Bingo starten** to open your own preview. **Zur Lobby** returns to the lobby. Squares cannot be marked and no game state is saved. The independent bingo rule calculations and test suite already live in `src/shared/bingo.ts` and `src/shared/bingo.test.ts`.
+Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local-only playable prototype**, not a multiplayer room. Enter a name, choose one of the ten WvW cards, and select **Bingo starten**. The compact lobby keeps rules in **Regeln & Infos** and shows a selected card only when **Karte ansehen** is clicked. Click squares to check or undo them. **Vergleich** opens a read-only comparison with your *actual local board* and two **clearly marked example players** (not online participants). **Zur Lobby** requests explicit confirmation before clearing the current session. Refreshing still loses local progress. The shared bingo rules live in `src/shared/bingo.ts`.
 
 After installation, verify the project with:
 
@@ -73,11 +73,11 @@ See the [architecture](docs/04-architecture.md) and [hosting guide](docs/10-depl
 | [data/cards.json](data/cards.json) | Machine-readable card content (canonical) |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Tracks what is actually implemented and verified |
 
-## Local prototype (Step 5)
+## Local prototype (Steps 5–6)
 
 Run `npm install` (if needed), then `npm run dev` in the repository root. In the lobby, enter a name and pick any of the ten original cards. Click **Bingo starten** to play locally. Click any regular square to check/uncheck it, while the center remains permanently checked. Progress and complete rows/columns/diagonals update instantly. **Zur Lobby** asks before discarding your current marks.
 
-**This remains a single-browser prototype.** Progress is in memory only: refreshing/closing the tab loses it, and no other browser can see the player yet. The room backend, live player list, comparison drawer and durable sessions are future tasks. Run `npm run typecheck`, `npm test`, and `npm run build` before committing.
+**This remains a single-browser prototype.** Progress is in memory only: refreshing/closing the tab loses it, and no other browser can see the player yet. The comparison drawer is implemented with two sample participants, *not* live users. The room backend, live player list and durable sessions are future tasks. Run `npm run typecheck`, `npm test`, and `npm run build` before committing.
 
 ## Source content
 
@@ -85,4 +85,8 @@ The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten 
 
 ## Next step
 
-**Next milestone:** verify the interactive local 5×5 board (mark/undo, live counters, bingo warning, confirmed return), then add the comparison drawer and a styled exit dialog. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.
+**Next milestone:** verify the local comparison drawer and styled exit dialog (including Esc/focus/undo), then implement the Cloudflare Worker and Durable Object backend. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.
+
+## Lobby UX refinement (Step 6.5)
+
+The lobby now has a single compact **GW2 Bingo** header, name/card selection, and the future player overview. **Regeln & Infos** and **Karte ansehen** open accessible modal dialogs (Escape or **Schließen** dismisses them). Multiple players may use the same card, as documented in the rules. The card preview does not mount its 5×5 content until requested. The local version still loses marks on page refresh. This UI change does not add persistent sessions or live player counts.
