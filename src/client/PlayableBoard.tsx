@@ -5,10 +5,11 @@ interface PlayableBoardProps {
   card: BingoCard
   checkedMask: number
   onToggleSquare: (index: number) => void
+  disabled?: boolean
 }
 
 /** Presentational board. The parent owns checked state (later supplied by the server). */
-export function PlayableBoard({ card, checkedMask, onToggleSquare }: PlayableBoardProps) {
+export function PlayableBoard({ card, checkedMask, onToggleSquare, disabled = false }: PlayableBoardProps) {
   const progress = getBingoProgress(checkedMask)
   const winningSquares = new Set(
     progress.completedLineIndices.flatMap((lineIndex) => BINGO_LINES[lineIndex]),
@@ -50,7 +51,7 @@ export function PlayableBoard({ card, checkedMask, onToggleSquare }: PlayableBoa
                 class={`play-square${checked ? ' play-square--checked' : ''}${isFree ? ' play-square--free' : ''}${winning ? ' play-square--winning' : ''}`}
                 aria-pressed={checked}
                 aria-label={`Zeile ${row}, Spalte ${column}: ${objective}, ${isFree ? 'Freifeld' : checked ? 'abgehakt' : 'offen'}`}
-                disabled={isFree}
+                disabled={isFree || disabled}
                 onClick={() => onToggleSquare(index)}
               >
                 <span class="play-square__mark" aria-hidden="true">{checked ? '✓' : ''}</span>

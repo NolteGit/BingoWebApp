@@ -45,7 +45,7 @@ export function LobbyModal({ mode, card, onDismiss, onAfterClose }: LobbyModalPr
           </ol>
           <h3>Auswahl der Karten</h3>
           <p>Alle zehn Karten sind frei wählbar. <strong>Mehrere Spieler dürfen dieselbe Karte verwenden.</strong> Jede Person verfolgt ihren Fortschritt unabhängig.</p>
-          <p class="lobby-modal__muted">Aktuell ist dies eine lokale Testversion: Es gibt noch keine gemeinsamen Spielräume oder dauerhafte Speicherung.</p>
+          <p class="lobby-modal__muted">Deine Karte wird im gemeinsamen Raum gespeichert. Mehrere Spieler können unabhängig dieselbe Karte wählen.</p>
         </div>
       ) : mode === 'preview' ? (
         <div class="lobby-modal__body">

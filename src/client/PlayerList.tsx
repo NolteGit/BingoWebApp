@@ -15,7 +15,7 @@ export function PlayerList({ entries, onPreview, selectedId = null, detailId }: 
     return (
       <div class="empty-players">
         <strong>Noch keine Spieler</strong>
-        <p>Die gemeinsame Übersicht wird mit dem Mehrspieler-Modus aktiviert.</p>
+        <p>Sobald jemand beitritt, erscheint hier sein Fortschritt.</p>
       </div>
     )
   }

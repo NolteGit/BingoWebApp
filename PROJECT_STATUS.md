@@ -165,3 +165,12 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Changes update player and room revisions in one SQLite transaction and derive completed fields, lines and first Bingo winner on the server. The first winner remains recorded after later unchecks.
 - **Verified here:** source parsing and a real SQLite round-trip harness covering mark/undo, idempotent retry, revision conflicts, first winner, database close/reopen and recovery. **Needs developer Windows verification:** `npm run typecheck`, `npm test`, `npm run build`, actual Wrangler API and restart tests in `docs/17-step9-progress-testing.md`.
 - **Not yet implemented:** frontend room/session wiring, persistence UI feedback, WebSocket broadcast, confirmed leave/reset. Demo players remain in the lobby and comparison for interface testing.
+
+## Step 10 — Browser / persistent room integration (2026-10-25, patch prepared)
+
+- The client now creates room URLs (`/r/CODE`), joins via Step 8 sessions, recovers `/me` on reload, renders real lobby/comparison entries from public room snapshots, and saves mark/unmark actions via Step 9's revision-checked API.
+- Each write is serialized and the UI displays server-confirmed square state. On a stale write it reloads the canonical player state. On an unresolved save it locks further edits until refresh instead of showing an unverified checkmark.
+- **Zur Lobby** is safe navigation that preserves the server record. A returning player can **Bingo fortsetzen**. Changing a card after joining and destructive leave are intentionally unavailable; see `docs/19-navigation-and-safety.md`.
+- Added TypeScript HTTP client, room/player mapping, tests for URL parsing, saved-mask reconstruction, same-origin cookie requests and conflicts. Replaced the old local-only App smoke test.
+- Lobby and Vergleich no longer display synthetic Mira/Tom. Other player's progress is fetched every five seconds, **not** WebSocket push. Presence, public deployment and cross-device recovery remain deferred.
+- **Verified in patch environment:** clean Git patch reconstruction through Step 9, TypeScript source parsing and pure data checks. **Not yet verified:** full npm typecheck/tests/build or actual local browsers (npm registry unavailable). The developer must run the checks in `docs/18-step10-browser-testing.md` before marking complete.

@@ -157,3 +157,11 @@ In addition to creating and reading rooms, the Worker now supports `POST /api/ro
 ### Step 9 backend progress API
 
 The backend now supports authenticated square writes with `PUT /api/rooms/:code/me/squares/:index`, body `{ "checked": true, "expectedPlayerRevision": 0 }`. The response contains the saved canonical state, a per-player revision, the room revision and first-winner metadata. Stale writes return `409` instead of silently overwriting a newer change; safe retries return `unchanged`. See [Step 9 test guide](docs/17-step9-progress-testing.md). **The browser UI is still local/demo-only** until room integration is implemented.
+
+## Step 10 — Browser joins a real saved room (local)
+
+The root page `/` creates a room. The generated `/r/CODE` link opens a shared lobby. Players enter a name, select one of the ten original cards, and receive a room-scoped HttpOnly session cookie. The playable board now uses the server's saved marks and revision-aware square updates; lobby and Vergleich show **real room players**, not Mira/Tom examples. When the same browser refreshes, `/me` recovers its existing player and marks. **Zur Lobby is safe navigation** and offers **Bingo fortsetzen**; no player deletion or card-reset endpoint is present.
+
+During this milestone other player snapshots refresh on a **5-second poll**, not WebSockets. No online/offline presence is claimed. Square writes show confirmed server state and lock edits if the saved state cannot be recovered. Do not clear `.wrangler/state` when testing persistence. Public deployment is still deferred pending rate limiting and security checks.
+
+Start Wrangler (`npm run dev:api`) and Vite (`npm run dev`) in two terminals. Follow the [two-browser test guide](docs/18-step10-browser-testing.md), including refresh, restart, navigation, and conflict scenarios. See [safe navigation decision](docs/19-navigation-and-safety.md).

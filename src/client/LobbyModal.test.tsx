@@ -12,7 +12,7 @@ describe('Lobby modal', () => {
     expect(html).toContain('Bonusfeld')
     expect(html).toContain('Reihe, Spalte oder Diagonale')
     expect(html).toContain('Mehrere Spieler dürfen dieselbe Karte verwenden')
-    expect(html).toContain('keine gemeinsamen Spielräume')
+    expect(html).toContain('im gemeinsamen Raum gespeichert')
     expect(html).not.toContain('role="gridcell"')
     expect(html).toContain('Schließen')
   })

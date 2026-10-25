@@ -26,6 +26,8 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress. *(Step 8 confirmed locally on Windows: private cookie resumes same player after Wrangler restart. Step 9 square updates prepared and need Windows verification. Confirmed leave remains separate.)*
 - [ ] Calculate official totals, bingo lines, and first winner **on the server**. *(Step 9 implementation and tests added; verify through Wrangler before checking off.)*
 
+- [ ] **Step 10 — Connect frontend to persistent rooms:** create/join by link, real players in lobby/Vergleich, recover cookies and saved marks, safe navigation. *(Patch prepared; two-browser verification pending. See `docs/18-step10-browser-testing.md`.)*
+
 ## 4. Live synchronization
 - [ ] Broadcast room snapshots over **WebSockets** to the lobby and comparison drawer.
 - [ ] Handle **late joins, reconnects, refreshes, offline status**, and independent players choosing the same card.
@@ -40,4 +42,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** run Step 9 tests and `docs/17-step9-progress-testing.md`, then commit the verified backend milestone.
+**Suggested next action:** verify Step 10 using `docs/18-step10-browser-testing.md`, then implement WebSocket synchronization and presence.

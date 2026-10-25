@@ -9,10 +9,11 @@ interface ComparisonDrawerProps {
   onSelect: (id: string | null) => void
   onDismiss: () => void
   onAfterClose: () => void
+  note?: string
 }
 
 /** The list remains visible while a player's card expands alongside or below it. */
-export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismiss, onAfterClose }: ComparisonDrawerProps) {
+export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismiss, onAfterClose, note }: ComparisonDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismis
         <button class="secondary-button" type="button" onClick={onDismiss}>Schließen</button>
       </div>
       <p class="comparison-note" id="compare-note">
-        Nur dein eigener Fortschritt ist echt. Mira und Tom sind Beispieldaten.
+        {note ?? 'Nur dein eigener Fortschritt ist echt. Mira und Tom sind Beispieldaten.'}
       </p>
       <PlayerOverview
         entries={entries}
