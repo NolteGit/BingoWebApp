@@ -144,7 +144,11 @@ Local Durable Object data lives under `.wrangler/` and is **not** the production
 Do not delete that directory if you want to retain local test rooms.
 
 **Deployment intentionally deferred:** publicly exposing room creation without rate
-limits would invite abuse. Authentication, persistence of player progress, and the
+limits would invite abuse. Authorized progress updates, persistence of player progress, and the
 working `/r/:code` frontend route are future tasks. The API-generated `roomUrl` is
 therefore a reserved path, not a usable invite screen yet. See
 [the API spec](docs/06-api-realtime.md).
+
+## Backend Step 8: private player sessions (local)
+
+In addition to creating and reading rooms, the Worker now supports `POST /api/rooms/:code/join` and `GET /api/rooms/:code/me`. New joins store a player and selected card in SQLite and issue a room-scoped HttpOnly cookie. Existing valid cookies resume a player instead of creating a duplicate. The frontend is not yet wired to these endpoints; the sample player entries remain demo UI. For the full Windows persistence/restart checks, see [Step 8 session testing](docs/15-step8-session-testing.md).

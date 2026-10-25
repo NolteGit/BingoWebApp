@@ -1,6 +1,6 @@
 # 06 — HTTP and realtime contract (proposed v1)
 
-**Status: partially implemented in Step 7, local verification pending.** `POST /api/rooms` and `GET /api/rooms/:code` are coded for SQLite-backed Durable Objects. All join, session, marks, WebSocket routes and frontend room routing below remain specifications, not working features. Creation returns a future `/r/:code` link that is not yet wired into the frontend.
+**Status: Step 7 room API verified locally, Step 8 join and resume implemented (local verification pending).** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates, leave, WebSockets and frontend room navigation remain specifications, not working features. Creation returns a future `/r/:code` link not yet wired into the frontend.
 
 ## General conventions
 
@@ -19,8 +19,8 @@
 | `POST` | `/api/rooms` | None | Create and initialize room; return code and link. |
 | `GET` | `/api/rooms/:code` | Room link | Get public room snapshot/metadata. |
 | `GET` | `/api/cards` | None | Return predefined card metadata and optional preview (could be static). |
-| `POST` | `/api/rooms/:code/join` | None | Join with name and card; issues session cookie. |
-| `GET` | `/api/rooms/:code/me` | Session cookie | Identify own active player and fetch full room state. |
+| `POST` | `/api/rooms/:code/join` | None or existing cookie | Join with name and card, or resume; issues session cookie for new players. |
+| `GET` | `/api/rooms/:code/me` | Session cookie | Identify own persistent player; includes own card ID and checked indices. |
 | `PUT` | `/api/rooms/:code/me/squares/:index` | Session cookie | Set desired boolean checked state. |
 | `POST` | `/api/rooms/:code/me/leave` | Session cookie | Delete own active player and revoke session. |
 | `GET` (upgrade) | `/api/rooms/:code/events` | Room link (cookie optional) | Hibernatable room WebSocket. |
@@ -48,8 +48,10 @@ Set-Cookie: bingo_session_K7MP2A8X=<opaque-token>; Path=/api/rooms/K7MP2A8X; Htt
 ```
 
 ```json
-{"playerId":"p_83f2","roomCode":"K7MP2A8X","revision":7}
+{"roomCode":"K7MP2A8X","player":{"playerId":"uuid","name":"Mira","cardId":7,"cardVersion":"wvw-v1","checkedIndices":[12],"joinedAt":"..."},"revision":7,"resumed":false}
 ```
+
+A repeat `POST /join` with a valid cookie returns `200` with `resumed:true`, retaining the original player and card instead of creating a new one. A duplicate name without that cookie returns `409 NAME_TAKEN`. `GET /api/rooms/:code/me` returns the same player object (without `resumed`) if the browser sends the room-scoped session cookie, or `401 SESSION_REQUIRED` if no valid session exists. **The cookie is HttpOnly, SameSite=Lax, scoped to `/api/rooms/:code` and Secure on HTTPS deployments.** During local HTTP development it omits Secure so the testing client can send it.
 
 `opaque-token` is server-generated, never displayed in client JavaScript, and never included in a room link. The cookie example illustrates the design; exact naming may change if documented consistently.
 
@@ -67,7 +69,7 @@ Content-Type: application/json
 ```json
 {
   "revision": 8,
-  "playerId": "p_83f2",
+  "playerId": "uuid",
   "checkedIndices": [8,12],
   "completed": 2,
   "completedLines": 0,
@@ -89,7 +91,7 @@ Content-Type: application/json
   "firstBingo": null,
   "players": [
     {
-      "playerId": "p_83f2",
+      "playerId": "uuid",
       "name": "Mira",
       "cardId": 7,
       "cardVersion": "wvw-v1",

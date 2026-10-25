@@ -72,3 +72,7 @@ Once scripts exist, require at minimum `npm run typecheck`, `npm test` and `npm 
 9. Test network offline/online with DevTools; inspect reconnect UI and actual persisted state.
 
 Record screenshots/observations in issue or PR when implemented. Do not mark e2e done based on a mocked UI.
+
+## Step 8: manual session/restart verification
+
+Follow [`docs/15-step8-session-testing.md`](15-step8-session-testing.md) for PowerShell commands. Verify that a new player is saved in SQLite, a cookie restores that player after restarting `wrangler dev`, a second request without a cookie cannot claim the same player name, and a cookie from another room cannot retrieve the first player. No deletion or square updates are yet implemented.

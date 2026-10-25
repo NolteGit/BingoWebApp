@@ -138,3 +138,17 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - **Not yet connected:** frontend room URLs (`/r/:code`), player join/session cookies, persistence of checked fields, realtime updates, rate limiting, and production deployment. The examples in lobby/comparison remain demo state.
 - **Verification needed on Windows:** `npm install`, `npm run typecheck`, `npm test`, `npm run build`, run `npm run dev:api` and `npm run dev`, create/read a room, restart Wrangler and verify the room still exists.
 - No external deployment should be done before API creation rate limiting and player authorization are planned.
+
+## Step 7 local verification (reported by developer, 2026-10-25)
+
+- On Windows, TypeScript and production Vite build succeeded after fixing the `BingoRoom` environment type. All 68 tests passed before Step 8.
+- Corrected `wrangler.jsonc` to declare `BingoRoom` under `migrations` with `new_sqlite_classes`. Local Worker `POST /api/rooms` returned 201. Room `9NC3L2P8` was successfully read with identical `createdAt` and revision after stopping and restarting Wrangler; a second room was created too.
+- Local Wrangler 4.35.0 still reports an old compatibility runtime warning. It is not a confirmed blocker to the room API.
+
+## Step 8 player sessions (2026-10-25, patch prepared)
+
+- New backend-only `POST /api/rooms/:code/join` and `GET /api/rooms/:code/me`. A player is saved with name, immutable chosen card, center-only initial mask, card snapshot, and a 32-byte random session credential (hashed in SQLite). Each join advances the room revision.
+- Room-scoped HttpOnly SameSite=Lax cookie resumes an existing player and prevents duplicate player creation or card changes. Invalid/missing cookies cannot read `/me`. Public snapshots list player progress but never expose tokens or hashes.
+- Added tests for joining, resuming, room isolation, duplicate names, invalid input, origin protection, and token/cookie helpers. **Not yet verified on Windows**: full npm scripts, real Wrangler SQLite behavior, cookie persistence after backend restart, and frontend integration (not in scope).
+- Demo players remain in UI. No real frontend room entry, square persistence, WebSockets, player deletion, or leave endpoint exists yet.
+- Next: run `docs/15-step8-session-testing.md` then commit; after that implement server-authorized checked-square persistence separately.

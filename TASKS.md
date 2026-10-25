@@ -22,8 +22,8 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] **Step 6.9 – compact player rows + floating side preview.** Preview appears next to the stable player list (no row movement), same row toggles close, another row switches. Lobby temporarily shows clearly labeled demo players for UI testing; remove/replace with real room members when backend is connected. Verify locally.
 
 ## 3. Persistent multiplayer backend
-- [ ] Set up **Cloudflare Worker + SQLite room Durable Object** and room creation/read API. *(Step 7 coded: local verification pending; player join is handled in the next task.)*
-- [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress.
+- [x] Set up **Cloudflare Worker + SQLite room Durable Object** and room creation/read API. *(Step 7 verified locally: room survives Wrangler restart, see PROJECT_STATUS.md.)*
+- [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress. *(Step 8 coded: SQLite player join, private cookie and session recovery. Local restart verification pending. Square updates/leave intentionally follow later.)*
 - [ ] Calculate official totals, bingo lines, and first winner **on the server**.
 
 ## 4. Live synchronization
@@ -40,4 +40,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** verify Step 6.7 locally (comparison summary and selected-card preview/back, empty lobby, keyboard dismissal). Run typecheck, tests and build, then begin Cloudflare backend work.
+**Suggested next action:** verify Step 8 player join/resume, cross-room isolation and restart persistence using `docs/15-step8-session-testing.md`.

@@ -73,3 +73,7 @@ Only display names and game interaction data are needed. Do not require Discord 
 - Verify cookie flags and websocket Origin checks in deployed domain.
 - Verify no secret/session ID appears in logs, error responses, room broadcasts or URLs.
 - Verify reconnect, fast double-click, two-tab state, and first-winner concurrency.
+
+## Step 8 cookie security
+
+Per-player sessions use 32 random bytes encoded as hex. Only their SHA-256 hashes are stored in SQLite. Room-scoped session cookies are HttpOnly, SameSite=Lax, and Secure for HTTPS requests. Origin checks reject cross-site join attempts from browsers and explicitly allow the local Vite proxy. A valid cookie always resumes its existing player without changing that player’s selected card, and names must be unique per room. No endpoint deletes a player or their progress in this milestone. Future mutation endpoints must authenticate using the same room cookie, enforce Origin, and never accept client-supplied player IDs as authorization.

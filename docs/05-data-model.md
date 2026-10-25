@@ -110,3 +110,9 @@ A successful mark that changes state updates the player's mask and the room revi
 ## Retention policy
 
 The MVP does not require historical analytics. An idle-room retention policy (proposed: expire after 30 days without activity) must be agreed before rollout; deletion/alarms should not be added without tests. Do not confuse `Verlassen` with room deletion.
+
+## Step 8 implementation notes (2026-10-25)
+
+The SQLite `players` table is now created by `BingoRoom` and populated on `POST /api/rooms/:code/join`. The database stores only the SHA-256 hash of the 32-byte random session token, not the token itself. `name_key` is NFC/trim/space-normalized and lowercase to reject duplicate active names in the same room. The player card snapshot is taken from the canonical ten-card catalog at join time. The free center is initially checked.
+
+`GET /api/rooms/:code/me` performs hash lookup from an HttpOnly room-scoped cookie. Only the matching player can resume. Neither tokens nor hashes are returned in public snapshots. Each new join increments the room revision. **Square mutations, player leave, and presence are still future tasks.**

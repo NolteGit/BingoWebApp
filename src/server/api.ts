@@ -1,4 +1,9 @@
+import { cardCatalog, getCardById, getFlatSquares } from '../shared/cards'
 import { generateRoomCode, normalizeRoomCode } from './room-code'
+import {
+  createSessionToken, extractSessionToken, hashSessionToken, parseCardId,
+  parsePlayerName, sessionCookie,
+} from './player-session'
 import type { RoomStub } from './room-model'
 
 export interface ApiBindings {
@@ -15,41 +20,99 @@ const json = (body: unknown, status = 200, headers?: HeadersInit): Response =>
 const error = (status: number, code: string, message: string): Response =>
   json({ error: { code, message } }, status)
 
-/** Same-origin API. The UI still runs as a local prototype in this milestone. */
+/** Deny browser mutations from other origins; allow the local Vite proxy for dev. */
+function validMutationOrigin(request: Request): boolean {
+  const origin = request.headers.get('Origin')
+  if (!origin) return true // CLI requests have no Origin header.
+  const url = new URL(request.url)
+  const localProxy = (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+    (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173')
+  return origin === url.origin || localProxy
+}
+
+async function getSessionPlayer(request: Request, room: RoomStub, roomCode: string) {
+  const token = extractSessionToken(request.headers.get('Cookie'), roomCode)
+  if (!token) return null
+  return room.getPlayerByTokenHash(await hashSessionToken(token))
+}
+
+/** Same-origin API. The UI will consume room sessions in a later milestone. */
 export async function handleRequest(request: Request, env: ApiBindings): Promise<Response> {
   const url = new URL(request.url)
   if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
 
-  if (url.pathname === '/api/health' && request.method === 'GET') {
-    return json({ status: 'ok' })
-  }
+  if (url.pathname === '/api/health' && request.method === 'GET') return json({ status: 'ok' })
 
   if (url.pathname === '/api/rooms' && request.method === 'POST') {
-    // Disallow cross-origin browser mutations. Requests without Origin (e.g. curl) are allowed.
-    const origin = request.headers.get('Origin')
-    // Vite proxies /api from localhost:5173 to the local Worker on :8787.
-    const localProxy = (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
-      (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173')
-    if (origin && origin !== url.origin && !localProxy) {
-      return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
-    }
+    if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
     for (let attempt = 0; attempt < 5; attempt++) {
       const roomCode = generateRoomCode()
-      const room = env.BINGO_ROOMS.getByName(roomCode)
-      if (await room.initialize(roomCode)) {
+      if (await env.BINGO_ROOMS.getByName(roomCode).initialize(roomCode)) {
         return json({ roomCode, roomUrl: `/r/${roomCode}` }, 201, { Location: `/r/${roomCode}` })
       }
     }
     return error(503, 'ROOM_CREATION_FAILED', 'Raum konnte nicht erstellt werden. Bitte erneut versuchen.')
   }
 
-  const matched = /^\/api\/rooms\/([^/]+)$/.exec(url.pathname)
-  if (matched && request.method === 'GET') {
+  const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me))?$/.exec(url.pathname)
+  if (matched) {
     const roomCode = normalizeRoomCode(matched[1])
     if (!roomCode) return error(400, 'INVALID_ROOM_CODE', 'Ungültiger Raumcode.')
-    const room = await env.BINGO_ROOMS.getByName(roomCode).getSnapshot()
-    if (!room) return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
-    return json(room)
+    const room = env.BINGO_ROOMS.getByName(roomCode)
+    const action = matched[2]
+
+    if (!action && request.method === 'GET') {
+      const snapshot = await room.getSnapshot()
+      return snapshot ? json(snapshot) : error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+    }
+
+    if (action === 'join' && request.method === 'POST') {
+      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+      // If an existing session is valid, never overwrite the card or create another player.
+      const resumed = await getSessionPlayer(request, room, roomCode)
+      if (resumed) {
+        const snapshot = await room.getSnapshot()
+        return json({ roomCode, player: resumed, revision: snapshot?.revision ?? 0, resumed: true })
+      }
+      const length = Number(request.headers.get('Content-Length') ?? '0')
+      if (length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+      let body: unknown
+      try {
+        const raw = await request.text()
+        if (raw.length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+        body = JSON.parse(raw)
+      } catch {
+        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+      }
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+      }
+      const data = body as Record<string, unknown>
+      const player = parsePlayerName(data.name)
+      if (!player) return error(400, 'INVALID_NAME', 'Bitte einen Namen mit 2 bis 24 Zeichen eingeben.')
+      const cardId = parseCardId(data.cardId)
+      if (!cardId) return error(400, 'INVALID_CARD', 'Bitte eine gültige Karte (1–10) auswählen.')
+
+      const token = createSessionToken()
+      const result = await room.joinPlayer({
+        playerId: crypto.randomUUID(), name: player.name, nameKey: player.nameKey, cardId,
+        cardVersion: cardCatalog.cardVersion, cardSnapshot: [...getFlatSquares(getCardById(cardId))],
+        tokenHash: await hashSessionToken(token),
+      })
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (result.status === 'name_taken') return error(409, 'NAME_TAKEN', 'Dieser Name ist bereits vergeben.')
+      const snapshot = await room.getSnapshot()
+      return json({ roomCode, player: result.player, revision: snapshot?.revision ?? 0, resumed: false },
+        201, { 'Set-Cookie': sessionCookie(roomCode, token, url.protocol === 'https:') })
+    }
+
+    if (action === 'me' && request.method === 'GET') {
+      const snapshot = await room.getSnapshot()
+      if (!snapshot) return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      const player = await getSessionPlayer(request, room, roomCode)
+      if (!player) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      return json({ roomCode, player, revision: snapshot.revision })
+    }
   }
 
   return error(404, 'NOT_FOUND', 'API-Endpunkt nicht gefunden.')
