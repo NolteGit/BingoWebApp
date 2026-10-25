@@ -104,3 +104,47 @@ In **Vergleich**, the list always stays visible. Select a player to view their o
 ### UI prototype: player list and preview (Step 6.9)
 
 The local lobby deliberately shows **two labeled example players** to test the final lobby leaderboard. Selecting a row opens a read-only bingo card beside the list without shifting the rows. Selecting it again closes the preview. The same shared component is used by Vergleich. These are mock players only; multiplayer and persistence are still to be implemented.
+
+
+## Step 7 — Cloudflare backend (room metadata only)
+
+The frontend still runs in local-only mode. This step adds a separate Worker API with
+SQLite-backed Durable Objects for room creation and public room metadata. No player
+joining, progress persistence, or realtime messaging is connected yet.
+
+```powershell
+npm install
+npm run typecheck
+npm test
+npm run build
+```
+
+Open two VS Code PowerShell terminals in the repository folder:
+
+```powershell
+# Terminal 1: start the Worker + durable local SQLite storage on port 8787
+npm run dev:api
+```
+
+```powershell
+# Terminal 2: start Vite UI on port 5173; /api is proxied to port 8787
+npm run dev
+```
+
+Test the API using a third terminal:
+
+```powershell
+$created = Invoke-RestMethod -Method Post -Uri 'http://localhost:5173/api/rooms'
+$created
+Invoke-RestMethod -Uri ("http://localhost:5173/api/rooms/" + $created.roomCode)
+```
+
+Stop and restart the Worker terminal. The second request should still return the same room.
+Local Durable Object data lives under `.wrangler/` and is **not** the production database.
+Do not delete that directory if you want to retain local test rooms.
+
+**Deployment intentionally deferred:** publicly exposing room creation without rate
+limits would invite abuse. Authentication, persistence of player progress, and the
+working `/r/:code` frontend route are future tasks. The API-generated `roomUrl` is
+therefore a reserved path, not a usable invite screen yet. See
+[the API spec](docs/06-api-realtime.md).

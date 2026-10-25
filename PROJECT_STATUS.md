@@ -128,3 +128,13 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Opening a player card no longer changes the list/drawer dimensions. The read-only preview floats **beside** the list whenever there is room, or overlays below it on narrow screens. Clicking the same row again closes it; clicking another row switches content without moving rows.
 - Comparison and lobby use the same component. Added pure responsive positioning tests and revised render tests. Verify full Vitest/TypeScript/Vite and browser behavior locally before checking off.
 - **Future backend requirement:** Replace example lobby players with actual server entries; all demo data is explicitly labeled and must not be transmitted as live room state.
+
+
+## Cloudflare room foundation (Step 7, 2026-10-25)
+
+- Added a Worker with SQLite-backed `BingoRoom` Durable Objects; creates durable room metadata through `POST /api/rooms` and reads it through `GET /api/rooms/:code`. Rooms start with revision 0 and zero players. Unknown codes are not initialized as real rooms on read.
+- Added Wrangler config, Vite `/api` local proxy, Cloudflare TypeScript checking, and API tests using an in-memory test double.
+- `npm run dev:api` starts local Worker storage; frontend stays a separate Vite dev server. `.wrangler/` is local and separate from production.
+- **Not yet connected:** frontend room URLs (`/r/:code`), player join/session cookies, persistence of checked fields, realtime updates, rate limiting, and production deployment. The examples in lobby/comparison remain demo state.
+- **Verification needed on Windows:** `npm install`, `npm run typecheck`, `npm test`, `npm run build`, run `npm run dev:api` and `npm run dev`, create/read a room, restart Wrangler and verify the room still exists.
+- No external deployment should be done before API creation rate limiting and player authorization are planned.

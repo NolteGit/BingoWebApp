@@ -1,6 +1,6 @@
 # 06 — HTTP and realtime contract (proposed v1)
 
-**Status: specification only.** Routes/payloads below are the intended stable interface for the first implementation. They are not currently deployed.
+**Status: partially implemented in Step 7, local verification pending.** `POST /api/rooms` and `GET /api/rooms/:code` are coded for SQLite-backed Durable Objects. All join, session, marks, WebSocket routes and frontend room routing below remain specifications, not working features. Creation returns a future `/r/:code` link that is not yet wired into the frontend.
 
 ## General conventions
 

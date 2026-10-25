@@ -22,7 +22,7 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] **Step 6.9 – compact player rows + floating side preview.** Preview appears next to the stable player list (no row movement), same row toggles close, another row switches. Lobby temporarily shows clearly labeled demo players for UI testing; remove/replace with real room members when backend is connected. Verify locally.
 
 ## 3. Persistent multiplayer backend
-- [ ] Set up **Cloudflare Worker + room Durable Object (SQLite)** and room creation/join/read API.
+- [ ] Set up **Cloudflare Worker + SQLite room Durable Object** and room creation/read API. *(Step 7 coded: local verification pending; player join is handled in the next task.)*
 - [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress.
 - [ ] Calculate official totals, bingo lines, and first winner **on the server**.
 
