@@ -54,7 +54,7 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
     return error(503, 'ROOM_CREATION_FAILED', 'Raum konnte nicht erstellt werden. Bitte erneut versuchen.')
   }
 
-  const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me))?$/.exec(url.pathname)
+  const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me)(?:\/squares\/([^/]+))?)?$/.exec(url.pathname)
   if (matched) {
     const roomCode = normalizeRoomCode(matched[1])
     if (!roomCode) return error(400, 'INVALID_ROOM_CODE', 'Ungültiger Raumcode.')
@@ -106,7 +106,55 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
         201, { 'Set-Cookie': sessionCookie(roomCode, token, url.protocol === 'https:') })
     }
 
-    if (action === 'me' && request.method === 'GET') {
+    if (action === 'me' && matched[3] !== undefined && request.method === 'PUT') {
+      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+      const indexText = matched[3]
+      if (!/^(?:[0-9]|1[0-9]|2[0-4])$/.test(indexText)) {
+        return error(400, 'INVALID_SQUARE', 'Feldnummer muss zwischen 0 und 24 liegen.')
+      }
+      const index = Number(indexText)
+      const token = extractSessionToken(request.headers.get('Cookie'), roomCode)
+      if (!token) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      let body: unknown
+      try {
+        if (Number(request.headers.get('Content-Length') ?? '0') > 256) {
+          return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+        }
+        const raw = await request.text()
+        if (raw.length > 256) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+        body = JSON.parse(raw)
+      } catch {
+        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+      }
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+      }
+      const data = body as Record<string, unknown>
+      if (typeof data.checked !== 'boolean' ||
+        typeof data.expectedPlayerRevision !== 'number' ||
+        !Number.isSafeInteger(data.expectedPlayerRevision) || data.expectedPlayerRevision < 0) {
+        return error(400, 'INVALID_SQUARE_UPDATE', 'checked und expectedPlayerRevision sind erforderlich.')
+      }
+      if (index === 12 && !data.checked) {
+        return error(400, 'FREE_SQUARE_LOCKED', 'Das Bonusfeld kann nicht abgewählt werden.')
+      }
+      const result = await room.setPlayerSquare({
+        tokenHash: await hashSessionToken(token), index, checked: data.checked,
+        expectedPlayerRevision: data.expectedPlayerRevision,
+      })
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (result.status === 'session_required') {
+        return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      }
+      if (result.status === 'stale') {
+        return json({ error: { code: 'STALE_PLAYER_REVISION',
+          message: 'Fortschritt hat sich geändert. Bitte aktualisieren und erneut versuchen.' },
+          current: result.state }, 409)
+      }
+      return json({ ...result.state, status: result.status })
+    }
+
+    if (action === 'me' && matched[3] === undefined && request.method === 'GET') {
       const snapshot = await room.getSnapshot()
       if (!snapshot) return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
       const player = await getSessionPlayer(request, room, roomCode)

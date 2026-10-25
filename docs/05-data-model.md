@@ -116,3 +116,12 @@ The MVP does not require historical analytics. An idle-room retention policy (pr
 The SQLite `players` table is now created by `BingoRoom` and populated on `POST /api/rooms/:code/join`. The database stores only the SHA-256 hash of the 32-byte random session token, not the token itself. `name_key` is NFC/trim/space-normalized and lowercase to reject duplicate active names in the same room. The player card snapshot is taken from the canonical ten-card catalog at join time. The free center is initially checked.
 
 `GET /api/rooms/:code/me` performs hash lookup from an HttpOnly room-scoped cookie. Only the matching player can resume. Neither tokens nor hashes are returned in public snapshots. Each new join increments the room revision. **Square mutations, player leave, and presence are still future tasks.**
+
+
+## Step 9 persisted square mutations
+
+- Existing Step 8 `players` rows gain the SQLite column `player_revision INTEGER NOT NULL DEFAULT 0` using a non-destructive `ALTER TABLE` on Durable Object initialization. New rows start at zero. Existing `checked_mask` and credentials remain unchanged.
+- Authenticated PUT requests modify the 25-bit `checked_mask` and increment `player_revision` and room `revision` atomically in `ctx.storage.transactionSync`. No mutation can uncheck index 12.
+- A repeated write for an already-matching square is a no-op and keeps revisions unchanged. A different write carrying a stale player revision returns a conflict and does not modify storage.
+- `room_meta`'s existing `first_bingo_player_id`, `first_bingo_name` and `first_bingo_at` columns now record the first server-recognized Bingo transition once, and are included in public snapshots as `firstBingo`.
+- `online` remains `false` until presence via WebSockets exists. The browser still uses local state until frontend room integration.

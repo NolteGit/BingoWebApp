@@ -152,3 +152,8 @@ therefore a reserved path, not a usable invite screen yet. See
 ## Backend Step 8: private player sessions (local)
 
 In addition to creating and reading rooms, the Worker now supports `POST /api/rooms/:code/join` and `GET /api/rooms/:code/me`. New joins store a player and selected card in SQLite and issue a room-scoped HttpOnly cookie. Existing valid cookies resume a player instead of creating a duplicate. The frontend is not yet wired to these endpoints; the sample player entries remain demo UI. For the full Windows persistence/restart checks, see [Step 8 session testing](docs/15-step8-session-testing.md).
+
+
+### Step 9 backend progress API
+
+The backend now supports authenticated square writes with `PUT /api/rooms/:code/me/squares/:index`, body `{ "checked": true, "expectedPlayerRevision": 0 }`. The response contains the saved canonical state, a per-player revision, the room revision and first-winner metadata. Stale writes return `409` instead of silently overwriting a newer change; safe retries return `unchanged`. See [Step 9 test guide](docs/17-step9-progress-testing.md). **The browser UI is still local/demo-only** until room integration is implemented.

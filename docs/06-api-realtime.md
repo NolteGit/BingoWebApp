@@ -1,6 +1,6 @@
 # 06 — HTTP and realtime contract (proposed v1)
 
-**Status: Step 7 room API verified locally, Step 8 join and resume implemented (local verification pending).** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates, leave, WebSockets and frontend room navigation remain specifications, not working features. Creation returns a future `/r/:code` link not yet wired into the frontend.
+**Status: Step 7–8 confirmed locally on Windows. Step 9 square persistence implemented and awaiting Windows verification.** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates have a backend implementation. Leave, WebSockets and frontend room navigation remain specifications, not working features. Creation returns a future `/r/:code` link not yet wired into the frontend.
 
 ## General conventions
 
@@ -55,31 +55,35 @@ A repeat `POST /join` with a valid cookie returns `200` with `resumed:true`, ret
 
 `opaque-token` is server-generated, never displayed in client JavaScript, and never included in a room link. The cookie example illustrates the design; exact naming may change if documented consistently.
 
-### Check square
+### Persistent square update (Step 9)
 
 ```http
 PUT /api/rooms/K7MP2A8X/me/squares/8
 Content-Type: application/json
+Cookie: bingo_session_K7MP2A8X=<private HttpOnly cookie>
 ```
 
 ```json
-{"checked":true}
+{"checked":true,"expectedPlayerRevision":0}
 ```
+
+The response is the **authoritative persisted** state, not a frontend guess:
 
 ```json
 {
-  "revision": 8,
-  "playerId": "uuid",
-  "checkedIndices": [8,12],
-  "completed": 2,
-  "completedLines": 0,
-  "hasBingo": false
+  "playerId":"uuid", "checkedIndices":[8,12], "completed":2,
+  "completedLines":0,"hasBingo":false,"playerRevision":1,
+  "revision":8,"firstBingo":null,"status":"updated"
 }
 ```
 
-- `index` must be 0–24; 12 cannot be set to `false`.
-- Repeating the same `checked:true` is idempotent.
-- If the player clicks very quickly, the client must serialize requests for that square or send a `clientMutationId` and reconcile against the latest server state. **Never rely on transport delivery order for toggle semantics.**
+- An HTTP retry requesting the **already-current** value returns `200 status:"unchanged"`, without increasing either revision, even if the supplied expected revision is older. Safe after a lost response.
+- A real change with a stale `expectedPlayerRevision` is rejected with `409 STALE_PLAYER_REVISION`, plus `current` containing the current authoritative player state and its revisions. Fetch/reconcile before retrying, **do not auto-issue an outdated inverse command**.
+- Every effective change increments the player and room revisions once; changing a different player's fields does not invalidate this player's expected revision.
+- `checked` must be an actual boolean, `expectedPlayerRevision` a nonnegative safe integer, `index` a canonical decimal in 0–24. The center (12) cannot be unchecked. All writes require the correct room-scoped session cookie and allowed Origin.
+- `GET /api/rooms/:code/me` now returns `player.playerRevision`. Public player snapshots also include `playerRevision`. Existing rooms are migrated additively without clearing any masks.
+- The first transition to one or more completed lines is stored in SQLite as `firstBingo:{playerId,name,at}`. It is retained if the winner later unchecks a field. Other players' completed lines still count.
+- **Frontend hookup is not part of this step.** The next frontend should queue mutations using the latest `playerRevision`, show pending/saved/error states, and resolve 409 conflicts before sending another write.
 
 ### Room snapshot response
 
@@ -97,6 +101,7 @@ Content-Type: application/json
       "cardVersion": "wvw-v1",
       "card": ["... exactly 25 canonical labels ..."],
       "checkedIndices": [8, 12],
+      "playerRevision": 1,
       "completed": 2,
       "completedLines": 0,
       "hasBingo": false,
@@ -116,7 +121,7 @@ Use appropriate 400/401/404/409/429/500 HTTP status with stable machine code:
 {"error":{"code":"NAME_TAKEN","message":"Dieser Name ist bereits vergeben."}}
 ```
 
-Suggested codes: `INVALID_ROOM_CODE`, `ROOM_NOT_FOUND`, `INVALID_NAME`, `NAME_TAKEN`, `INVALID_CARD`, `SESSION_REQUIRED`, `SESSION_NOT_FOUND`, `INVALID_SQUARE`, `FREE_SQUARE_LOCKED`, `RATE_LIMITED`, `INTERNAL_ERROR`. Never expose a session token or stack trace.
+Suggested codes: `INVALID_ROOM_CODE`, `ROOM_NOT_FOUND`, `INVALID_NAME`, `NAME_TAKEN`, `INVALID_CARD`, `SESSION_REQUIRED`, `SESSION_NOT_FOUND`, `INVALID_SQUARE`, `INVALID_SQUARE_UPDATE`, `STALE_PLAYER_REVISION`, `FREE_SQUARE_LOCKED`, `RATE_LIMITED`, `INTERNAL_ERROR`. Never expose a session token or stack trace.
 
 ## WebSocket protocol
 

@@ -152,3 +152,16 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Added tests for joining, resuming, room isolation, duplicate names, invalid input, origin protection, and token/cookie helpers. **Not yet verified on Windows**: full npm scripts, real Wrangler SQLite behavior, cookie persistence after backend restart, and frontend integration (not in scope).
 - Demo players remain in UI. No real frontend room entry, square persistence, WebSockets, player deletion, or leave endpoint exists yet.
 - Next: run `docs/15-step8-session-testing.md` then commit; after that implement server-authorized checked-square persistence separately.
+
+
+## Step 8 verification reported by developer (2026-10-25)
+
+- The same room-scoped cookie successfully recovered player `Henrik`, Karte 7, identical player ID and checked free center after restarting Wrangler. Step 8 was committed/pushed before the Step 9 request.
+
+## Step 9 — Server-persisted bingo progress (2026-10-25, patch prepared)
+
+- Adds an authorized `PUT /api/rooms/:code/me/squares/:index`, requiring `checked: boolean` and `expectedPlayerRevision`. The server explicitly **sets** the value, never toggles it, and persists mask changes in SQLite.
+- An additive migration introduces `players.player_revision DEFAULT 0` without erasing existing Step 8 masks or session hashes. A stale write returns `409` with current saved progress, and an already-satisfied retry returns `200 unchanged` with no revision increment.
+- Changes update player and room revisions in one SQLite transaction and derive completed fields, lines and first Bingo winner on the server. The first winner remains recorded after later unchecks.
+- **Verified here:** source parsing and a real SQLite round-trip harness covering mark/undo, idempotent retry, revision conflicts, first winner, database close/reopen and recovery. **Needs developer Windows verification:** `npm run typecheck`, `npm test`, `npm run build`, actual Wrangler API and restart tests in `docs/17-step9-progress-testing.md`.
+- **Not yet implemented:** frontend room/session wiring, persistence UI feedback, WebSocket broadcast, confirmed leave/reset. Demo players remain in the lobby and comparison for interface testing.

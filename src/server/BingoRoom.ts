@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers'
-import { createInitialCheckedMask, getBingoProgress } from '../shared/bingo'
+import { createInitialCheckedMask, getBingoProgress, isFirstBingoTransition, setSquareChecked } from '../shared/bingo'
 import type { ApiBindings } from './api'
-import type { PublicRoomPlayer, RoomSnapshot } from './room-model'
+import type { FirstBingo, PublicRoomPlayer, RoomSnapshot, SavedProgress, SquareUpdateInput, SquareUpdateResult } from './room-model'
 import type { JoinPlayerInput, JoinResult, OwnPlayer } from './player-session'
 
 /** Each room owns a SQLite database. All player records survive normal restarts. */
@@ -29,11 +29,17 @@ export class BingoRoom extends DurableObject<ApiBindings> {
         card_version TEXT NOT NULL,
         card_snapshot_json TEXT NOT NULL,
         checked_mask INTEGER NOT NULL,
+        player_revision INTEGER NOT NULL DEFAULT 0,
         joined_at TEXT NOT NULL,
         last_modified_at TEXT NOT NULL,
         token_hash TEXT NOT NULL UNIQUE
       )
     `)
+    // Step 8 databases predate player_revision. Add the column without resetting marks.
+    const columns = ctx.storage.sql.exec('PRAGMA table_info(players)').toArray()
+    if (!columns.some(column => column.name === 'player_revision')) {
+      ctx.storage.sql.exec('ALTER TABLE players ADD COLUMN player_revision INTEGER NOT NULL DEFAULT 0')
+    }
   }
 
   /** Never overwrite an existing room when someone tries to create it again. */
@@ -53,6 +59,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
       playerId: String(row.player_id), name: String(row.name), cardId: Number(row.card_id),
       cardVersion: String(row.card_version),
       checkedIndices: [...getBingoProgress(Number(row.checked_mask)).checkedIndices],
+      playerRevision: Number(row.player_revision),
       joinedAt: String(row.joined_at),
     }
   }
@@ -60,7 +67,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
   /** A valid bearer cookie can only resolve to its own player in this room. */
   async getPlayerByTokenHash(tokenHash: string): Promise<OwnPlayer | null> {
     const rows = this.ctx.storage.sql.exec(
-      'SELECT player_id, name, card_id, card_version, checked_mask, joined_at FROM players WHERE token_hash = ?',
+      'SELECT player_id, name, card_id, card_version, checked_mask, player_revision, joined_at FROM players WHERE token_hash = ?',
       tokenHash,
     ).toArray()
     return rows.length ? this.toOwnPlayer(rows[0]) : null
@@ -88,25 +95,91 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     )
     return { status: 'created', player: {
       playerId: input.playerId, name: input.name, cardId: input.cardId,
-      cardVersion: input.cardVersion, checkedIndices: [12], joinedAt: now,
+      cardVersion: input.cardVersion, checkedIndices: [12], playerRevision: 0, joinedAt: now,
     } }
+  }
+
+
+  private firstBingoFromRow(row: Record<string, unknown>): FirstBingo | null {
+    return row.first_bingo_player_id === null || row.first_bingo_player_id === undefined
+      ? null
+      : { playerId: String(row.first_bingo_player_id), name: String(row.first_bingo_name),
+          at: String(row.first_bingo_at) }
+  }
+
+  /** Atomic, authenticated, conditional SET (never an unreliable toggle). */
+  async setPlayerSquare(input: SquareUpdateInput): Promise<SquareUpdateResult> {
+    return this.ctx.storage.transactionSync((): SquareUpdateResult => {
+      const rooms = this.ctx.storage.sql.exec(
+        'SELECT revision, first_bingo_player_id, first_bingo_name, first_bingo_at FROM room_meta WHERE id = 1',
+      ).toArray()
+      if (!rooms.length) return { status: 'room_not_found' }
+      const rows = this.ctx.storage.sql.exec(
+        'SELECT player_id, name, checked_mask, player_revision FROM players WHERE token_hash = ?',
+        input.tokenHash,
+      ).toArray()
+      if (!rows.length) return { status: 'session_required' }
+
+      const row = rows[0]
+      const room = rooms[0]
+      const mask = Number(row.checked_mask)
+      const currentPlayerRevision = Number(row.player_revision)
+      // Route validation already rejects bad input; the pure game rules revalidate it.
+      const desiredMask = setSquareChecked(mask, input.index, input.checked)
+      const progressState = (currentMask: number, playerRevision: number,
+        revision: number, firstBingo: FirstBingo | null): SavedProgress => {
+        const progress = getBingoProgress(currentMask)
+        return {
+          playerId: String(row.player_id), checkedIndices: [...progress.checkedIndices],
+          completed: progress.completedSquares, completedLines: progress.completedLines,
+          hasBingo: progress.hasBingo, playerRevision, revision, firstBingo,
+        }
+      }
+      const previousWinner = this.firstBingoFromRow(room)
+      const currentRoomRevision = Number(room.revision)
+      if (desiredMask === mask) {
+        // Lost HTTP responses can be retried safely even with the old revision.
+        return { status: 'unchanged', state: progressState(mask, currentPlayerRevision,
+          currentRoomRevision, previousWinner) }
+      }
+      if (input.expectedPlayerRevision !== currentPlayerRevision) {
+        return { status: 'stale', state: progressState(mask, currentPlayerRevision,
+          currentRoomRevision, previousWinner) }
+      }
+
+      const now = new Date().toISOString()
+      const winner = !previousWinner && isFirstBingoTransition(mask, desiredMask)
+        ? { playerId: String(row.player_id), name: String(row.name), at: now }
+        : previousWinner
+      this.ctx.storage.sql.exec(
+        'UPDATE players SET checked_mask = ?, player_revision = player_revision + 1, last_modified_at = ? WHERE player_id = ?',
+        desiredMask, now, row.player_id,
+      )
+      this.ctx.storage.sql.exec(
+        `UPDATE room_meta SET revision = revision + 1, last_activity_at = ?,
+          first_bingo_player_id = ?, first_bingo_name = ?, first_bingo_at = ? WHERE id = 1`,
+        now, winner?.playerId ?? null, winner?.name ?? null, winner?.at ?? null,
+      )
+      return { status: 'updated', state: progressState(desiredMask, currentPlayerRevision + 1,
+        currentRoomRevision + 1, winner) }
+    })
   }
 
   async getSnapshot(): Promise<RoomSnapshot | null> {
     const results = this.ctx.storage.sql.exec(
-      'SELECT room_code, created_at, revision FROM room_meta WHERE id = 1',
+      'SELECT room_code, created_at, revision, first_bingo_player_id, first_bingo_name, first_bingo_at FROM room_meta WHERE id = 1',
     ).toArray()
     if (!results.length) return null
     const room = results[0]
     const rows = this.ctx.storage.sql.exec(
-      'SELECT player_id, name, card_id, card_version, card_snapshot_json, checked_mask FROM players ORDER BY joined_at, player_id',
+      'SELECT player_id, name, card_id, card_version, card_snapshot_json, checked_mask, player_revision FROM players ORDER BY joined_at, player_id',
     ).toArray()
     const players: PublicRoomPlayer[] = rows.map(row => {
       const progress = getBingoProgress(Number(row.checked_mask))
       return {
         playerId: String(row.player_id), name: String(row.name), cardId: Number(row.card_id),
         cardVersion: String(row.card_version), card: JSON.parse(String(row.card_snapshot_json)) as string[],
-        checkedIndices: [...progress.checkedIndices], completed: progress.completedSquares,
+        checkedIndices: [...progress.checkedIndices], playerRevision: Number(row.player_revision), completed: progress.completedSquares,
         completedLines: progress.completedLines, hasBingo: progress.hasBingo,
         online: false, // Presence will be derived from WebSockets in a later step.
       }
@@ -114,7 +187,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     return {
       type: 'room.snapshot', roomCode: String(room.room_code),
       createdAt: String(room.created_at), revision: Number(room.revision),
-      firstBingo: null, players,
+      firstBingo: this.firstBingoFromRow(room), players,
     }
   }
 }

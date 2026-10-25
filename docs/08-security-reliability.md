@@ -77,3 +77,11 @@ Only display names and game interaction data are needed. Do not require Discord 
 ## Step 8 cookie security
 
 Per-player sessions use 32 random bytes encoded as hex. Only their SHA-256 hashes are stored in SQLite. Room-scoped session cookies are HttpOnly, SameSite=Lax, and Secure for HTTPS requests. Origin checks reject cross-site join attempts from browsers and explicitly allow the local Vite proxy. A valid cookie always resumes its existing player without changing that player’s selected card, and names must be unique per room. No endpoint deletes a player or their progress in this milestone. Future mutation endpoints must authenticate using the same room cookie, enforce Origin, and never accept client-supplied player IDs as authorization.
+
+
+## Step 9 mutation protection
+
+- Backend mutations identify the player exclusively from a hashed room session cookie, enforce same-origin requests, validate the desired state and expected per-player revision, and modify only that row.
+- The server uses a transaction to commit the checked mask, revisions, and first winner together. On a stale revision it returns a `409` with current progress but performs **no** mutation.
+- Retrying an already-applied desired state is idempotent. An automatic client retry of a `409` with the old intent is **not** allowed. Reconcile with server state first to avoid clobbering newer clicks in other tabs.
+- These guarantees have been exercised in a standalone SQLite harness; Wrangler and UI-integration tests remain separate release gates.

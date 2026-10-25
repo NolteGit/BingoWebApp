@@ -20,6 +20,7 @@ export interface OwnPlayer {
   cardId: number
   cardVersion: string
   checkedIndices: number[]
+  playerRevision: number
   joinedAt: string
 }
 
