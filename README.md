@@ -4,6 +4,12 @@ A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 W
 
 > **Project status (2026-10-25):** Multiplayer backend and local SQLite persistence, player sessions, saved bingo progress, real room UI, and WebSocket updates are implemented and locally exercised. Step 12 adds recovery safeguards and requires the Windows outage tests in `docs/20-step12-reliability-testing.md`. Public deployment is not yet complete. See `PROJECT_STATUS.md` for verification details.
 
+## Deploy your own instance (Cloudflare Free)
+
+**New to Cloudflare or sharing this repository with a friend?** Follow the [beginner-friendly self-hosting guide](docs/22-self-host-cloudflare.md). It covers account setup, cloning the repository, first deployment, publishing the room link, testing saved progress, updates, and troubleshooting.
+
+**Already set up?** In the repository root: `npm install`, `npm run typecheck`, `npm test`, `npx wrangler login`, then `npm run deploy`. Each Cloudflare account hosts independent rooms and player progress.
+
 ## Run locally
 
 From the repository root, with Node.js 24 and npm installed:
@@ -73,6 +79,7 @@ See the [architecture](docs/04-architecture.md) and [hosting guide](docs/10-depl
 | [data/cards.json](data/cards.json) | Machine-readable card content (canonical) |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Tracks what is actually implemented and verified |
 | [21 — Pre-deployment readiness](docs/21-predeployment-readiness.md) | Rate limits, testing and first deployment checklist |
+| [22 — Self-host on Cloudflare](docs/22-self-host-cloudflare.md) | Beginner guide for independent first-time deployments |
 
 ## Local prototype (Steps 5–6)
 

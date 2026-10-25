@@ -1,5 +1,7 @@
 # 10 — Local development, Cloudflare hosting and cost constraints
 
+> **For actual first-time installation and deployment**, use the current [self-hosting guide](22-self-host-cloudflare.md). This older document explains the project’s original hosting design and historical scaffolding plan.
+
 **Checked against provider docs: 2026-10-25.** These steps describe the planned setup **after** code/configuration has been scaffolded. There is no deployable app in the documentation-first commit.
 
 ## Hosting choice
