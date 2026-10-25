@@ -6,14 +6,9 @@ import { PlayableBoard } from './PlayableBoard'
 import { ComparisonDrawer } from './ComparisonDrawer'
 import { ExitDialog } from './ExitDialog'
 import { CardChangeDialog } from './CardChangeDialog'
-import { PlayerList } from './PlayerList'
-import { PlayerPreviewDialog } from './PlayerPreviewDialog'
-import { getComparisonEntries, type ComparisonEntry } from './comparison'
+import { PlayerOverview } from './PlayerOverview'
+import { DEMO_ENTRIES, getComparisonEntries } from './comparison'
 import { createLocalPlayer, MAX_PLAYER_NAME_LENGTH, type LocalPlayer } from './lobby'
-
-// No real lobby participants exist yet. Future room snapshots will populate this list.
-// The same PlayerList is used in the lobby and the comparison drawer.
-const lobbyEntries: ReadonlyArray<ComparisonEntry> = []
 
 export function App() {
   const [draftName, setDraftName] = useState('')
@@ -32,7 +27,6 @@ export function App() {
   const previewButtonRef = useRef<HTMLButtonElement>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
-  const lastLobbyPlayerTrigger = useRef<HTMLButtonElement | null>(null)
   const exitButtonRef = useRef<HTMLButtonElement>(null)
   const cardSelectRef = useRef<HTMLSelectElement>(null)
 
@@ -90,7 +84,6 @@ export function App() {
   }
 
   const comparisonEntries = activePlayer ? getComparisonEntries(activePlayer, checkedMask) : []
-  const selectedLobbyPlayer = lobbyEntries.find((entry) => entry.id === lobbyPreviewId) ?? null
 
   return (
     <main class="page-shell">
@@ -163,14 +156,15 @@ export function App() {
               <aside class="players-panel" aria-labelledby="players-title">
                 <div class="panel-heading">
                   <h2 id="players-title">Spielerübersicht</h2>
-                  <span class="panel-count">0 Spieler</span>
+                  <span class="panel-count">{DEMO_ENTRIES.length} Beispiele</span>
                 </div>
-                <PlayerList
-                  entries={lobbyEntries}
-                  onPreview={(id, trigger) => {
-                    lastLobbyPlayerTrigger.current = trigger
-                    setLobbyPreviewId(id)
-                  }}
+                <p class="players-panel__demo-note">Testansicht – noch keine Online-Spieler.</p>
+                <PlayerOverview
+                  entries={DEMO_ENTRIES}
+                  selectedId={lobbyPreviewId}
+                  onSelect={setLobbyPreviewId}
+                  detailId="lobby-player-detail"
+                  variant="lobby"
                 />
               </aside>
             </div>
@@ -178,11 +172,6 @@ export function App() {
             <p class="lobby-local-note" role="note">
               Lokale Testversion – Fortschritt wird beim Neuladen noch nicht gespeichert.
             </p>
-            <PlayerPreviewDialog
-              entry={selectedLobbyPlayer}
-              onDismiss={() => setLobbyPreviewId(null)}
-              onAfterClose={() => lastLobbyPlayerTrigger.current?.focus()}
-            />
             <LobbyModal
               mode={lobbyModal}
               card={selectedCard}

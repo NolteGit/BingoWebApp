@@ -112,3 +112,19 @@ For each implementation milestone, record the date, what works, the command/test
 ## Immediate next action
 
 Run typecheck, tests and build on Windows; verify the compact game screen, confirmation/cancelled card changes, comparison and exit flows, then gather any remaining UI refinements before Cloudflare work.
+
+## Inline player preview refinement (Step 6.8, 2026-10-25)
+
+- The **same `PlayerOverview` component** is shared by the lobby and Vergleich. Selecting a player expands a read-only 5×5 card **beside the list on wider comparison windows**, or **beneath it on narrower windows and in the lobby**. The compact list never disappears.
+- Clicking the selected player again collapses the card; selecting a different player swaps the displayed card. The selected row announces its state with `aria-expanded` and links to the detail region.
+- Removed the separate lobby player-preview modal and the comparison back-navigation screen. The demo players remain comparison-only; the real lobby remains empty pending backend data.
+- Automated render tests updated for the collapsed/expanded layouts and shared detail component. Patch application can be verified here; full TypeScript/Vitest/Vite and browser click tests must run locally on Windows.
+- No persistence, backend, or live room functionality added.
+
+## Floating player-preview UX (Step 6.9, 2026-10-25)
+
+- **UI-only example lobby:** The lobby shows the two existing labeled example profiles, rather than an empty placeholder, to test its player list. No one is actually online, and there is still no backend.
+- Shared `PlayerList` uses one compact row per person (name, card, checked-square count, bingo count) in one line.
+- Opening a player card no longer changes the list/drawer dimensions. The read-only preview floats **beside** the list whenever there is room, or overlays below it on narrow screens. Clicking the same row again closes it; clicking another row switches content without moving rows.
+- Comparison and lobby use the same component. Added pure responsive positioning tests and revised render tests. Verify full Vitest/TypeScript/Vite and browser behavior locally before checking off.
+- **Future backend requirement:** Replace example lobby players with actual server entries; all demo data is explicitly labeled and must not be transmitted as live room state.

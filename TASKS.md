@@ -17,6 +17,10 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 - [ ] Share **one compact player overview** between lobby and comparison, with read-only card previews on demand. *(Step 6.7 added: lobby remains empty until live room players exist; comparison uses clearly labeled example players. Verify locally before checking off.)*
 
+- [ ] Refine shared player overview with an **inline, collapsible read-only card** rather than navigating to a second preview. *(Step 6.8 patch prepared; verify click-toggle, switching players, responsive layout and test suite locally.)*
+
+- [ ] **Step 6.9 – compact player rows + floating side preview.** Preview appears next to the stable player list (no row movement), same row toggles close, another row switches. Lobby temporarily shows clearly labeled demo players for UI testing; remove/replace with real room members when backend is connected. Verify locally.
+
 ## 3. Persistent multiplayer backend
 - [ ] Set up **Cloudflare Worker + room Durable Object (SQLite)** and room creation/join/read API.
 - [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress.

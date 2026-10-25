@@ -96,3 +96,11 @@ The lobby now has a single compact **GW2 Bingo** header, name/card selection, an
 The in-game view now shows the player's **name**, a **card selector**, **Vergleich** and **Zur Lobby** above the progress counters and the 5×5 board. The large duplicate title, static explanatory box, always-visible hint, and game footer were removed. The status pill still says **Lokal · ungespeichert** until persistent storage exists. The bingo banner only appears after completing a line.
 
 **Changing the selected card requires confirmation** because it discards all currently checked squares in the local preview; cancelling (including Escape) preserves the current card and progress. Confirming switches the preset and resets the free-center-only state. This is deliberately a local prototype action; multiplayer room rules will determine whether switching cards is allowed after joining.
+
+## Expandable player overview (Step 6.8)
+
+In **Vergleich**, the list always stays visible. Select a player to view their original marked card inline. On a wide screen it appears to the right of the list, otherwise below; select the same player to close it, or another player to switch. The lobby uses this same component once real room participants are available. The original sample players remain limited to comparison, not the lobby. The preview is read-only.
+
+### UI prototype: player list and preview (Step 6.9)
+
+The local lobby deliberately shows **two labeled example players** to test the final lobby leaderboard. Selecting a row opens a read-only bingo card beside the list without shifting the rows. Selecting it again closes the preview. The same shared component is used by Vergleich. These are mock players only; multiplayer and persistence are still to be implemented.

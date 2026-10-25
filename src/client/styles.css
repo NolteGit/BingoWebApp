@@ -711,26 +711,24 @@ h1 {
 .player-summary__demo { margin-left: auto; color: #f0d4a2; }
 .player-summary__track { display: block; height: 6px; overflow: hidden; border-radius: 8px; background: #314557; }
 .player-summary__track > span { display: block; height: 100%; background: #70d2a2; }
-.comparison-dialog .player-list { margin-top: 18px; }
-.comparison-dialog--detail { width: min(760px, 100vw); }
+/* Keep the leaderboard visible when a card is expanded. */
 .comparison-note { margin: 10px 0 0; color: #b7c8d5; font-size: 0.8rem; line-height: 1.5; }
-.compare-detail { margin-top: 18px; }
-.back-link {
-  border: 0;
-  padding: 8px 0;
-  margin: 0 0 12px;
-  color: #f0cb87;
-  background: transparent;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.back-link:hover { text-decoration: underline; }
 .player-card-detail { min-width: 0; overflow-x: auto; }
 .player-card-detail .form-note { margin-top: 14px; }
-.player-preview-dialog { width: min(820px, calc(100vw - 28px)); }
-.player-preview-dialog .player-card-detail { margin-top: 16px; }
-.player-preview-dialog h2 { margin: 0; font-size: 1.45rem; }
+
+/* Shared inline card expansion in the lobby and Vergleich. */
+.player-overview { display: grid; gap: 16px; min-width: 0; }
+.comparison-dialog .player-overview { margin-top: 18px; }
+.player-overview__detail {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #4a6076;
+  border-radius: 10px;
+  background: #192b3c;
+}
+.player-summary--selected,
+.player-summary--selected:hover { border-color: #e9c078; background: #2a4051; }
+
 .compare-selected__heading { margin-bottom: 14px; }
 .compare-selected__heading h3 { margin: 0 0 6px; font-size: 1.13rem; }
 .compare-selected__heading h3 span { color: #bfd0dd; font-weight: normal; font-size: 0.85rem; }
@@ -771,7 +769,6 @@ h1 {
 }
 .danger-button:hover { background: #a4453d; }
 .player-summary:focus-visible,
-.back-link:focus-visible,
 .danger-button:focus-visible { outline: 3px solid #f3cb80; outline-offset: 3px; }
 
 @media (max-width: 640px) {
@@ -960,4 +957,49 @@ h1 {
   .player-heading--compact .player-identity { width: 100%; }
   .player-heading--compact .player-actions { width: 100%; }
   .player-heading--compact .player-actions button { flex: 1; }
+}
+
+/* Step 6.9: compact single-row leaderboard with a floating side preview.
+   The list and modal width NEVER change when the selected player changes. */
+.player-overview { display: block; min-width: 0; }
+.player-overview__list { min-width: 0; }
+.player-list { max-height: min(420px, 55dvh); overflow-y: auto; padding-right: 2px; }
+.player-summary { display: block; padding: 12px 11px; }
+.player-summary__line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; }
+.player-summary__line strong { display: inline-flex; align-items: center; gap: 5px; min-width: 0; overflow-wrap: anywhere; font-size: 0.88rem; }
+.player-summary__card { color: #c5d4df; font-size: 0.79rem; white-space: nowrap; }
+.player-summary__points { color: #e0eadf; font-size: 0.79rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.player-summary__demo { color: #f0d4a2; font-size: 0.62rem; font-weight: 500; white-space: nowrap; }
+.players-panel__demo-note { margin: 12px 0 12px; font-size: 0.78rem; color: #b8cbd8; }
+.comparison-dialog--detail, .comparison-dialog { width: min(520px, 100vw); }
+.comparison-dialog .player-overview--expanded { display: block; }
+.players-panel .player-overview--expanded { display: block; }
+.player-overview__detail {
+  position: fixed;
+  z-index: 50;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 15px;
+  box-shadow: 0 18px 60px #030912df;
+}
+.player-overview__close {
+  float: right;
+  margin: 0 0 8px 8px;
+  border: 1px solid #62778a;
+  border-radius: 7px;
+  color: #f4f5f7;
+  background: #26384a;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 3px 9px;
+}
+.player-overview__close:focus-visible { outline: 3px solid #f3cb80; outline-offset: 2px; }
+.player-overview__detail .compare-board { min-width: 330px; }
+@media (max-width: 520px) {
+  .player-summary__line { gap: 4px; }
+  .player-summary__line strong { font-size: 0.78rem; }
+  .player-summary__card, .player-summary__points { font-size: 0.69rem; }
+  .player-overview__detail .compare-board { min-width: 310px; }
 }
