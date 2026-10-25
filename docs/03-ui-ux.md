@@ -67,6 +67,15 @@ Room codes in the example are illustrative, not a live room. Progress indicators
 - Highlight all completed lines; if a cell belongs to multiple lines, it remains visually valid.
 - On mobile/narrow desktop, 5 columns remain intact. Reduce font carefully; allow page scrolling. Do not replace 5×5 with one-column checklist.
 
+## Compact personal game screen (Step 6.6 UI refinement)
+
+- The common top bar already identifies **GW2 Bingo**. The personal screen must avoid repeating that title as a large hero.
+- Put **player name** and current **Karte 1–10** selector first, alongside **Vergleich** and **Zur Lobby**. Below that, keep the `n/25` progress, `n/12` bingo lines, slim progress bar and the clickable 5×5 board. No second card title or instructional box above the grid.
+- The **BINGO!** announcement and winning-line highlighting remain. When the player has no bingo, do not reserve a visible empty explanatory panel.
+- Selecting a different card during the **local prototype** must display a destructive-action confirmation before resetting marks. Cancel/Escape keeps the old card and progress. Once multiplayer is implemented, the backend and room rules must explicitly decide whether such switching is allowed.
+- Local mode must remain truthful about refresh loss, using the compact **Lokal · ungespeichert** status. Removing visual filler must not imply persistence.
+- Retain keyboard-accessible card controls, square buttons, visible focus indicators, and clear comparison/exit actions.
+
 ## Comparison panel
 
 - Overlay/drawer in the bingo screen, preferably right side on desktop.

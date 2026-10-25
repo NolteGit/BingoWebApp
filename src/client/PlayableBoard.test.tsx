@@ -23,7 +23,10 @@ describe('local playable 5×5 board', () => {
     expect(html).toContain('1/25')
     expect(html).toContain('0/12')
     expect(html).not.toContain('BINGO!')
+    expect(html).not.toContain('Vervollständige eine Reihe') // no filler message
+    expect(html).not.toContain('play-card-title') // no duplicate card heading
     expect(html).toContain('Deine Bingokarte: Karte 7')
+    expect(html).toContain('aria-describedby="play-board-help"')
   })
 
   it('shows checked styling and the updated count after marking a square', () => {

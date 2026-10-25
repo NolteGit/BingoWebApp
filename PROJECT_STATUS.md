@@ -82,6 +82,15 @@ Last documentation review: **2026-10-25**.
 - Added SSR tests for the compact lobby, hidden-until-open preview content, German rules, and the selected-card grid. **Pending Windows verification:** `npm run typecheck`, `npm test`, `npm run build`, and manual dialog/keyboard/browser checks.
 - Next: review any additional UI/UX refinements, then implement persistent multiplayer.
 
+
+## Compact game UI refinement handoff (2026-10-25)
+
+- Step 6.6 replaces the repeated game heading with the player name and a visible card selector. **Vergleich** and **Zur Lobby** stay accessible alongside it; progress counters/bar sit directly above the bingo tiles.
+- The static non-BINGO message, duplicate card label, always-visible instruction, verbose local-mode info panel, and extra footer were removed. Accessible instructions remain in screen-reader-only text. The top status pill continues to warn **Lokal · ungespeichert**.
+- A card-switch dialog requires explicit confirmation before changing the card and resetting marks. Cancel/Escape preserves the existing card and checked progress. After confirmation, only the newly selected preset and free center remain, by design. The existing confirmed exit dialog is unaffected.
+- Added SSR tests for compact board markup and the new confirmation dialog. **Not yet browser verified:** actual card-selector selection/reversion on cancellation, focus recovery, typecheck, Vitest suite, and Vite build. These need Windows verification before checking off the task.
+- **Still not persistent:** reload or browser closure loses local progress. Card switching may be restricted differently once a multiplayer room session is implemented.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.
@@ -94,4 +103,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Run typecheck, tests and build on Windows; verify compact lobby, rules/preview dialogs and existing Step 6 comparison/exit flows. Gather remaining UI refinements before Cloudflare work.
+Run typecheck, tests and build on Windows; verify the compact game screen, confirmation/cancelled card changes, comparison and exit flows, then gather any remaining UI refinements before Cloudflare work.

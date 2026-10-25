@@ -15,11 +15,8 @@ export function PlayableBoard({ card, checkedMask, onToggleSquare }: PlayableBoa
   )
 
   return (
-    <section class="play-area" aria-labelledby="play-card-title">
-      <div class="preview-caption">
-        <h2 id="play-card-title">{card.name}</h2>
-        <span>5 × 5 · Klicke ein Feld zum Abhaken</span>
-      </div>
+    <section class="play-area" aria-label={`Bingokarte: ${card.name}`}>
+      <p class="sr-only" id="play-board-help">Ein Feld anklicken zum Abhaken, erneut anklicken zum Entfernen. Das Bonusfeld bleibt aktiv.</p>
 
       <div class="progress-header">
         <span><strong>{progress.completedSquares}/25</strong> Felder</span>
@@ -33,15 +30,13 @@ export function PlayableBoard({ card, checkedMask, onToggleSquare }: PlayableBoa
       />
 
       <div class="bingo-message" role="status" aria-live="polite" aria-atomic="true">
-        {progress.hasBingo ? (
+        {progress.hasBingo && (
           <strong>🎉 BINGO! {progress.completedLines} {progress.completedLines === 1 ? 'Linie' : 'Linien'} geschafft!</strong>
-        ) : (
-          <span>Vervollständige eine Reihe, Spalte oder Diagonale.</span>
         )}
       </div>
 
       <div class="play-board-scroll">
-        <div class="board-preview board-play" role="group" aria-label={`Deine Bingokarte: ${card.name}`}>
+        <div class="board-preview board-play" role="group" aria-label={`Deine Bingokarte: ${card.name}`} aria-describedby="play-board-help">
           {getFlatSquares(card).map((objective, index) => {
             const checked = isSquareChecked(checkedMask, index)
             const isFree = index === FREE_SQUARE_INDEX
@@ -66,7 +61,6 @@ export function PlayableBoard({ card, checkedMask, onToggleSquare }: PlayableBoa
           })}
         </div>
       </div>
-      <p class="play-hint">Ein zweiter Klick entfernt das Häkchen. Das Bonusfeld bleibt immer aktiv.</p>
     </section>
   )
 }

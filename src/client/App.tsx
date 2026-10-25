@@ -5,6 +5,7 @@ import { LobbyModal, type LobbyModalMode } from './LobbyModal'
 import { PlayableBoard } from './PlayableBoard'
 import { ComparisonDrawer } from './ComparisonDrawer'
 import { ExitDialog } from './ExitDialog'
+import { CardChangeDialog } from './CardChangeDialog'
 import { getComparisonEntries } from './comparison'
 import { createLocalPlayer, MAX_PLAYER_NAME_LENGTH, type LocalPlayer } from './lobby'
 
@@ -19,11 +20,13 @@ export function App() {
   const [comparisonOpen, setComparisonOpen] = useState(false)
   const [selectedComparisonId, setSelectedComparisonId] = useState('demo-mira')
   const [exitOpen, setExitOpen] = useState(false)
+  const [pendingCardId, setPendingCardId] = useState<number | null>(null)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
   const previewButtonRef = useRef<HTMLButtonElement>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
   const exitButtonRef = useRef<HTMLButtonElement>(null)
+  const cardSelectRef = useRef<HTMLSelectElement>(null)
 
   const selectedCard = getCardById(selectedCardId)
   const canStart = draftName.trim().length > 0 && draftName.trim().length <= MAX_PLAYER_NAME_LENGTH
@@ -43,6 +46,7 @@ export function App() {
       setComparisonOpen(false)
       setSelectedComparisonId('demo-mira')
       setExitOpen(false)
+      setPendingCardId(null)
       setFormError('')
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Spiel konnte nicht gestartet werden.')
@@ -51,6 +55,21 @@ export function App() {
 
   function toggleSquare(index: number) {
     setCheckedMask((previous) => setSquareChecked(previous, index, !isSquareChecked(previous, index)))
+  }
+
+  function requestCardChange(nextCardId: number) {
+    if (activePlayer !== null && nextCardId !== activePlayer.cardId) {
+      getCardById(nextCardId) // reject invalid IDs, even before the backend exists
+      setPendingCardId(nextCardId)
+    }
+  }
+
+  function confirmCardChange() {
+    if (activePlayer === null || pendingCardId === null) return
+    setActivePlayer(createLocalPlayer(activePlayer.name, pendingCardId))
+    setCheckedMask(createInitialCheckedMask())
+    setSelectedComparisonId('demo-mira')
+    setPendingCardId(null)
   }
 
   function leaveLocalGame() {
@@ -69,7 +88,7 @@ export function App() {
         <header class="topbar">
           <span class="brand-mark" aria-hidden="true">B</span>
           <span class="brand-name">GW2 Bingo</span>
-          <span class="status-pill">Lokal</span>
+          <span class="status-pill" title="Lokale Testversion: Fortschritt wird beim Neuladen nicht gespeichert">Lokal · ungespeichert</span>
         </header>
 
         {activePlayer === null ? (
@@ -154,12 +173,22 @@ export function App() {
             />
           </section>
         ) : (
-          <section class="player-view" aria-labelledby="page-title">
-            <div class="player-heading">
-              <div>
-                <p class="eyebrow">Deine Karte · Lokales Spiel</p>
-                <h1 id="page-title">WvW Bingo</h1>
-                <p class="lead">{activePlayer.name} · {getCardById(activePlayer.cardId).name}</p>
+          <section class="player-view player-view--compact" aria-labelledby="page-title">
+            <div class="player-heading player-heading--compact">
+              <div class="player-identity">
+                <h1 id="page-title">{activePlayer.name}</h1>
+                <label class="sr-only" for="active-card-choice">Bingokarte wechseln</label>
+                <select
+                  id="active-card-choice"
+                  ref={cardSelectRef}
+                  value={pendingCardId ?? activePlayer.cardId}
+                  title="Beim Kartenwechsel wird dein bisheriger Fortschritt zurückgesetzt."
+                  onChange={(event) => requestCardChange(Number(event.currentTarget.value))}
+                >
+                  {presetCards.map((card) => (
+                    <option key={card.id} value={card.id}>{card.name}</option>
+                  ))}
+                </select>
               </div>
               <div class="player-actions">
                 <button
@@ -176,10 +205,6 @@ export function App() {
               </div>
             </div>
             <PlayableBoard card={getCardById(activePlayer.cardId)} checkedMask={checkedMask} onToggleSquare={toggleSquare} />
-            <div class="info-panel" role="note">
-              <strong>Lokales Spiel · kein Mehrspieler</strong>
-              <p>Deine Häkchen gelten nur in diesem Browserfenster und gehen beim Neuladen verloren. Der Vergleich enthält ausdrücklich gekennzeichnete Beispieldaten. „Zur Lobby“ fragt vor dem Löschen nach.</p>
-            </div>
             <ComparisonDrawer
               open={comparisonOpen}
               entries={comparisonEntries}
@@ -194,15 +219,16 @@ export function App() {
               onConfirm={leaveLocalGame}
               onAfterClose={() => { setExitOpen(false); exitButtonRef.current?.focus() }}
             />
+            <CardChangeDialog
+              nextCardName={pendingCardId !== null ? getCardById(pendingCardId).name : ''}
+              open={pendingCardId !== null}
+              onCancel={() => setPendingCardId(null)}
+              onConfirm={confirmCardChange}
+              onAfterClose={() => cardSelectRef.current?.focus()}
+            />
           </section>
         )}
 
-        {activePlayer !== null && (
-          <footer class="footer">
-            <span>Lokales Spiel</span>
-            <span>Keine Speicherung beim Neuladen</span>
-          </footer>
-        )}
       </div>
     </main>
   )

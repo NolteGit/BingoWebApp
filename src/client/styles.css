@@ -872,3 +872,80 @@ h1 {
   .lobby-modal--preview .board-preview { min-width: 400px; }
   .lobby-modal--preview .preview-area { overflow-x: auto; }
 }
+
+/* Step 6.6: compact personal screen, with the card itself as the focus. */
+.player-view--compact {
+  padding-top: clamp(20px, 3vw, 30px);
+  padding-bottom: clamp(18px, 3vw, 28px);
+}
+
+.player-heading--compact {
+  gap: 12px 22px;
+  margin-bottom: 20px;
+}
+
+.player-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  min-width: 0;
+}
+
+.player-identity h1 {
+  font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.player-identity select {
+  padding: 9px 32px 9px 12px;
+  background: #203347;
+  border: 1px solid #59728a;
+  border-radius: 9px;
+  color: #f1f5fa;
+  font: inherit;
+  font-size: 0.91rem;
+  cursor: pointer;
+}
+
+.player-identity select:focus-visible {
+  outline: 3px solid #f3cb80;
+  outline-offset: 3px;
+}
+
+.player-heading--compact .player-actions .primary-button,
+.player-heading--compact .player-actions .secondary-button {
+  padding: 10px 15px;
+  font-size: 0.89rem;
+  margin: 0;
+}
+
+.player-view--compact .play-area {
+  margin-top: 0;
+}
+
+.player-view--compact .game-progress-bar {
+  height: 8px;
+}
+
+.player-view--compact .bingo-message:empty {
+  display: none;
+}
+
+.player-view--compact .bingo-message:not(:empty) {
+  margin: 12px 0;
+}
+
+.player-view--compact .play-board-scroll {
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .player-heading--compact { align-items: stretch; }
+  .player-heading--compact .player-identity { width: 100%; }
+  .player-heading--compact .player-actions { width: 100%; }
+  .player-heading--compact .player-actions button { flex: 1; }
+}

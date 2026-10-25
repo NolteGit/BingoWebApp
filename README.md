@@ -90,3 +90,9 @@ The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten 
 ## Lobby UX refinement (Step 6.5)
 
 The lobby now has a single compact **GW2 Bingo** header, name/card selection, and the future player overview. **Regeln & Infos** and **Karte ansehen** open accessible modal dialogs (Escape or **Schließen** dismisses them). Multiple players may use the same card, as documented in the rules. The card preview does not mount its 5×5 content until requested. The local version still loses marks on page refresh. This UI change does not add persistent sessions or live player counts.
+
+## Compact personal bingo screen (Step 6.6)
+
+The in-game view now shows the player's **name**, a **card selector**, **Vergleich** and **Zur Lobby** above the progress counters and the 5×5 board. The large duplicate title, static explanatory box, always-visible hint, and game footer were removed. The status pill still says **Lokal · ungespeichert** until persistent storage exists. The bingo banner only appears after completing a line.
+
+**Changing the selected card requires confirmation** because it discards all currently checked squares in the local preview; cancelling (including Escape) preserves the current card and progress. Confirming switches the preset and resets the free-center-only state. This is deliberately a local prototype action; multiplayer room rules will determine whether switching cards is allowed after joining.
