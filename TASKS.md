@@ -44,3 +44,8 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
 **Suggested next action:** verify Step 12 on Windows with `docs/20-step12-reliability-testing.md`, then plan production rollout and additional recovery safeguards.
+
+## 6. Pre-deployment hardening (Step 13)
+- [ ] Verify anonymous room-create and join rate limits, session-resume bypass, browser-origin guards and security headers (`npm run typecheck`, `npm test`, `npm run build`).
+- [ ] Perform local two-browser disconnect and restart tests from `docs/20-step12-reliability-testing.md`.
+- [ ] Read and complete the launch checklist in `docs/21-predeployment-readiness.md` before `npm run deploy`.

@@ -14,7 +14,8 @@ export default {
         code: 'INTERNAL_ERROR', message: 'Serverfehler. Bitte erneut versuchen.',
       } }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
+          'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' },
       })
     }
   },

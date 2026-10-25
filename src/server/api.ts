@@ -6,15 +6,23 @@ import {
 } from './player-session'
 import type { RoomStub } from './room-model'
 
+/** Approximate per-location Cloudflare limit (not a strict global quota). */
+export interface RateLimiterBinding {
+  limit(input: { key: string }): Promise<{ success: boolean }>
+}
+
 export interface ApiBindings {
   BINGO_ROOMS: { getByName(name: string): RoomStub }
+  ROOM_CREATE_LIMITER: RateLimiterBinding
+  ROOM_JOIN_LIMITER: RateLimiterBinding
   ASSETS: { fetch(request: Request): Promise<Response> }
 }
 
 const json = (body: unknown, status = 200, headers?: HeadersInit): Response =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', ...headers },
   })
 
 const error = (status: number, code: string, message: string): Response =>
@@ -23,11 +31,25 @@ const error = (status: number, code: string, message: string): Response =>
 /** Deny browser mutations from other origins; allow the local Vite proxy for dev. */
 function validMutationOrigin(request: Request): boolean {
   const origin = request.headers.get('Origin')
-  if (!origin) return true // CLI requests have no Origin header.
+  // Defense-in-depth if a browser supplies Fetch Metadata but no Origin header.
+  if (request.headers.get('Sec-Fetch-Site') === 'cross-site') return false
+  if (!origin) return true // PowerShell/curl clients typically send no Origin.
   const url = new URL(request.url)
   const localProxy = (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
     (origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173')
   return origin === url.origin || localProxy
+}
+
+/** Cloudflare controls CF-Connecting-IP in production. Local requests share a test key. */
+function rateLimitKey(request: Request): string {
+  return request.headers.get('CF-Connecting-IP') || 'local-or-unknown-client'
+}
+
+async function checkRateLimit(request: Request, binding: RateLimiterBinding): Promise<Response | null> {
+  const { success } = await binding.limit({ key: rateLimitKey(request) })
+  return success ? null : json({ error: {
+    code: 'RATE_LIMITED', message: 'Zu viele Anfragen. Bitte in einer Minute erneut versuchen.',
+  } }, 429, { 'Retry-After': '60' })
 }
 
 async function getSessionPlayer(request: Request, room: RoomStub, roomCode: string) {
@@ -45,6 +67,8 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
 
   if (url.pathname === '/api/rooms' && request.method === 'POST') {
     if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+    const limited = await checkRateLimit(request, env.ROOM_CREATE_LIMITER)
+    if (limited) return limited
     for (let attempt = 0; attempt < 5; attempt++) {
       const roomCode = generateRoomCode()
       if (await env.BINGO_ROOMS.getByName(roomCode).initialize(roomCode)) {
@@ -86,6 +110,8 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
         const snapshot = await room.getSnapshot()
         return json({ roomCode, player: resumed, revision: snapshot?.revision ?? 0, resumed: true })
       }
+      const limited = await checkRateLimit(request, env.ROOM_JOIN_LIMITER)
+      if (limited) return limited
       const length = Number(request.headers.get('Content-Length') ?? '0')
       if (length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
       let body: unknown

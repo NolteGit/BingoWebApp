@@ -196,3 +196,11 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Added `src/client/reliability.test.ts` for confirmed saves, response loss, stale revisions, failed recovery, invalid identity/data and connection-state labels. See `docs/20-step12-reliability-testing.md` for manual two-browser and outage tests.
 - **Verification in patch environment:** previous Step 11 file series reconstructed and patch source parsed. Full `npm run typecheck`, `npm test`, `npm run build` and real Wrangler/browser outage testing remain to be performed on Windows. Do not claim end-to-end reliability is verified yet.
 - **Still future work:** public deployment, rate limiting, cross-device recovery, data export/restore, explicit leave/delete safeguards and any administrative recovery tools.
+
+## Step 13 — Pre-deployment hardening (patch prepared, 2026-10-25)
+
+- Added Worker rate-limit bindings on anonymous room creation and **new** player joins (8/min and 30/min per client IP, approximate per Cloudflare location). Valid cookie session resumes bypass new-join throttling. Returns HTTP 429 with German message and `Retry-After` when limited.
+- Rejects browser requests marked `Sec-Fetch-Site: cross-site`; retains existing `Origin` and room/session authorization checks. API errors additionally carry safe response headers.
+- Added release checklist at `docs/21-predeployment-readiness.md` and `npm run deploy` convenience command. No production deployment or user-visible UI redesign is included.
+- **Verification:** patch applied against reconstructed Step 12 baseline; API test fixtures expanded. Full `npm run typecheck`, `npm test`, `npm run build`, local Wrangler binding tests, and live Cloudflare checks must run on Windows before marking complete.
+- Remaining limitations: no in-app cross-device recovery, independent backup/export, or destructive player/room management. Keep the latter out of the first public deployment.

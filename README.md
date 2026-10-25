@@ -23,7 +23,7 @@ npm test
 npm run build
 ```
 
-The browser uses room-specific HttpOnly session cookies. Actual checkmarks are written to SQLite and confirmed by the server. The Step 12 patch displays connection/save status and automatically attempts to recover uncertain saves without blindly repeating a write. See [Step 12 manual test guide](docs/20-step12-reliability-testing.md).
+The browser uses room-specific HttpOnly session cookies. Actual checkmarks are written to SQLite and confirmed by the server. Step 12 displays connection/save status and reconciles uncertain writes without blindly repeating them. Step 13 adds public room/join rate limits and a release checklist. See [Step 12 reliability tests](docs/20-step12-reliability-testing.md) and [pre-deployment checklist](docs/21-predeployment-readiness.md).
 
 ## Core experience
 
@@ -72,6 +72,7 @@ See the [architecture](docs/04-architecture.md) and [hosting guide](docs/10-depl
 | [ADR 0001](docs/adr/0001-cloudflare-durable-objects.md) | Why this hosting/backend was chosen |
 | [data/cards.json](data/cards.json) | Machine-readable card content (canonical) |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Tracks what is actually implemented and verified |
+| [21 — Pre-deployment readiness](docs/21-predeployment-readiness.md) | Rate limits, testing and first deployment checklist |
 
 ## Local prototype (Steps 5–6)
 
@@ -171,3 +172,7 @@ Start Wrangler (`npm run dev:api`) and Vite (`npm run dev`) in two terminals. Fo
 With `npm run dev:api` and `npm run dev` running, authenticated participants connect to `/api/rooms/:code/events` using Cloudflare Durable Object WebSockets. Room snapshots appear immediately in lobby/Vergleich, including best-effort presence. The backend continues to persist all marks in SQLite via authenticated HTTP PUT. If the socket disconnects, the browser reconnects and uses five-second HTTP polling as fallback. No room/player data is deleted on disconnect.
 
 Follow [Step 11 test guide](docs/19-step11-realtime-testing.md) in two separate browser sessions before committing this milestone. WebSocket/live behavior has not yet been manually verified in Windows browsers.
+
+## Step 13 — Before public launch
+
+`wrangler.jsonc` now includes rate-limit bindings for anonymous room creation and new joins. Run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, then follow [`docs/21-predeployment-readiness.md`](docs/21-predeployment-readiness.md). `npm run deploy` builds and runs `wrangler deploy`, **but don't run it until local reliability tests pass**. Local `.wrangler` state is not deployed; public rooms start independently.

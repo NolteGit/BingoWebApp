@@ -78,6 +78,8 @@ function fakeEnvironment(): ApiBindings {
       },
     },
     ASSETS: { fetch: async () => new Response('<html>UI</html>') },
+    ROOM_CREATE_LIMITER: { limit: async () => ({ success: true }) },
+    ROOM_JOIN_LIMITER: { limit: async () => ({ success: true }) },
   }
 }
 
@@ -303,5 +305,47 @@ describe('persistent square update contract', () => {
     for (let i = 0; i < 5; i++) await square(env, code, i, true, i, tom)
     const later = await handleRequest(req(`/api/rooms/${code}`), env)
     expect((await later.json() as RoomSnapshot).firstBingo).toEqual(first)
+  })
+})
+
+
+describe('public launch rate limits and request guards', () => {
+  it('does not create a room when the creator is rate-limited', async () => {
+    const env = fakeEnvironment()
+    const keys: string[] = []
+    env.ROOM_CREATE_LIMITER = { limit: async ({ key }) => {
+      keys.push(key)
+      return { success: false }
+    } }
+    const response = await handleRequest(new Request('http://localhost:8787/api/rooms', {
+      method: 'POST', headers: { 'CF-Connecting-IP': '198.51.100.3' },
+    }), env)
+    expect(response.status).toBe(429)
+    expect(response.headers.get('Retry-After')).toBe('60')
+    expect((await response.json() as {error: {code: string}}).error.code).toBe('RATE_LIMITED')
+    expect(keys).toEqual(['198.51.100.3'])
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+  })
+
+  it('prevents new joins when limited but allows a valid session to resume', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const initial = await join(env, code, 'Mira', 7)
+    const cookie = cookieOf(initial)
+    env.ROOM_JOIN_LIMITER = { limit: async () => ({ success: false }) }
+    expect((await join(env, code, 'Tom', 8)).status).toBe(429)
+    const resumed = await join(env, code, 'Ignored', 1, cookie)
+    expect(resumed.status).toBe(200)
+    expect((await resumed.json() as {resumed:boolean}).resumed).toBe(true)
+    const room = await handleRequest(req(`/api/rooms/${code}`), env)
+    expect((await room.json() as RoomSnapshot).players).toHaveLength(1)
+  })
+
+  it('blocks cross-site Fetch Metadata even when Origin is missing', async () => {
+    const env = fakeEnvironment()
+    const denied = await handleRequest(new Request('http://localhost:8787/api/rooms', {
+      method: 'POST', headers: { 'Sec-Fetch-Site': 'cross-site' },
+    }), env)
+    expect(denied.status).toBe(403)
   })
 })
