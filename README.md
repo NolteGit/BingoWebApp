@@ -2,7 +2,7 @@
 
 A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 World vs. World (WvW)*. Friends join the same room, select one of ten predefined German bingo cards, tick off events while playing, and see each other's progress live. The interface is designed for Alt-Tab and second-monitor use.
 
-> **Project status (2026-10-25): frontend scaffold added, not yet locally verified.** A German local-only starter page and build/test configuration now exist. The ten-card gameplay, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
+> **Project status (2026-10-25): frontend scaffold running locally on Windows, ten-card read-only viewer added.** The card loader and validation tests still need to pass on the local machine. Interactive marking, bingo scoring, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
 
 ## Run the local frontend (first implementation step)
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (normally `http://localhost:5173/`). This is only a **local starter page**, not yet a working game.
+Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local read-only card preview**, not yet a playable game. You can select each of the ten WvW cards, but cannot mark squares.
 
 After installation, verify the project with:
 
@@ -79,4 +79,4 @@ The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten 
 
 ## Next step
 
-**Next foundation task:** load and validate `data/cards.json` from the frontend, then implement pure bingo rules and tests before building the playable UI. See [roadmap](docs/11-roadmap.md). Once implementation begins, update `PROJECT_STATUS.md` in each substantive commit.
+**Next foundation task:** after local verification of the card loader and preview, implement pure bingo rules and unit tests, then the playable UI. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.
