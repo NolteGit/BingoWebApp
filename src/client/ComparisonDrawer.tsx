@@ -1,21 +1,22 @@
 import { useEffect, useRef } from 'preact/hooks'
-import { getBingoProgress } from '../shared/bingo'
-import { getCardById } from '../shared/cards'
-import { ReadOnlyBoard } from './ReadOnlyBoard'
 import type { ComparisonEntry } from './comparison'
+import { PlayerList } from './PlayerList'
+import { PlayerCardDetail } from './PlayerCardDetail'
 
 interface ComparisonDrawerProps {
   open: boolean
   entries: ReadonlyArray<ComparisonEntry>
-  selectedId: string
-  onSelect: (id: string) => void
+  selectedId: string | null
+  onSelect: (id: string | null) => void
   onDismiss: () => void
   onAfterClose: () => void
 }
 
-/** Native modal dialog handles focus trapping; Escape is an explicit cancel, not a destructive action. */
+/** Starts on a compact leaderboard. Card details appear only after selecting a player. */
 export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismiss, onAfterClose }: ComparisonDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const selected = selectedId === null ? undefined : entries.find((entry) => entry.id === selectedId)
+  const lastSelectedTrigger = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -24,13 +25,21 @@ export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismis
     if (!open && dialog.open) dialog.close()
   }, [open])
 
-  const selected = entries.find((entry) => entry.id === selectedId) ?? entries[0]
-  const progress = selected ? getBingoProgress(selected.checkedMask) : null
+  function showPlayer(id: string, trigger: HTMLButtonElement) {
+    lastSelectedTrigger.current = trigger
+    onSelect(id)
+  }
+
+  function backToList() {
+    onSelect(null)
+    // Focus the back button's replacement (selected player) after the next render.
+    requestAnimationFrame(() => lastSelectedTrigger.current?.focus())
+  }
 
   return (
     <dialog
       ref={dialogRef}
-      class="comparison-dialog"
+      class={`comparison-dialog${selected ? ' comparison-dialog--detail' : ''}`}
       aria-labelledby="compare-title"
       aria-describedby="compare-note"
       onCancel={(event) => { event.preventDefault(); onDismiss() }}
@@ -38,44 +47,21 @@ export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismis
     >
       <div class="dialog-topline">
         <div>
-          <p class="eyebrow">Lokale Vorschau</p>
           <h2 id="compare-title">Spielervergleich</h2>
         </div>
         <button class="secondary-button" type="button" onClick={onDismiss}>Schließen</button>
       </div>
-      <p class="demo-disclaimer" id="compare-note">
-        <strong>Keine Live-Spieler:</strong> Nur dein eigener Fortschritt ist echt. Mira und Tom sind feste Beispieldaten, um den Vergleich zu testen.
+      <p class="comparison-note" id="compare-note">
+        Nur dein eigener Fortschritt ist echt. Mira und Tom sind Beispieldaten.
       </p>
-      <div class="compare-layout">
-        <nav class="compare-players" aria-label="Spieler auswählen">
-          {entries.map((entry) => {
-            const rowProgress = getBingoProgress(entry.checkedMask)
-            return (
-              <button
-                key={entry.id}
-                type="button"
-                class={`compare-player${selected?.id === entry.id ? ' compare-player--active' : ''}`}
-                aria-pressed={selected?.id === entry.id}
-                onClick={() => onSelect(entry.id)}
-              >
-                <span class="compare-player__top"><strong>{entry.name}</strong><span>{entry.kind === 'self' ? 'Du · lokal' : 'Beispiel'}</span></span>
-                <span class="compare-player__stats">{getCardById(entry.cardId).name} · {rowProgress.completedSquares}/25 Felder · {rowProgress.completedLines} Bingo</span>
-                <span class="compare-player__bar" aria-hidden="true"><span style={{ width: `${rowProgress.completedSquares / 25 * 100}%` }} /></span>
-              </button>
-            )
-          })}
-        </nav>
-        {selected && progress && (
-          <section class="compare-selected" aria-labelledby="selected-compare-title">
-            <div class="compare-selected__heading">
-              <h3 id="selected-compare-title">{selected.name} <span>({selected.kind === 'self' ? 'deine Karte' : 'Beispiel'})</span></h3>
-              <p>{getCardById(selected.cardId).name} · {progress.completedSquares}/25 Felder · {progress.completedLines}/12 Linien</p>
-            </div>
-            <ReadOnlyBoard card={getCardById(selected.cardId)} checkedMask={selected.checkedMask} />
-            <p class="form-note">Nur ansehen – hier können keine Felder geändert werden.</p>
-          </section>
-        )}
-      </div>
+      {selected ? (
+        <div class="compare-detail">
+          <button class="back-link" type="button" onClick={backToList}>← Zur Übersicht</button>
+          <PlayerCardDetail entry={selected} />
+        </div>
+      ) : (
+        <PlayerList entries={entries} onPreview={showPlayer} />
+      )}
     </dialog>
   )
 }

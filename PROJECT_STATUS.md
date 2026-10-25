@@ -91,6 +91,14 @@ Last documentation review: **2026-10-25**.
 - Added SSR tests for compact board markup and the new confirmation dialog. **Not yet browser verified:** actual card-selector selection/reversion on cancellation, focus recovery, typecheck, Vitest suite, and Vite build. These need Windows verification before checking off the task.
 - **Still not persistent:** reload or browser closure loses local progress. Card switching may be restricted differently once a multiplayer room session is implemented.
 
+## Shared player overview UX handoff (Step 6.7, 2026-10-25)
+
+- The lobby and the game comparison use the same `PlayerList` summary: name, card, marked fields, bingo count and progress bar. The lobby shows a truthful empty state until the backend supplies actual participants; example players appear **only in comparison** and are labeled as such.
+- Selecting a player in the comparison drawer opens their read-only board, with **Zur Übersicht** to return to the compact list. The panel opens on the list each time.
+- The lobby supports opening a player card in a separate read-only dialog using the same `PlayerCardDetail` component, ready for real multiplayer entries later.
+- Added SSR tests for list/empty state, summary counts, comparison detail, and non-interactive card previews. The patch and source files were checked locally; complete npm checks and browser interaction require verification on Windows.
+- No durable sessions, real lobby participants, realtime communication or persistence were added.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.

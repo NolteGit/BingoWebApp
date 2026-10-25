@@ -15,6 +15,8 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] Refine **compact lobby UX**: single header, rules/info dialog and on-demand card preview. *(Step 6.5 code added; verify layout, dialogs, Escape, selected-card preview and tests locally.)*
 - [ ] Refine **compact game UX**: player name, card selector, comparison/exit buttons and progress above the 5×5 board. Confirm before discarding progress on card change. *(Step 6.6 patch prepared; browser and full test verification pending.)*
 
+- [ ] Share **one compact player overview** between lobby and comparison, with read-only card previews on demand. *(Step 6.7 added: lobby remains empty until live room players exist; comparison uses clearly labeled example players. Verify locally before checking off.)*
+
 ## 3. Persistent multiplayer backend
 - [ ] Set up **Cloudflare Worker + room Durable Object (SQLite)** and room creation/join/read API.
 - [ ] Add **private player sessions**, authorized square updates, confirmed leave, and persisted progress.
@@ -34,4 +36,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** verify Step 6.6 locally (compact game layout; mark, bingo, cancel/confirm card switch, comparison and exit), run typecheck/tests/build, then review remaining UI refinements before Cloudflare backend work.
+**Suggested next action:** verify Step 6.7 locally (comparison summary and selected-card preview/back, empty lobby, keyboard dismissal). Run typecheck, tests and build, then begin Cloudflare backend work.

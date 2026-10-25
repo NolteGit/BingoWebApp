@@ -15,6 +15,8 @@ describe('App compact local lobby', () => {
     expect(html).toContain('Regeln &amp; Infos')
     expect(html).toContain('Bingo starten')
     expect(html).toContain('Noch keine Spieler')
+    expect(html).not.toContain('Mira') // comparison-only examples are never lobby participants
+    expect(html).not.toContain('class="player-summary"')
     expect(html).toContain('Lokal')
     expect(html).toContain('Fortschritt wird beim Neuladen noch nicht gespeichert')
     expect(html.match(/<option\b/g)).toHaveLength(10)

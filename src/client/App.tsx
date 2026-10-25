@@ -6,8 +6,14 @@ import { PlayableBoard } from './PlayableBoard'
 import { ComparisonDrawer } from './ComparisonDrawer'
 import { ExitDialog } from './ExitDialog'
 import { CardChangeDialog } from './CardChangeDialog'
-import { getComparisonEntries } from './comparison'
+import { PlayerList } from './PlayerList'
+import { PlayerPreviewDialog } from './PlayerPreviewDialog'
+import { getComparisonEntries, type ComparisonEntry } from './comparison'
 import { createLocalPlayer, MAX_PLAYER_NAME_LENGTH, type LocalPlayer } from './lobby'
+
+// No real lobby participants exist yet. Future room snapshots will populate this list.
+// The same PlayerList is used in the lobby and the comparison drawer.
+const lobbyEntries: ReadonlyArray<ComparisonEntry> = []
 
 export function App() {
   const [draftName, setDraftName] = useState('')
@@ -18,13 +24,15 @@ export function App() {
   // Local-only for Step 5. Backend-owned state will replace this in multiplayer.
   const [checkedMask, setCheckedMask] = useState(createInitialCheckedMask())
   const [comparisonOpen, setComparisonOpen] = useState(false)
-  const [selectedComparisonId, setSelectedComparisonId] = useState('demo-mira')
+  const [selectedComparisonId, setSelectedComparisonId] = useState<string | null>(null)
+  const [lobbyPreviewId, setLobbyPreviewId] = useState<string | null>(null)
   const [exitOpen, setExitOpen] = useState(false)
   const [pendingCardId, setPendingCardId] = useState<number | null>(null)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
   const previewButtonRef = useRef<HTMLButtonElement>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
+  const lastLobbyPlayerTrigger = useRef<HTMLButtonElement | null>(null)
   const exitButtonRef = useRef<HTMLButtonElement>(null)
   const cardSelectRef = useRef<HTMLSelectElement>(null)
 
@@ -44,7 +52,7 @@ export function App() {
       setLobbyModal(null)
       setActivePlayer(player)
       setComparisonOpen(false)
-      setSelectedComparisonId('demo-mira')
+      setSelectedComparisonId(null)
       setExitOpen(false)
       setPendingCardId(null)
       setFormError('')
@@ -68,7 +76,7 @@ export function App() {
     if (activePlayer === null || pendingCardId === null) return
     setActivePlayer(createLocalPlayer(activePlayer.name, pendingCardId))
     setCheckedMask(createInitialCheckedMask())
-    setSelectedComparisonId('demo-mira')
+    setSelectedComparisonId(null)
     setPendingCardId(null)
   }
 
@@ -76,11 +84,13 @@ export function App() {
     // Only explicit confirmation destroys the current local state.
     setExitOpen(false)
     setComparisonOpen(false)
+    setSelectedComparisonId(null)
     setActivePlayer(null)
     setCheckedMask(createInitialCheckedMask())
   }
 
   const comparisonEntries = activePlayer ? getComparisonEntries(activePlayer, checkedMask) : []
+  const selectedLobbyPlayer = lobbyEntries.find((entry) => entry.id === lobbyPreviewId) ?? null
 
   return (
     <main class="page-shell">
@@ -155,16 +165,24 @@ export function App() {
                   <h2 id="players-title">Spielerübersicht</h2>
                   <span class="panel-count">0 Spieler</span>
                 </div>
-                <div class="empty-players">
-                  <strong>Noch keine Spieler</strong>
-                  <p>Die gemeinsame Übersicht wird mit dem Mehrspieler-Modus aktiviert.</p>
-                </div>
+                <PlayerList
+                  entries={lobbyEntries}
+                  onPreview={(id, trigger) => {
+                    lastLobbyPlayerTrigger.current = trigger
+                    setLobbyPreviewId(id)
+                  }}
+                />
               </aside>
             </div>
 
             <p class="lobby-local-note" role="note">
               Lokale Testversion – Fortschritt wird beim Neuladen noch nicht gespeichert.
             </p>
+            <PlayerPreviewDialog
+              entry={selectedLobbyPlayer}
+              onDismiss={() => setLobbyPreviewId(null)}
+              onAfterClose={() => lastLobbyPlayerTrigger.current?.focus()}
+            />
             <LobbyModal
               mode={lobbyModal}
               card={selectedCard}
@@ -195,7 +213,7 @@ export function App() {
                   ref={compareButtonRef}
                   class="primary-button compare-trigger"
                   type="button"
-                  onClick={() => setComparisonOpen(true)}
+                  onClick={() => { setSelectedComparisonId(null); setComparisonOpen(true) }}
                 >
                   Vergleich
                 </button>

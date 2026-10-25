@@ -84,6 +84,15 @@ Room codes in the example are illustrative, not a live room. Progress indicators
 - Accessible Close button **Schließen**; Esc closes the drawer; focus returns to **Vergleich**.
 - Update content from current room snapshot without refreshing the route.
 
+## Shared player overview (Step 6.7 UI refinement)
+
+- Use **one `PlayerList` component** in the lobby and comparison drawer. Each row shows player name, card number, `n/25` completed squares, bingo-line count and compact progress bar.
+- The comparison drawer **opens on the summary list**, never on a preselected card. Clicking an entry replaces the list with its **read-only** 5×5 card and a clear **Zur Übersicht** action.
+- In the lobby, clicking a real player opens the same card detail in a popup. There are currently no real lobby players, so the lobby remains empty rather than importing comparison examples.
+- Keep `PlayerCardDetail` reusable across the two contexts. Names and objective text must be rendered as text. Do not allow editing another player’s marks.
+- The comparison examples remain explicitly labeled **Beispiel** and must be replaced by real server-supplied entries during multiplayer implementation.
+- Preserve Escape / Schließen behavior, keyboard navigation and focus restoration when closing a dialog or returning to the summary.
+
 ## Destructive exit dialogue
 
 **Title:** `Bingokarte verlassen?`
