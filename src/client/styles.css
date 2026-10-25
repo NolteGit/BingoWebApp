@@ -1041,3 +1041,76 @@ h1 {
 .save-status--offline,
 .save-status--unverified { color: #f1c4b5; }
 .save-status .preview-link { margin-left: auto; }
+
+/* Post-deployment usability: safe room switching and card hover previews. */
+.room-link-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.room-link-actions .secondary-button:disabled { opacity: .5; cursor: not-allowed; }
+
+.card-picker { position: relative; }
+.card-picker__trigger {
+  width: 100%; padding: 12px 14px; border: 1px solid #59728a; border-radius: 9px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; background: #112031; color: #f1f5fa; font: inherit; cursor: pointer;
+}
+.card-picker__trigger:hover { border-color: #e5c083; }
+.card-picker__trigger:focus-visible, .card-picker__option:focus-visible,
+.card-picker__close:focus-visible { outline: 3px solid #f3cb80; outline-offset: 2px; }
+.card-picker__popover {
+  position: fixed; z-index: 200; width: min(700px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px); overflow: auto; padding: 12px;
+  background: #142130; border: 1px solid #658197; border-radius: 14px;
+  box-shadow: 0 24px 65px #030912dd; color: #eaf3f9;
+}
+.card-picker__layout { display: grid; grid-template-columns: 138px minmax(0, 1fr); gap: 14px; }
+.card-picker__options { display: flex; flex-direction: column; align-self: start; gap: 3px; }
+.card-picker__option {
+  min-height: 36px; width: 100%; border: 1px solid transparent;
+  border-radius: 7px; padding: 7px 9px; display: flex;
+  align-items: center; justify-content: space-between; gap: 5px;
+  background: transparent; color: #eaf3f9; text-align: left; font: inherit;
+  font-size: .85rem; cursor: pointer;
+}
+.card-picker__option:hover, .card-picker__option:focus-visible { background: #31495f; border-color: #6e8698; }
+.card-picker__option--selected { color: #fce3ad; border-color: #d1ab6d; }
+.card-picker__detail { min-width: 0; }
+.card-picker__detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  color: #bbcfdf; font-size: .73rem; }
+.card-picker__close { background: #253b50; border: 1px solid #587187; color: #fff; border-radius: 7px;
+  font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 3px 8px; }
+.card-picker__detail .preview-area { margin-top: 8px; }
+.card-picker__detail .preview-caption { margin-bottom: 9px; }
+.card-picker__detail .preview-caption h2 { font-size: 1.05rem; }
+.card-picker__detail .preview-caption span { font-size: .66rem; }
+.card-picker__detail .board-preview { gap: 3px; }
+.card-picker__detail .preview-square { min-height: 68px; padding: 5px 3px;
+  border-radius: 6px; font-size: clamp(.56rem, .9vw, .67rem); }
+.card-picker__detail .preview-square small { font-size: .49rem; }
+@media (max-width: 560px) {
+  .card-picker__layout { grid-template-columns: minmax(0, 1fr); }
+  .card-picker__options { flex-direction: row; flex-wrap: wrap; }
+  .card-picker__option { width: calc(33.33% - 3px); min-height: 33px; justify-content: center; }
+  .card-picker__detail .preview-square { min-height: 61px; font-size: .6rem; }
+}
+
+/* Slightly larger objectives while retaining the existing 5 × 5 board. */
+.play-square { font-size: clamp(.76rem, 1.45vw, .88rem); line-height: 1.4; }
+.compare-square { font-size: .72rem; }
+@media (max-width: 650px) {
+  .play-square { font-size: .7rem; }
+  .compare-square { font-size: .65rem; }
+}
+
+
+/* Confirmed reset of one's own bingo (separate from safe lobby navigation). */
+.returning-player-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.returning-player-actions button { min-width: 0; }
+.new-bingo-dialog {
+  width: min(430px, calc(100vw - 32px)); padding: 24px;
+  background: #142130; color: #f1f5fa; border: 1px solid #70869a;
+  border-radius: 14px; box-shadow: 0 24px 65px #02070ec9;
+}
+.new-bingo-dialog::backdrop { background: #050d19c8; }
+.new-bingo-dialog h2 { margin: 0 0 10px; font-size: 1.35rem; }
+.new-bingo-dialog p { color: #c5d2dd; line-height: 1.5; }
+.new-bingo-dialog__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.new-bingo-dialog .danger-button:disabled { opacity: .55; cursor: progress; }

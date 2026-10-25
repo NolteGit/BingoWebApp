@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers'
 import { createInitialCheckedMask, getBingoProgress, isFirstBingoTransition, setSquareChecked } from '../shared/bingo'
 import type { ApiBindings } from './api'
-import type { FirstBingo, PublicRoomPlayer, RoomSnapshot, SavedProgress, SquareUpdateInput, SquareUpdateResult } from './room-model'
+import type { FirstBingo, PublicRoomPlayer, RoomSnapshot, SavedProgress, SquareUpdateInput, SquareUpdateResult, RemovePlayerResult } from './room-model'
 import { extractSessionToken, hashSessionToken } from './player-session'
 import type { JoinPlayerInput, JoinResult, OwnPlayer } from './player-session'
 
@@ -225,6 +225,40 @@ export class BingoRoom extends DurableObject<ApiBindings> {
         currentRoomRevision + 1, winner) }
     })
     if (result.status === 'updated') await this.broadcastSnapshot()
+    return result
+  }
+
+  /** Remove only the player matching the private token; never delete the room. */
+  async removePlayerByTokenHash(tokenHash: string): Promise<RemovePlayerResult> {
+    const result = this.ctx.storage.transactionSync((): RemovePlayerResult => {
+      const room = this.ctx.storage.sql.exec(
+        'SELECT room_code FROM room_meta WHERE id = 1',
+      ).toArray()
+      if (!room.length) return { status: 'room_not_found' }
+      const players = this.ctx.storage.sql.exec(
+        'SELECT player_id FROM players WHERE token_hash = ?', tokenHash,
+      ).toArray()
+      if (!players.length) return { status: 'session_required' }
+      const playerId = String(players[0].player_id)
+      const now = new Date().toISOString()
+      this.ctx.storage.sql.exec('DELETE FROM players WHERE player_id = ?', playerId)
+      // A deleted participant must not remain the displayed room winner.
+      this.ctx.storage.sql.exec(`
+        UPDATE room_meta SET revision = revision + 1, last_activity_at = ?,
+          first_bingo_player_id = CASE WHEN first_bingo_player_id = ? THEN NULL ELSE first_bingo_player_id END,
+          first_bingo_name = CASE WHEN first_bingo_player_id = ? THEN NULL ELSE first_bingo_name END,
+          first_bingo_at = CASE WHEN first_bingo_player_id = ? THEN NULL ELSE first_bingo_at END
+        WHERE id = 1
+      `, now, playerId, playerId, playerId)
+      return { status: 'removed', playerId }
+    })
+    if (result.status === 'removed') {
+      // A removed session can no longer receive live room snapshots.
+      for (const socket of this.ctx.getWebSockets(`player:${result.playerId}`)) {
+        try { socket.close(1000, 'Bingo neu gestartet') } catch { /* Already closed. */ }
+      }
+      await this.broadcastSnapshot()
+    }
     return result
   }
 

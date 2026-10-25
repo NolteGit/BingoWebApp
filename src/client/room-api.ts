@@ -95,6 +95,9 @@ export function joinRoom(code: string, name: string, cardId: number): Promise<Se
     method: 'POST', body: JSON.stringify({ name, cardId }),
   })
 }
+export function deleteOwnBingo(code: string): Promise<{ status: 'deleted'; roomCode: string; playerId: string; room: RoomSnapshot }> {
+  return requestJson(`/api/rooms/${encodeURIComponent(code)}/me`, { method: 'DELETE' })
+}
 export function saveSquare(code: string, index: number, checked: boolean, expectedPlayerRevision: number): Promise<SquareResponse> {
   return requestJson(`/api/rooms/${encodeURIComponent(code)}/me/squares/${index}`, {
     method: 'PUT', body: JSON.stringify({ checked, expectedPlayerRevision }),

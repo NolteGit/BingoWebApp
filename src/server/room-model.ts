@@ -55,6 +55,11 @@ export interface RoomSnapshot {
   players: PublicRoomPlayer[]
 }
 
+export type RemovePlayerResult =
+  | { status: 'removed'; playerId: string }
+  | { status: 'session_required' }
+  | { status: 'room_not_found' }
+
 export interface RoomStub {
   fetch(request: Request): Promise<Response>
   initialize(roomCode: string): Promise<boolean>
@@ -62,4 +67,5 @@ export interface RoomStub {
   joinPlayer(input: JoinPlayerInput): Promise<JoinResult>
   getPlayerByTokenHash(tokenHash: string): Promise<OwnPlayer | null>
   setPlayerSquare(input: SquareUpdateInput): Promise<SquareUpdateResult>
+  removePlayerByTokenHash(tokenHash: string): Promise<RemovePlayerResult>
 }

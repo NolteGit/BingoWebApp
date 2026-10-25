@@ -22,6 +22,18 @@ function fakeEnvironment(): ApiBindings {
           },
           async getSnapshot() { return rooms.get(name)?.snapshot ?? null },
           async getPlayerByTokenHash(hash) { return rooms.get(name)?.tokenPlayers.get(hash) ?? null },
+          async removePlayerByTokenHash(tokenHash: string) {
+            const room = rooms.get(name)
+            if (!room) return { status: 'room_not_found' } as const
+            const old = room.tokenPlayers.get(tokenHash)
+            if (!old) return { status: 'session_required' } as const
+            room.tokenPlayers.delete(tokenHash)
+            room.names.delete(old.name.toLocaleLowerCase('de-AT'))
+            room.snapshot.players = room.snapshot.players.filter(player => player.playerId !== old.playerId)
+            if (room.snapshot.firstBingo?.playerId === old.playerId) room.snapshot.firstBingo = null
+            room.snapshot.revision += 1
+            return { status: 'removed', playerId: old.playerId } as const
+          },
           async setPlayerSquare(input: SquareUpdateInput): Promise<SquareUpdateResult> {
             const room = rooms.get(name)
             if (!room) return { status: 'room_not_found' }
@@ -347,5 +359,57 @@ describe('public launch rate limits and request guards', () => {
       method: 'POST', headers: { 'Sec-Fetch-Site': 'cross-site' },
     }), env)
     expect(denied.status).toBe(403)
+  })
+})
+
+
+describe('explicit own-bingo reset', () => {
+  it('removes only the authenticated player, expires the cookie and frees the old name', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const mira = cookieOf(await join(env, code, 'Mira', 7))
+    const tom = cookieOf(await join(env, code, 'Tom', 3))
+    await square(env, code, 0, true, 0, mira)
+    await square(env, code, 8, true, 0, tom)
+
+    const response = await handleRequest(req(`/api/rooms/${code}/me`, 'DELETE', { cookie: mira }), env)
+    expect(response.status).toBe(200)
+    const payload = await response.json() as { status: string; room: RoomSnapshot }
+    expect(payload.status).toBe('deleted')
+    expect(payload.room.players.map(player => player.name)).toEqual(['Tom'])
+    expect(payload.room.players[0].checkedIndices).toEqual([8, 12])
+    const clearing = response.headers.get('Set-Cookie') ?? ''
+    expect(clearing).toContain(`bingo_session_${code}=`)
+    expect(clearing).toContain(`Path=/api/rooms/${code}`)
+    expect(clearing).toContain('Max-Age=0')
+    expect(clearing).toContain('HttpOnly')
+    expect((await handleRequest(req(`/api/rooms/${code}/me`, 'GET', { cookie: mira }), env)).status).toBe(401)
+    expect((await square(env, code, 1, true, 1, mira)).status).toBe(401)
+    expect((await handleRequest(req(`/api/rooms/${code}/me`, 'GET', { cookie: tom }), env)).status).toBe(200)
+    expect((await join(env, code, 'Mira', 2)).status).toBe(201)
+  })
+
+  it('rejects deletes from outsiders, other rooms and untrusted origins', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const other = await createRoom(env)
+    const cookie = cookieOf(await join(env, code, 'Mira', 1))
+    const path = `/api/rooms/${code}/me`
+    expect((await handleRequest(req(path, 'DELETE'), env)).status).toBe(401)
+    expect((await handleRequest(req(`/api/rooms/${other}/me`, 'DELETE', { cookie }), env)).status).toBe(401)
+    expect((await handleRequest(req(path, 'DELETE', { cookie, origin: 'https://bad.example' }), env)).status).toBe(403)
+    const snapshot = await handleRequest(req(`/api/rooms/${code}`), env)
+    expect((await snapshot.json() as RoomSnapshot).players).toHaveLength(1)
+  })
+
+  it('clears a removed first winner rather than displaying a deleted player', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const mira = cookieOf(await join(env, code, 'Mira', 1))
+    for (let i = 0; i < 5; i++) await square(env, code, i, true, i, mira)
+    const before = await handleRequest(req(`/api/rooms/${code}`), env)
+    expect((await before.json() as RoomSnapshot).firstBingo?.name).toBe('Mira')
+    const removed = await handleRequest(req(`/api/rooms/${code}/me`, 'DELETE', { cookie: mira }), env)
+    expect((await removed.json() as {room: RoomSnapshot}).room.firstBingo).toBeNull()
   })
 })

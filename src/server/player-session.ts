@@ -73,3 +73,8 @@ export async function hashSessionToken(token: string): Promise<string> {
 export function sessionCookie(roomCode: string, token: string, isHttps: boolean): string {
   return `${sessionCookieName(roomCode)}=${token}; Path=/api/rooms/${roomCode}; HttpOnly; SameSite=Lax; Max-Age=${SESSION_DURATION_SECONDS}${isHttps ? '; Secure' : ''}`
 }
+
+/** Match the original cookie's Path/flags so browsers actually remove it. */
+export function expiredSessionCookie(roomCode: string, isHttps: boolean): string {
+  return `${sessionCookieName(roomCode)}=; Path=/api/rooms/${roomCode}; HttpOnly; SameSite=Lax; Max-Age=0${isHttps ? '; Secure' : ''}`
+}

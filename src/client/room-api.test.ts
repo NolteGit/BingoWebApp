@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, checkedIndicesToMask, createRoom, getOwnSession, joinRoom, roomCodeFromPath, saveSquare } from './room-api'
+import { ApiError, checkedIndicesToMask, createRoom, deleteOwnBingo, getOwnSession, joinRoom, roomCodeFromPath, saveSquare } from './room-api'
 import { getBingoProgress } from '../shared/bingo'
 import { entriesFromRoom } from './room-view'
 import type { RoomSnapshot } from './room-api'
@@ -57,4 +57,18 @@ describe('room integration', () => {
     await expect(saveSquare('9NC3L2P8', 0, true, 0))
       .rejects.toMatchObject({ status: 409, code: 'STALE_PLAYER_REVISION' } satisfies Partial<ApiError>)
   })
+
+  it('deletes only the current room player using the private same-origin session', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+      status: 'deleted', roomCode: '9NC3L2P8', playerId: 'p1', room: {
+        type: 'room.snapshot', roomCode: '9NC3L2P8', players: [], revision: 2,
+      },
+    }) })
+    vi.stubGlobal('fetch', fetchMock)
+    await deleteOwnBingo('9NC3L2P8')
+    expect(fetchMock).toHaveBeenCalledOnce()
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/rooms/9NC3L2P8/me')
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'DELETE', credentials: 'same-origin' })
+  })
+
 })

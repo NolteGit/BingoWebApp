@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  createSessionToken, extractSessionToken, hashSessionToken, parseCardId,
+  createSessionToken, expiredSessionCookie, extractSessionToken, hashSessionToken, parseCardId,
   parsePlayerName, sessionCookie, sessionCookieName,
 } from './player-session'
 
@@ -38,4 +38,14 @@ describe('player input and private cookies', () => {
     expect(extractSessionToken(`bingo_session_ZZZZZZZZ=${token}`, 'ABCDEFGH')).toBeNull()
     expect(extractSessionToken('bingo_session_ABCDEFGH=broken', 'ABCDEFGH')).toBeNull()
   })
+  it('expires the exact room-scoped cookie without touching another room', () => {
+    const expired = expiredSessionCookie('ABCDEFGH', true)
+    expect(expired).toContain('bingo_session_ABCDEFGH=;')
+    expect(expired).toContain('Path=/api/rooms/ABCDEFGH')
+    expect(expired).toContain('Max-Age=0')
+    expect(expired).toContain('HttpOnly')
+    expect(expired).toContain('Secure')
+    expect(expiredSessionCookie('ABCDEFGH', false)).not.toContain('; Secure')
+  })
+
 })

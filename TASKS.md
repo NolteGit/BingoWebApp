@@ -49,3 +49,14 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] Verify anonymous room-create and join rate limits, session-resume bypass, browser-origin guards and security headers (`npm run typecheck`, `npm test`, `npm run build`).
 - [ ] Perform local two-browser disconnect and restart tests from `docs/20-step12-reliability-testing.md`.
 - [ ] Read and complete the launch checklist in `docs/21-predeployment-readiness.md` before `npm run deploy`.
+
+## 7. Post-deployment usability (2026-10-26)
+- [ ] Allow safe navigation from a room lobby to the start screen; verify returning through the old invitation URL restores progress.
+- [ ] Preview predefined cards while hovering/focusing the custom join-form card menu; verify keyboard, mouse and narrow-screen behavior.
+- [ ] Increase the readability of the playable board's square labels and verify long objectives fit.
+- [ ] Run `npm run typecheck`, `npm test`, `npm run build`, then deploy the UI-only update and smoke-test the public URL.
+
+
+### Nach dem öffentlichen Start: Eigenes Bingo zurücksetzen
+- [ ] In der Lobby ein neues Bingo nur nach expliziter Bestätigung starten; eigene Sitzung, Karte und Häkchen serverseitig entfernen und alte Live-Verbindungen schließen.
+- [ ] Mit zwei Browsern testen: Abbrechen, Namenswiederverwendung, andere Spieler unverändert, Restart-Persistenz.

@@ -183,3 +183,12 @@ Follow [Step 11 test guide](docs/19-step11-realtime-testing.md) in two separate 
 ## Step 13 — Before public launch
 
 `wrangler.jsonc` now includes rate-limit bindings for anonymous room creation and new joins. Run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, then follow [`docs/21-predeployment-readiness.md`](docs/21-predeployment-readiness.md). `npm run deploy` builds and runs `wrangler deploy`, **but don't run it until local reliability tests pass**. Local `.wrangler` state is not deployed; public rooms start independently.
+
+
+### Eigenes Bingo neu starten
+
+In einer bestehenden Raum-Lobby können angemeldete Spieler **Neues Bingo starten** wählen.
+Erst nach Bestätigung löscht der Server den eigenen Spieler-Datensatz und Fortschritt sowie
+die zugehörige Sitzung. Die Raum-Lobby und andere Spieler bleiben bestehen.
+Danach sind Name und Bingokarte wieder frei wählbar. **Zur Lobby** und **Neuen Raum**
+löschen dagegen nichts.

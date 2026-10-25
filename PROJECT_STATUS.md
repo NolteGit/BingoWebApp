@@ -204,3 +204,19 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Added release checklist at `docs/21-predeployment-readiness.md` and `npm run deploy` convenience command. No production deployment or user-visible UI redesign is included.
 - **Verification:** patch applied against reconstructed Step 12 baseline; API test fixtures expanded. Full `npm run typecheck`, `npm test`, `npm run build`, local Wrangler binding tests, and live Cloudflare checks must run on Windows before marking complete.
 - Remaining limitations: no in-app cross-device recovery, independent backup/export, or destructive player/room management. Keep the latter out of the first public deployment.
+
+## Post-deployment usability patch (2026-10-26)
+
+- **Room navigation:** The lobby can return to the start screen using **Neuen Raum**, without deleting current room data or player sessions. New rooms are created only with a separate explicit action on the start screen. Room-specific cookies allow returning to an earlier invitation URL.
+- **Card picker:** Replaced only the join-form native card dropdown with an accessible custom list. Hovering or focusing a card option displays its read-only 5×5 preview without selecting it. Clicking an option commits that card. The established bingo board, API and persistent card assignment are unchanged.
+- **Legibility:** Slightly larger text in gameplay squares and read-only player previews, preserving the 5×5 grid layout.
+- **Verification:** Source patch and standalone render tests added. Browser checks, complete typecheck/test/build and production deployment **remain to be verified by user**. See `docs/23-postdeploy-usability-testing.md`.
+
+
+### Zusatz zu Step 14 — bestätigter persönlicher Neustart (lokal zu verifizieren)
+- Returning-Player-Lobby: **Neues Bingo starten** mit kurzer, expliziter Bestätigung.
+- Authentifizierte, raumbezogene `DELETE /api/rooms/:code/me`-Operation entfernt nur den eigenen Spieler und Cookie.
+- Durable Object entfernt alte WebSockets und sendet einen aktuellen Raum-Snapshot.
+- Nach serverseitiger Bestätigung: Name/Karte neu wählen. Abbruch und Netzwerkfehler löschen nichts im UI.
+- Entfernte Erst-Bingo-Referenzen werden bereinigt; andere Spieler bleiben unverändert.
+- Full-Typecheck, Browserprüfung und Cloudflare-Deployment stehen noch aus.

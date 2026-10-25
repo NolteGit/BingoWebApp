@@ -1,7 +1,7 @@
 import { cardCatalog, getCardById, getFlatSquares } from '../shared/cards'
 import { generateRoomCode, normalizeRoomCode } from './room-code'
 import {
-  createSessionToken, extractSessionToken, hashSessionToken, parseCardId,
+  createSessionToken, extractSessionToken, expiredSessionCookie, hashSessionToken, parseCardId,
   parsePlayerName, sessionCookie,
 } from './player-session'
 import type { RoomStub } from './room-model'
@@ -142,6 +142,23 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
       const snapshot = await room.getSnapshot()
       return json({ roomCode, player: result.player, revision: snapshot?.revision ?? 0, resumed: false },
         201, { 'Set-Cookie': sessionCookie(roomCode, token, url.protocol === 'https:') })
+    }
+
+    if (action === 'me' && matched[3] === undefined && request.method === 'DELETE') {
+      if (!validMutationOrigin(request)) {
+        return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+      }
+      const token = extractSessionToken(request.headers.get('Cookie'), roomCode)
+      if (!token) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      const result = await room.removePlayerByTokenHash(await hashSessionToken(token))
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (result.status === 'session_required') {
+        return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      }
+      const snapshot = await room.getSnapshot()
+      return json({ status: 'deleted', roomCode, playerId: result.playerId, room: snapshot }, 200, {
+        'Set-Cookie': expiredSessionCookie(roomCode, url.protocol === 'https:'),
+      })
     }
 
     if (action === 'me' && matched[3] !== undefined && request.method === 'PUT') {

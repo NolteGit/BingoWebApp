@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { getCardById, presetCards } from '../shared/cards'
+import { getCardById } from '../shared/cards'
 import { isSquareChecked } from '../shared/bingo'
 import { LobbyModal, type LobbyModalMode } from './LobbyModal'
 import { PlayableBoard } from './PlayableBoard'
+import { CardPicker } from './CardPicker'
+import { NewBingoDialog } from './NewBingoDialog'
 import { ComparisonDrawer } from './ComparisonDrawer'
 import { PlayerOverview } from './PlayerOverview'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
@@ -10,7 +12,7 @@ import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
 import { acceptIncomingSnapshot, connectLiveRoom } from './room-live'
 import { CONNECTION_LABELS, connectionState, recoverSavedState, saveSquareSafely } from './reliability'
 import {
-  ApiError, assertRoomSnapshot, createRoom, errorMessage, getOwnSession, getRoom, joinRoom,
+  ApiError, assertRoomSnapshot, createRoom, deleteOwnBingo, errorMessage, getOwnSession, getRoom, joinRoom,
   roomCodeFromPath, type OwnPlayer, type RoomSnapshot,
 } from './room-api'
 
@@ -39,11 +41,12 @@ export function App() {
   const [draftName, setDraftName] = useState('')
   const [selectedCardId, setSelectedCardId] = useState(1)
   const [lobbyModal, setLobbyModal] = useState<LobbyModalMode>(null)
+  const [newBingoOpen, setNewBingoOpen] = useState(false)
   const [comparisonOpen, setComparisonOpen] = useState(false)
   const [selectedComparisonId, setSelectedComparisonId] = useState<string | null>(null)
   const [lobbyPreviewId, setLobbyPreviewId] = useState<string | null>(null)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
-  const previewButtonRef = useRef<HTMLButtonElement>(null)
+  const newBingoButtonRef = useRef<HTMLButtonElement>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
   // Mutable guards close the gap before Preact has rendered the new disabled state.
@@ -160,6 +163,21 @@ export function App() {
     setLobbyModal(mode)
   }
 
+  /** Navigating to the start screen never deletes a room, session, or checked square. */
+  function returnToRoomStart() {
+    if (working || saving || syncBlocked) return
+    window.history.pushState({}, '', '/')
+    setRoomCode(null)
+    setRoom(null)
+    setPlayer(null)
+    setView('lobby')
+    setComparisonOpen(false)
+    setLobbyModal(null)
+    setSelectedComparisonId(null)
+    setLobbyPreviewId(null)
+    setMessage('')
+  }
+
   async function createNewRoom() {
     if (working) return
     setWorking(true)
@@ -172,6 +190,34 @@ export function App() {
       setView('lobby')
     } catch (error) { setMessage(errorMessage(error)) }
     finally { setWorking(false) }
+  }
+
+  /** Delete this player's record only after explicit confirmation and a successful API response. */
+  async function startFreshBingo() {
+    if (!roomCode || !player || working || saving || syncBlocked || recovering || writeBusyRef.current) return
+    const oldRoomCode = roomCode
+    const oldPlayerId = player.playerId
+    setWorking(true)
+    setMessage('')
+    try {
+      const response = await deleteOwnBingo(oldRoomCode)
+      if (currentRoomRef.current !== oldRoomCode || currentPlayerRef.current?.playerId !== oldPlayerId) return
+      if (response.status !== 'deleted' || response.playerId !== oldPlayerId ||
+        response.room?.roomCode !== oldRoomCode) {
+        throw new Error('Löschung konnte nicht bestätigt werden. Bitte erneut versuchen.')
+      }
+      setPlayer(null)
+      setRoom(assertRoomSnapshot(response.room))
+      setDraftName('')
+      setSelectedCardId(1)
+      setLobbyPreviewId(null)
+      setNewBingoOpen(false)
+      setView('lobby')
+      setMessage('Altes Bingo gelöscht. Du kannst jetzt neu starten.')
+    } catch (error) {
+      // Never discard the last confirmed local state after an unverified deletion.
+      setMessage(`Neustart nicht bestätigt: ${errorMessage(error)} Bitte ggf. Seite neu laden.`)
+    } finally { setWorking(false) }
   }
 
   async function join(event: Event) {
@@ -339,7 +385,12 @@ export function App() {
             </div>
             <div class="room-link-row">
               <span>Raumcode: <strong>{roomCode}</strong></span>
-              <button class="secondary-button" type="button" onClick={() => void copyLink()}>Link kopieren</button>
+              <div class="room-link-actions">
+                <button class="secondary-button" type="button" onClick={() => void copyLink()}>Link kopieren</button>
+                <button class="secondary-button" type="button" disabled={working || saving || syncBlocked}
+                  title="Zur Startseite wechseln. Der bestehende Spielstand wird nicht gelöscht."
+                  onClick={returnToRoomStart}>Neuen Raum</button>
+              </div>
             </div>
             <div class="lobby-layout">
               <section class="join-panel" aria-labelledby="join-title">
@@ -347,7 +398,12 @@ export function App() {
                   <>
                     <h2 id="join-title">Willkommen zurück, {player.name}</h2>
                     <p>{getCardById(player.cardId).name} · {playerStatus(player)}</p>
-                    <button class="primary-button" type="button" onClick={() => { setMessage(''); setView('game') }}>Bingo fortsetzen</button>
+                    <div class="returning-player-actions">
+                      <button class="primary-button" type="button" onClick={() => { setMessage(''); setView('game') }}>Bingo fortsetzen</button>
+                      <button ref={newBingoButtonRef} class="secondary-button" type="button"
+                        disabled={working || saving || recovering || syncBlocked}
+                        onClick={() => setNewBingoOpen(true)}>Neues Bingo starten</button>
+                    </div>
                     <p class="form-note">Dein Fortschritt bleibt beim Wechsel zur Lobby gespeichert.</p>
                   </>
                 ) : (
@@ -358,15 +414,8 @@ export function App() {
                       <input id="player-name" type="text" autoComplete="nickname" maxLength={MAX_PLAYER_NAME_LENGTH}
                         placeholder="Spielername eingeben" value={draftName}
                         onInput={event => { setDraftName(event.currentTarget.value); setMessage('') }} required />
-                      <div class="card-field-label">
-                        <label for="card-choice">Karte auswählen</label>
-                        <button class="preview-link" ref={previewButtonRef} type="button"
-                          onClick={() => showLobbyModal('preview', previewButtonRef.current)}>Karte ansehen</button>
-                      </div>
-                      <select id="card-choice" value={selectedCardId}
-                        onChange={event => setSelectedCardId(Number(event.currentTarget.value))}>
-                        {presetCards.map(card => <option key={card.id} value={card.id}>{card.name}</option>)}
-                      </select>
+                      <div class="card-field-label"><label for="card-choice">Karte auswählen</label></div>
+                      <CardPicker value={selectedCardId} onChange={setSelectedCardId} />
                       <button class="primary-button" type="submit" disabled={!joinEnabled}>
                         {working ? 'Beitritt läuft…' : 'Bingo starten'}
                       </button>
@@ -381,6 +430,9 @@ export function App() {
                 <p class="form-note">{liveConnected ? 'Live verbunden – Änderungen erscheinen sofort.' : 'Aktualisierung alle 5 Sekunden (Fallback).'}</p>
               </aside>
             </div>
+            <NewBingoDialog open={newBingoOpen} busy={working}
+              onCancel={() => setNewBingoOpen(false)} onConfirm={() => void startFreshBingo()}
+              onAfterClose={() => newBingoButtonRef.current?.focus()} />
             <LobbyModal mode={lobbyModal} card={selectedCard}
               onDismiss={() => setLobbyModal(null)}
               onAfterClose={() => lastLobbyTriggerRef.current?.focus()} />
