@@ -11,12 +11,12 @@ Last documentation review: **2026-10-25**.
 | Frontend scaffold | Local development page shown running on Windows; typecheck/test/build not yet confirmed | `package.json`, `vite.config.ts`, `src/client/` and `index.html`; run `npm install`, `npm run typecheck`, `npm test`, `npm run build`, `npm run dev` |
 | Ten-card validation and read-only preview | Code added; local tests pending | `src/shared/cards.ts`, `src/shared/cards.test.ts`, preview in `src/client/App.tsx` |
 | 5×5 playable card | Not started | Read-only preview only; marking not implemented |
-| Pure bingo detection | Not started | — |
+| Pure bingo detection | Rules module + test cases added; project-wide Vitest verification pending | `src/shared/bingo.ts`, `src/shared/bingo.test.ts`; standalone TypeScript compile and runtime smoke tests passed |
 | Lobby / join flow | Not started | — |
 | Backend Durable Object | Not started | — |
 | Persistence and sessions | Not started | — |
 | Realtime connections | Not started | — |
-| Automated tests | UI smoke test and card validation tests added; not yet executed for this patch | `src/client/App.test.tsx`, `src/shared/cards.test.ts` |
+| Automated tests | UI, card validation and bingo-rule Vitest tests added; full suite still requires local verification | `src/client/App.test.tsx`, `src/shared/cards.test.ts`, `src/shared/bingo.test.ts` |
 | Cloudflare deployment | Not started | — |
 
 ## Scaffold handoff (2026-10-25)
@@ -36,6 +36,15 @@ Last documentation review: **2026-10-25**.
 - **Patch environment limitation:** `npm install` failed because registry.npmjs.org could not be resolved (`EAI_AGAIN`). The new tests and TypeScript/build commands remain unverified until run locally on Windows.
 - Next: run `npm run typecheck`, `npm test`, and `npm run build`, then update checkboxes in `TASKS.md`. Implement bingo calculation in the next task.
 
+## Bingo logic milestone handoff (2026-10-25)
+
+- Added `src/shared/bingo.ts`: one canonical immutable list of 12 winning lines, 25-bit checked-square state, immutable checked center, pure mark/unmark operation, completed-square totals, completed-line indexes, and player-level first-bingo transition helper.
+- Added `src/shared/bingo.test.ts`: checks all 12 possible lines, center-column and diagonal behavior, overlapping lines, 25 checked squares, undo/idempotency, invalid masks and indexes, non-boolean inputs, and independent check state for two players using the same preset.
+- **Verified in patch-authoring environment:** compiled `bingo.ts` and its `cards.ts` dependency using standalone `tsc` (ES2022, CommonJS, strict). Executed a Node assertion script covering all twelve patterns, all-squares, overlaps, undo, immutable center, and invalid indexes. These checks passed.
+- **Not verified here:** complete project TypeScript check, Vitest execution, and Vite build, because npm packages are not installed in this environment. Execute `npm run typecheck`, `npm test`, `npm run build` on Windows before checking off the third foundation task.
+- The card preview is **intentionally unchanged/read-only**. No client game state, lobby, player sessions, or backend has been implemented.
+- Next: verify local commands and implement the German lobby/selection UI with local-only state.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.
@@ -48,4 +57,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Run the local typecheck, tests and build on Windows, and mark the first two foundation checklist items complete if successful. Next: pure bingo logic and unit tests (third foundation item).
+Run the local typecheck, tests and build on Windows, and mark the first two foundation checklist items complete if successful. Next: verify the bingo rules and unit tests, then implement the local-only lobby UI.

@@ -91,3 +91,15 @@ When a player's `completedLines` changes from `0` to `>=1`, atomically assign ro
 ## Cards/catalog
 
 Human-readable 10-card tables: [13 — Full card catalog](13-card-catalog.md). Machine-readable source: [`data/cards.json`](../data/cards.json). Do not regenerate/re-shuffle the presets per player; positions are fixed by the supplied PDF.
+
+## Implemented shared rules module (foundation step 3)
+
+The pure calculations now live in [`../src/shared/bingo.ts`](../src/shared/bingo.ts) and are tested in [`../src/shared/bingo.test.ts`](../src/shared/bingo.test.ts).
+
+- `BINGO_LINES` is the frozen canonical order of all 12 winning lines.
+- `createInitialCheckedMask()` returns `1 << 12`, with the center checked.
+- `setSquareChecked(mask, index, checked)` is **idempotent** and rejects attempts to uncheck the free center or write malformed data.
+- `getBingoProgress(mask)` derives completed square count, checked indices, completed line count, completed line indices and whether the player has a bingo.
+- `isFirstBingoTransition(previousMask, nextMask)` detects a **single player's** transition from zero completed lines to one or more. It does **not** award the room's first winner. That must happen atomically in a later server milestone.
+
+This code is shared game logic, not yet connected to the read-only preview UI or a networked server.

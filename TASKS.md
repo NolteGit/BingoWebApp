@@ -5,7 +5,7 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 ## 1. Project foundation
 - [ ] Scaffold **Vite + Preact + TypeScript + CSS** with working `dev`, `build`, and `test` commands. *(Dev server confirmed in VS Code screenshot; still verify typecheck/test/build.)*
 - [ ] Load and validate the **10 cards** from `data/cards.json` (5×5 layout, immutable free center). *(Loader, preview and tests added; check off once local tests pass.)*
-- [ ] Implement and unit-test the **12 bingo lines**, checked-square totals, and first-bingo detection.
+- [ ] Implement and unit-test the **12 bingo lines**, checked-square totals, and first-bingo detection. *(Pure rules and tests added; standalone TypeScript/runtime checks passed; run `npm test` and `npm run typecheck` locally before checking off.)*
 
 ## 2. Playable UI (local only)
 - [ ] Build the **German lobby UI** with name entry, card selection, and card preview.
@@ -31,4 +31,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** run the local verification commands, check off the first two foundation items if successful, then implement pure bingo logic (third item).
+**Suggested next action:** run the local verification commands, check off the first two foundation items if successful, then verify the bingo-rule tests (third item) and proceed with the local lobby UI.
