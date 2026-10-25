@@ -186,3 +186,13 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Frontend connects automatically for joined/resumed players; it rejects stale snapshots, reconnects with bounded backoff, and keeps five-second HTTP polling when disconnected (60-second safety polling while live). Lobby and Vergleich use the same real player state. Saved marks remain server-authoritative via HTTP PUT.
 - Added protocol/URL parsing tests and API-origin/upgrade guard tests. **Not yet verified in full project:** `npm run typecheck`, `npm test`, `npm run build`, real browser WebSocket upgrade and instant updates, reconnection and Wrangler restart. See `docs/19-step11-realtime-testing.md` before marking feature complete.
 - No player deletion, account replacement, cross-device restore, administrative reset, or production deployment is included.
+
+## Step 12 — Reliability and reconnect safeguards (2026-10-25, patch prepared)
+
+- Extracted testable save/recovery logic (`src/client/reliability.ts`). A square write uses the existing revision-checked server API. A lost response is **not automatically replayed**: the client fetches the authoritative player session and room snapshot, validates the identity/room/revision, and only then re-enables editing.
+- Added synchronous in-flight guards to prevent overlapping clicks before Preact finishes rendering; stale WebSocket/HTTP state cannot replace a newer confirmed player revision.
+- An uncertain save locks square editing, shows a distinct status, and retries recovery every five seconds, on browser reconnect, and on tab visibility. A manual **Erneut prüfen** button is available. Explicit `Live`, `Abfrage`, `Speichern`, `Synchronisiere`, `Offline` and `unbestätigt` statuses keep this visible with minimal UI clutter.
+- If loading a saved room fails, **Erneut laden** retries without creating a new room or deleting progress. Navigation to the lobby stays non-destructive.
+- Added `src/client/reliability.test.ts` for confirmed saves, response loss, stale revisions, failed recovery, invalid identity/data and connection-state labels. See `docs/20-step12-reliability-testing.md` for manual two-browser and outage tests.
+- **Verification in patch environment:** previous Step 11 file series reconstructed and patch source parsed. Full `npm run typecheck`, `npm test`, `npm run build` and real Wrangler/browser outage testing remain to be performed on Windows. Do not claim end-to-end reliability is verified yet.
+- **Still future work:** public deployment, rate limiting, cross-device recovery, data export/restore, explicit leave/delete safeguards and any administrative recovery tools.

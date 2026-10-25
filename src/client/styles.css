@@ -1014,3 +1014,30 @@ h1 {
 .room-card-label { padding: 8px 12px; border: 1px solid #59728a; border-radius: 9px; background: #203347; color: #f1f5fa; }
 .save-indicator { font-size: 0.78rem; color: #abcbbd; margin: 0 0 10px; }
 .room-feedback { border-top: 1px solid #314353; padding: 12px 24px; margin: 0; font-size: 0.87rem; color: #f7d4a0; overflow-wrap: anywhere; }
+
+/* Step 12: a compact, explicit confirmation state above the board. */
+.save-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: #c1d8cb;
+  font-size: 0.78rem;
+  min-height: 20px;
+}
+.save-status__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: #5cc7a0;
+  border-radius: 50%;
+}
+.save-status--polling .save-status__dot,
+.save-status--saving .save-status__dot,
+.save-status--recovering .save-status__dot { background: #d3aa68; }
+.save-status--offline .save-status__dot,
+.save-status--unverified .save-status__dot { background: #ef9181; }
+.save-status--offline,
+.save-status--unverified { color: #f1c4b5; }
+.save-status .preview-link { margin-left: auto; }

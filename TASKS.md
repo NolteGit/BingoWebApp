@@ -32,6 +32,7 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] Broadcast room snapshots over **WebSockets** to the lobby and comparison drawer. *(Step 11 patch prepared: authenticated Hibernation WebSocket, reconnect and HTTP polling fallback; two-browser verification pending.)*
 - [ ] Handle **late joins, reconnects, refreshes, offline status**, and independent players choosing the same card. *(Live connection/presence implemented in Step 11, but manual disconnect/reconnect tests pending.)*
 - [ ] Test simultaneous actions and make sure one player cannot edit another player's card.
+- [ ] **Step 12 — Reliable saves/recovery:** explicit save/connection indicator, no blind retries, automatic reconciliation after uncertain writes, online/visibility recovery and non-destructive room load retry. Run `docs/20-step12-reliability-testing.md` in two browsers before checking off.
 
 ## 5. Release
 - [ ] Polish German text, responsive layout, keyboard controls, errors, and destructive-exit warning.
@@ -42,4 +43,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** verify Step 10 using `docs/18-step10-browser-testing.md`, then implement WebSocket synchronization and presence.
+**Suggested next action:** verify Step 12 on Windows with `docs/20-step12-reliability-testing.md`, then plan production rollout and additional recovery safeguards.

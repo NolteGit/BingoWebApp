@@ -2,9 +2,9 @@
 
 A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 World vs. World (WvW)*. Friends join the same room, select one of ten predefined German bingo cards, tick off events while playing, and see each other's progress live. The interface is designed for Alt-Tab and second-monitor use.
 
-> **Project status (2026-10-25): frontend scaffold running locally on Windows, German lobby, clickable local bingo board, and comparison/exit UI added; pure bingo rules implemented.** The unit tests and complete build still need to be verified locally. Multiplayer backend, persistence, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
+> **Project status (2026-10-25):** Multiplayer backend and local SQLite persistence, player sessions, saved bingo progress, real room UI, and WebSocket updates are implemented and locally exercised. Step 12 adds recovery safeguards and requires the Windows outage tests in `docs/20-step12-reliability-testing.md`. Public deployment is not yet complete. See `PROJECT_STATUS.md` for verification details.
 
-## Run the local frontend
+## Run locally
 
 From the repository root, with Node.js 24 and npm installed:
 
@@ -13,9 +13,9 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local-only playable prototype**, not a multiplayer room. Enter a name, choose one of the ten WvW cards, and select **Bingo starten**. The compact lobby keeps rules in **Regeln & Infos** and shows a selected card only when **Karte ansehen** is clicked. Click squares to check or undo them. **Vergleich** opens a read-only comparison with your *actual local board* and two **clearly marked example players** (not online participants). **Zur Lobby** requests explicit confirmation before clearing the current session. Refreshing still loses local progress. The shared bingo rules live in `src/shared/bingo.ts`.
+To test full multiplayer, run `npm run dev:api` in a second terminal, then create a room at `http://localhost:5173/`. Share its `/r/CODE` link and join from a separate browser/private window. The Worker stores local rooms under `.wrangler/`. Never delete that directory if you need to retain your local games. Data in local Wrangler is independent of production storage.
 
-After installation, verify the project with:
+Check the project with:
 
 ```powershell
 npm run typecheck
@@ -23,7 +23,7 @@ npm test
 npm run build
 ```
 
-`npm install` generates a `package-lock.json`: **commit this lockfile** along with the scaffold for reproducible installs. The Cloudflare Worker, Durable Object and associated configuration are intentionally deferred to the backend milestone.
+The browser uses room-specific HttpOnly session cookies. Actual checkmarks are written to SQLite and confirmed by the server. The Step 12 patch displays connection/save status and automatically attempts to recover uncertain saves without blindly repeating a write. See [Step 12 manual test guide](docs/20-step12-reliability-testing.md).
 
 ## Core experience
 

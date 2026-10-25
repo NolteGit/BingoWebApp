@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks'
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import { getCardById, presetCards } from '../shared/cards'
 import { isSquareChecked } from '../shared/bingo'
 import { LobbyModal, type LobbyModalMode } from './LobbyModal'
@@ -8,9 +8,10 @@ import { PlayerOverview } from './PlayerOverview'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
 import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
 import { acceptIncomingSnapshot, connectLiveRoom } from './room-live'
+import { CONNECTION_LABELS, connectionState, recoverSavedState, saveSquareSafely } from './reliability'
 import {
   ApiError, assertRoomSnapshot, createRoom, errorMessage, getOwnSession, getRoom, joinRoom,
-  roomCodeFromPath, saveSquare, type OwnPlayer, type RoomSnapshot,
+  roomCodeFromPath, type OwnPlayer, type RoomSnapshot,
 } from './room-api'
 
 const POLL_MS = 5000
@@ -28,6 +29,11 @@ export function App() {
   const [working, setWorking] = useState(false)
   const [saving, setSaving] = useState(false)
   const [syncBlocked, setSyncBlocked] = useState(false)
+  const [recovering, setRecovering] = useState(false)
+  const [serverReachable, setServerReachable] = useState(true)
+  const [browserOnline, setBrowserOnline] = useState(() =>
+    typeof navigator === 'undefined' || navigator.onLine !== false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [liveConnected, setLiveConnected] = useState(false)
   const [message, setMessage] = useState('')
   const [draftName, setDraftName] = useState('')
@@ -40,6 +46,21 @@ export function App() {
   const previewButtonRef = useRef<HTMLButtonElement>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
+  // Mutable guards close the gap before Preact has rendered the new disabled state.
+  const writeBusyRef = useRef(false)
+  const recoveryBusyRef = useRef(false)
+  const currentRoomRef = useRef(roomCode)
+  const currentPlayerRef = useRef(player)
+  currentRoomRef.current = roomCode
+  currentPlayerRef.current = player
+
+  useEffect(() => {
+    const online = () => setBrowserOnline(true)
+    const offline = () => { setBrowserOnline(false); setServerReachable(false) }
+    window.addEventListener('online', online)
+    window.addEventListener('offline', offline)
+    return () => { window.removeEventListener('online', online); window.removeEventListener('offline', offline) }
+  }, [])
 
   // Direct links (/r/CODE) restore the existing HttpOnly session without another join.
   useEffect(() => {
@@ -60,18 +81,20 @@ export function App() {
       if (cancelled) return
       setRoom(snapshot)
       setPlayer(own?.player ?? null)
+      setServerReachable(true)
       setView(own ? 'game' : 'lobby')
     }).catch(error => {
-      if (!cancelled) setMessage(errorMessage(error))
+      if (!cancelled) { setServerReachable(false); setMessage(errorMessage(error)) }
     }).finally(() => { if (!cancelled) setLoadingRoom(false) })
     return () => { cancelled = true }
-  }, [roomCode])
+  }, [roomCode, loadAttempt])
 
   // Room-scoped WebSocket; storage remains authoritative and reconnects are non-destructive.
   useEffect(() => {
     setLiveConnected(false)
     if (!roomCode || !player) return
     const connection = connectLiveRoom(roomCode, snapshot => {
+      setServerReachable(true)
       setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
       const own = snapshot.players.find(entry => entry.playerId === player.playerId)
       if (own) {
@@ -92,8 +115,11 @@ export function App() {
     async function refresh() {
       try {
         const snapshot = assertRoomSnapshot(await getRoom(roomCode!))
-        if (!cancelled) setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
-      } catch { /* Keep the last known valid snapshot; show write failures separately. */ }
+        if (!cancelled) {
+          setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
+          setServerReachable(true)
+        }
+      } catch { if (!cancelled) setServerReachable(false) /* Keep confirmed state. */ }
     }
     const interval = window.setInterval(() => { void refresh() }, liveConnected ? 60000 : POLL_MS)
     const onVisible = () => { if (!document.hidden) void refresh() }
@@ -125,6 +151,8 @@ export function App() {
   const entries = room ? entriesFromRoom(room) : []
   const currentMask = maskForOwnPlayer(player)
   const joinEnabled = draftName.trim().length >= 2 && draftName.trim().length <= MAX_PLAYER_NAME_LENGTH && !working
+  const connection = connectionState({ saving, recovering, blocked: syncBlocked, online: browserOnline,
+    serverReachable, live: liveConnected })
   const hasInvalidRoomPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/r/') && !roomCode
 
   function showLobbyModal(mode: Exclude<LobbyModalMode, null>, trigger: HTMLButtonElement | null) {
@@ -166,53 +194,97 @@ export function App() {
     finally { setWorking(false) }
   }
 
+  /** Safe recovery can be triggered manually, by a timer, or on reconnection. */
+  const recoverNow = useCallback(async () => {
+    const active = currentPlayerRef.current
+    if (!roomCode || !active || recoveryBusyRef.current) return
+    recoveryBusyRef.current = true
+    setRecovering(true)
+    try {
+      const recovered = await recoverSavedState(roomCode, active.playerId, active.playerRevision)
+      // Ignore a response for a room/player that was navigated away from in the meantime.
+      if (currentRoomRef.current !== roomCode || currentPlayerRef.current?.playerId !== active.playerId) return
+      if ((currentPlayerRef.current?.playerRevision ?? 0) > recovered.player.playerRevision) {
+        throw new Error('Ein neuerer Spielstand wird noch abgeglichen.')
+      }
+      setPlayer(previous => previous?.playerId === active.playerId ? recovered.player : previous)
+      setRoom(previous => acceptIncomingSnapshot(previous, recovered.room) ? recovered.room : previous)
+      setSyncBlocked(false)
+      setServerReachable(true)
+      setMessage('Verbindung wiederhergestellt. Gespeicherten Stand geladen – bitte letztes Häkchen prüfen.')
+    } catch {
+      if (currentRoomRef.current === roomCode) {
+        setSyncBlocked(true)
+        setServerReachable(false)
+      }
+    } finally {
+      recoveryBusyRef.current = false
+      setRecovering(false)
+    }
+  }, [roomCode, player?.playerId])
+
+  // A lost response does not require a manual refresh: verify the authoritative state
+  // periodically and as soon as the browser comes online or the tab becomes visible.
+  useEffect(() => {
+    if (!syncBlocked || !roomCode || !player) return
+    const attempt = () => { if (navigator.onLine !== false) void recoverNow() }
+    const onVisible = () => { if (!document.hidden) attempt() }
+    const interval = window.setInterval(attempt, 5000)
+    window.addEventListener('online', attempt)
+    document.addEventListener('visibilitychange', onVisible)
+    attempt()
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('online', attempt)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [syncBlocked, roomCode, player?.playerId, recoverNow])
+
   async function toggleSquare(index: number) {
-    if (!roomCode || !player || saving || syncBlocked || index === 12) return
+    if (!roomCode || !player || writeBusyRef.current || syncBlocked || recovering ||
+      !browserOnline || index === 12) return
+    writeBusyRef.current = true
+    const activeRoom = roomCode
     const originalPlayer = player
     const desiredChecked = !isSquareChecked(currentMask, index)
     setSaving(true)
     setMessage('')
     try {
-      const saved = await saveSquare(roomCode, index, desiredChecked, originalPlayer.playerRevision)
-      setPlayer(previous => previous?.playerId === saved.playerId && previous.playerRevision > saved.playerRevision
-        ? previous
-        : { ...originalPlayer, checkedIndices: saved.checkedIndices, playerRevision: saved.playerRevision })
-      try {
-        const snapshot = assertRoomSnapshot(await getRoom(roomCode))
-        setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
-      }
-      catch { setMessage('Häkchen gespeichert. Die Spielerübersicht konnte noch nicht aktualisiert werden.') }
-    } catch (error) {
-      if (error instanceof ApiError && error.code === 'STALE_PLAYER_REVISION') {
+      const result = await saveSquareSafely(activeRoom, originalPlayer, index, desiredChecked)
+      if (currentRoomRef.current !== activeRoom || currentPlayerRef.current?.playerId !== originalPlayer.playerId) return
+      if (result.status === 'saved') {
+        // Never roll back a newer revision received via WebSocket or another tab.
+        setPlayer(previous => previous?.playerId === result.state.playerId &&
+          previous.playerRevision <= result.state.playerRevision
+          ? { ...previous, checkedIndices: result.state.checkedIndices,
+              playerRevision: result.state.playerRevision }
+          : previous)
+        setServerReachable(true)
         try {
-          const latest = await getOwnSession(roomCode)
-          setPlayer(latest.player)
-          const snapshot = assertRoomSnapshot(await getRoom(roomCode))
-          setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
-          setSyncBlocked(false)
-          setMessage('Deine Karte wurde zwischenzeitlich geändert. Aktueller Stand geladen – bitte Feld erneut auswählen.')
-        } catch {
-          setSyncBlocked(true)
-          setMessage('Speicherstand konnte nicht geprüft werden. Weitere Klicks gesperrt, bitte Seite neu laden.')
-        }
-      } else if (error instanceof ApiError && error.status === 401) {
-        setSyncBlocked(true)
-        setMessage('Sitzung abgelaufen. Deine gespeicherten Felder wurden nicht gelöscht. Bitte dieselbe Browser-Sitzung verwenden.')
+          const snapshot = assertRoomSnapshot(await getRoom(activeRoom))
+          if (currentRoomRef.current === activeRoom) {
+            setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
+          }
+        } catch { setMessage('Feld gespeichert. Spielerübersicht wird wieder synchronisiert.') }
+      } else if (result.status === 'recovered') {
+        setPlayer(previous => previous?.playerId === result.player.playerId &&
+          previous.playerRevision <= result.player.playerRevision ? result.player : previous)
+        setRoom(previous => acceptIncomingSnapshot(previous, result.room) ? result.room : previous)
+        setServerReachable(true)
+        setMessage(result.conflict
+          ? 'Karte wurde in einem anderen Tab geändert. Aktuellen Stand geladen – bitte erneut klicken.'
+          : 'Speicherantwort verloren. Serverstand geprüft – bitte letztes Häkchen kontrollieren.')
       } else {
-        // A lost response might still have been persisted. Recover server truth before allowing another write.
-        try {
-          const latest = await getOwnSession(roomCode)
-          setPlayer(latest.player)
-          const snapshot = assertRoomSnapshot(await getRoom(roomCode))
-          setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
-          setSyncBlocked(false)
-          setMessage('Verbindung unterbrochen. Gespeicherten Stand geladen. Bitte dein letztes Häkchen prüfen.')
-        } catch {
-          setSyncBlocked(true)
-          setMessage('Speicherung nicht bestätigt. Bitte Verbindung prüfen und die Seite neu laden, bevor du weiterspielst.')
-        }
+        setSyncBlocked(true)
+        setServerReachable(false)
+        setMessage(result.authFailed
+          ? 'Spielsitzung nicht bestätigt. Fortschritt bleibt erhalten; Sitzung im selben Browser wiederherstellen.'
+          : 'Speicherung unbestätigt. Prüfe den Serverstand automatisch – weitere Klicks vorerst gesperrt.')
       }
-    } finally { setSaving(false) }
+    } finally {
+      writeBusyRef.current = false
+      setSaving(false)
+    }
   }
 
   async function copyLink() {
@@ -253,6 +325,7 @@ export function App() {
           <section class="lobby lobby--compact">
             <h1>Raum nicht erreichbar</h1>
             <p>Der Raum konnte nicht geladen werden. Die gespeicherten Daten werden dadurch nicht gelöscht.</p>
+            <button class="secondary-button" type="button" onClick={() => setLoadAttempt(previous => previous + 1)}>Erneut laden</button>
             <button class="secondary-button" type="button" onClick={() => { window.history.pushState({}, '', '/'); setRoomCode(null); setMessage('') }}>Zur Startseite</button>
           </section>
         ) : view === 'lobby' || !player ? (
@@ -326,9 +399,14 @@ export function App() {
                   onClick={() => { setComparisonOpen(false); setView('lobby'); setMessage('') }}>Zur Lobby</button>
               </div>
             </div>
-            <p class="save-indicator" role="status">{saving ? 'Speichern…' : syncBlocked ? 'Speicherstand unklar – bitte Seite neu laden' : 'Fortschritt wird serverseitig gespeichert'}</p>
+            <div class={`save-status save-status--${connection}`} role="status" aria-live="polite">
+              <span class="save-status__dot" aria-hidden="true" />
+              <span>{CONNECTION_LABELS[connection]}</span>
+              {syncBlocked && <button class="preview-link" type="button" disabled={recovering}
+                onClick={() => void recoverNow()}>Erneut prüfen</button>}
+            </div>
             <PlayableBoard card={getCardById(player.cardId)} checkedMask={currentMask}
-              onToggleSquare={index => void toggleSquare(index)} disabled={saving || syncBlocked} />
+              onToggleSquare={index => void toggleSquare(index)} disabled={saving || syncBlocked || recovering || !browserOnline} />
             <ComparisonDrawer open={comparisonOpen} entries={entries} selectedId={selectedComparisonId}
               onSelect={setSelectedComparisonId} onDismiss={() => setComparisonOpen(false)}
               onAfterClose={() => { setComparisonOpen(false); compareButtonRef.current?.focus() }}
