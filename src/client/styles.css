@@ -259,3 +259,220 @@ h1 {
     font-size: 0.48rem;
   }
 }
+
+/* Step 4: lobby and local player selection. No room/backend is implied. */
+.lobby,
+.player-view {
+  padding: clamp(22px, 4vw, 42px) clamp(18px, 5vw, 52px) 44px;
+}
+
+.page-intro h1,
+.player-heading h1 {
+  font-size: clamp(2.8rem, 5vw, 4.3rem);
+  margin: 8px 0 10px;
+}
+
+.page-intro .lead,
+.player-heading .lead {
+  margin-top: 0;
+}
+
+.lobby-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  margin: 26px 0 34px;
+}
+
+.join-panel,
+.players-panel {
+  border: 1px solid #3b5266;
+  border-radius: 15px;
+  padding: 22px;
+  background: #192a3b;
+}
+
+.join-panel h2,
+.players-panel h2,
+.preview-heading h2 {
+  margin: 0;
+  font-size: 1.13rem;
+}
+
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.join-form label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #d8e6ef;
+}
+
+.join-form input,
+.join-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #59728a;
+  border-radius: 9px;
+  background: #112031;
+  color: #f1f5fa;
+  font: inherit;
+}
+
+.join-form input::placeholder {
+  color: #93aabc;
+}
+
+.join-form label:not(:first-child) {
+  margin-top: 10px;
+}
+
+.primary-button,
+.secondary-button {
+  border: 1px solid #c5a56d;
+  border-radius: 9px;
+  padding: 13px 17px;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.primary-button {
+  margin-top: 10px;
+  background: #c9a567;
+  color: #17202b;
+}
+
+.primary-button:hover:enabled {
+  background: #e0ba7b;
+}
+
+.primary-button:disabled {
+  background: #57606b;
+  border-color: #57606b;
+  color: #d7dde2;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: #1b3044;
+  color: #f6dfb3;
+  white-space: nowrap;
+}
+
+.secondary-button:hover {
+  background: #2d465b;
+}
+
+.join-form input:focus-visible,
+.join-form select:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 3px solid #f3cb80;
+  outline-offset: 3px;
+}
+
+.form-note,
+.form-error {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.form-note {
+  color: #aabccc;
+}
+
+.form-error {
+  color: #ffc9b7;
+}
+
+.panel-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-count {
+  font-size: 0.75rem;
+  color: #abbfd0;
+  border: 1px solid #4b6376;
+  border-radius: 16px;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.empty-players {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 235px;
+  gap: 13px;
+  color: #e1eaf0;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 1px dashed #6a8496;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  color: #a4c5cd;
+}
+
+.empty-players p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.86rem;
+  color: #b7c8d5;
+  max-width: 260px;
+}
+
+.preview-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #3b5266;
+}
+
+.preview-heading p {
+  margin: 0;
+  font-size: 0.79rem;
+  color: #aabccc;
+}
+
+.player-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.player-heading .lead {
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .lobby-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-players {
+    min-height: 150px;
+  }
+}

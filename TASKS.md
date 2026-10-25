@@ -8,7 +8,7 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] Implement and unit-test the **12 bingo lines**, checked-square totals, and first-bingo detection. *(Pure rules and tests added; standalone TypeScript/runtime checks passed; run `npm test` and `npm run typecheck` locally before checking off.)*
 
 ## 2. Playable UI (local only)
-- [ ] Build the **German lobby UI** with name entry, card selection, and card preview.
+- [ ] Build the **German lobby UI** with name entry, card selection, and card preview. *(Implemented locally in Step 4, with a read-only player screen; run local checks and verify navigation before checking off.)*
 - [ ] Build the **clickable 5×5 bingo page** with checked-state styling, progress, and a return button.
 - [ ] Add the **comparison drawer** and exit confirmation using mock player data. Label the demo as local-only.
 
@@ -31,4 +31,4 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 
 **Workflow for each task:** implement → test → check off here → update `PROJECT_STATUS.md` with verified results → commit. Do not mark untested features complete. Add new ideas to the detailed roadmap rather than expanding this checklist.
 
-**Suggested next action:** run the local verification commands, check off the first two foundation items if successful, then verify the bingo-rule tests (third item) and proceed with the local lobby UI.
+**Suggested next action:** verify the local lobby and all earlier tests, then implement clickable squares in the personal bingo screen (Step 5).

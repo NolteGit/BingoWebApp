@@ -12,11 +12,11 @@ Last documentation review: **2026-10-25**.
 | Ten-card validation and read-only preview | Code added; local tests pending | `src/shared/cards.ts`, `src/shared/cards.test.ts`, preview in `src/client/App.tsx` |
 | 5×5 playable card | Not started | Read-only preview only; marking not implemented |
 | Pure bingo detection | Rules module + test cases added; project-wide Vitest verification pending | `src/shared/bingo.ts`, `src/shared/bingo.test.ts`; standalone TypeScript compile and runtime smoke tests passed |
-| Lobby / join flow | Not started | — |
+| Lobby / join flow | Local-only lobby, card picker, name form and preview navigation added; browser verification pending | `src/client/App.tsx`, `src/client/lobby.ts`, local tests. No room API or multiplayer yet |
 | Backend Durable Object | Not started | — |
 | Persistence and sessions | Not started | — |
 | Realtime connections | Not started | — |
-| Automated tests | UI, card validation and bingo-rule Vitest tests added; full suite still requires local verification | `src/client/App.test.tsx`, `src/shared/cards.test.ts`, `src/shared/bingo.test.ts` |
+| Automated tests | Lobby SSR and input validation, card validation and bingo-rule Vitest tests added; full suite still requires local verification | `src/client/App.test.tsx`, `src/shared/cards.test.ts`, `src/shared/bingo.test.ts` |
 | Cloudflare deployment | Not started | — |
 
 ## Scaffold handoff (2026-10-25)
@@ -45,6 +45,15 @@ Last documentation review: **2026-10-25**.
 - The card preview is **intentionally unchanged/read-only**. No client game state, lobby, player sessions, or backend has been implemented.
 - Next: verify local commands and implement the German lobby/selection UI with local-only state.
 
+## Local lobby milestone handoff (2026-10-25)
+
+- Added a German lobby containing a name field (maximum 24 characters), selection of ten predefined cards, card preview, and an empty-state player overview. The player overview clearly explains that no other players can connect yet.
+- **Bingo starten** opens a personal, read-only preview displaying the player's chosen name and card. **Zur Lobby** returns without pretending to save or delete progress. Both views are explicitly labeled as local-only.
+- Added pure form validation tests and updated the SSR UI smoke test. No extra frontend packages were introduced.
+- **Verified in patch environment:** all new TS/TSX files parsed without syntax errors. `lobby.ts` and the card-loader dependency compiled under strict TypeScript settings, and standalone Node assertions passed for name normalization, valid card selection, and invalid input.
+- **Not verified here:** full `npm run typecheck`, `npm test`, `npm run build`, or interactive browser behavior (npm registry unavailable). Run those on Windows and test submitting a name, changing cards, opening the preview, and returning to the lobby.
+- No database, sessions, real player list, clickable marks, persistence, or live synchronization. Next milestone: make the player screen clickable with progress/bingo counters.
+
 ## Verified facts
 
 - `data/cards.json` defines 10 cards, each 5×5, with the center position set to `Bonusfeld`.
@@ -57,4 +66,4 @@ For each implementation milestone, record the date, what works, the command/test
 
 ## Immediate next action
 
-Run the local typecheck, tests and build on Windows, and mark the first two foundation checklist items complete if successful. Next: verify the bingo rules and unit tests, then implement the local-only lobby UI.
+Run the local typecheck, tests and build on Windows, verify the local lobby form and navigation, and check off verified tasks. Next: implement the clickable bingo board and local progress.

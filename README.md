@@ -2,9 +2,9 @@
 
 A lightweight, browser-based **multiplayer 5×5 bingo game** for *Guild Wars 2 World vs. World (WvW)*. Friends join the same room, select one of ten predefined German bingo cards, tick off events while playing, and see each other's progress live. The interface is designed for Alt-Tab and second-monitor use.
 
-> **Project status (2026-10-25): frontend scaffold running locally on Windows, ten-card read-only viewer and pure bingo rules added.** The unit tests and complete build still need to be verified locally. Interactive marking, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
+> **Project status (2026-10-25): frontend scaffold running locally on Windows, German lobby and read-only personal card preview added, pure bingo rules implemented.** The unit tests and complete build still need to be verified locally. Interactive marking, multiplayer backend, API and deployment remain unimplemented. See `PROJECT_STATUS.md` for verification details.
 
-## Run the local frontend (first implementation step)
+## Run the local frontend
 
 From the repository root, with Node.js 24 and npm installed:
 
@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local read-only card preview**, not yet a playable game. You can select each of the ten WvW cards, but cannot mark squares. The independent bingo rule calculations and test suite already live in `src/shared/bingo.ts` and `src/shared/bingo.test.ts`.
+Open the URL Vite prints (normally `http://localhost:5173/`). This is a **local-only lobby and read-only personal card preview**, not yet a playable game. Enter a name, select one of the ten WvW cards, and select **Bingo starten** to open your own preview. **Zur Lobby** returns to the lobby. Squares cannot be marked and no game state is saved. The independent bingo rule calculations and test suite already live in `src/shared/bingo.ts` and `src/shared/bingo.test.ts`.
 
 After installation, verify the project with:
 
@@ -79,4 +79,4 @@ The ten cards are transcribed from the user-provided **GW2 WvW Bingo.pdf** (ten 
 
 ## Next step
 
-**Next milestone:** verify the new bingo-rule tests locally, then implement the German lobby and playable UI. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.
+**Next milestone:** verify the lobby locally, then implement the clickable player board and local progress updates. See [TASKS.md](TASKS.md) and the [roadmap](docs/11-roadmap.md). Keep `PROJECT_STATUS.md` accurate after each substantive commit.

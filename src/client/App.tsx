@@ -1,14 +1,26 @@
 import { useState } from 'preact/hooks'
-import {
-  FREE_SQUARE_INDEX,
-  getCardById,
-  getFlatSquares,
-  presetCards,
-} from '../shared/cards'
+import { getCardById, presetCards } from '../shared/cards'
+import { CardPreview } from './CardPreview'
+import { createLocalPlayer, MAX_PLAYER_NAME_LENGTH, type LocalPlayer } from './lobby'
 
 export function App() {
+  const [draftName, setDraftName] = useState('')
   const [selectedCardId, setSelectedCardId] = useState(1)
+  const [activePlayer, setActivePlayer] = useState<LocalPlayer | null>(null)
+  const [formError, setFormError] = useState('')
+
   const selectedCard = getCardById(selectedCardId)
+  const canStart = draftName.trim().length > 0 && draftName.trim().length <= MAX_PLAYER_NAME_LENGTH
+
+  function startLocalPreview(event: Event) {
+    event.preventDefault()
+    try {
+      setActivePlayer(createLocalPlayer(draftName, selectedCardId))
+      setFormError('')
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Spiel konnte nicht gestartet werden.')
+    }
+  }
 
   return (
     <main class="page-shell">
@@ -16,65 +28,98 @@ export function App() {
         <header class="topbar">
           <span class="brand-mark" aria-hidden="true">B</span>
           <span class="brand-name">GW2 WvW Bingo</span>
-          <span class="status-pill">Lokale Vorschau</span>
+          <span class="status-pill">Nur lokal · kein Mehrspieler</span>
         </header>
 
-        <section class="hero" aria-labelledby="page-title">
-          <p class="eyebrow">Guild Wars 2 · World vs. World</p>
-          <h1 id="page-title">WvW Bingo</h1>
-          <p class="lead">
-            Alle zehn WvW-Bingokarten sind geladen. Wähle eine Karte aus,
-            um ihre Originalfelder anzusehen.
-          </p>
-
-          <div class="preview-toolbar">
-            <label for="card-choice">Bingokarte auswählen</label>
-            <select
-              id="card-choice"
-              value={selectedCardId}
-              onChange={(event) => setSelectedCardId(Number(event.currentTarget.value))}
-            >
-              {presetCards.map((card) => (
-                <option key={card.id} value={card.id}>{card.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <section class="preview-area" aria-labelledby="preview-title">
-            <div class="preview-caption">
-              <h2 id="preview-title">{selectedCard.name}</h2>
-              <span>5 × 5 · Bonusfeld in der Mitte</span>
+        {activePlayer === null ? (
+          <section class="lobby" aria-labelledby="page-title">
+            <div class="page-intro">
+              <p class="eyebrow">Guild Wars 2 · World vs. World</p>
+              <h1 id="page-title">Lobby</h1>
+              <p class="lead">Wähle deinen Namen und eine der zehn WvW-Bingokarten. Du kannst deine Karte vor dem Start ansehen.</p>
             </div>
-            <div class="board-preview" role="grid" aria-label={`Vorschau: ${selectedCard.name}`}>
-              {getFlatSquares(selectedCard).map((objective, index) => (
-                <div
-                  key={`${selectedCard.id}-${index}`}
-                  class={`preview-square${index === FREE_SQUARE_INDEX ? ' preview-square--free' : ''}`}
-                  role="gridcell"
-                  aria-label={index === FREE_SQUARE_INDEX ? `${objective}, Freifeld` : objective}
-                >
-                  <span>{objective}</span>
-                  {index === FREE_SQUARE_INDEX && <small>FREIFELD</small>}
+
+            <div class="lobby-layout">
+              <section class="join-panel" aria-labelledby="join-title">
+                <h2 id="join-title">Bingo beitreten</h2>
+                <form class="join-form" onSubmit={startLocalPreview}>
+                  <label for="player-name">Dein Name</label>
+                  <input
+                    id="player-name"
+                    name="player-name"
+                    type="text"
+                    autoComplete="nickname"
+                    maxLength={MAX_PLAYER_NAME_LENGTH}
+                    placeholder="Spielername eingeben"
+                    value={draftName}
+                    onInput={(event) => {
+                      setDraftName(event.currentTarget.value)
+                      setFormError('')
+                    }}
+                    required
+                  />
+                  <label for="card-choice">Karte auswählen</label>
+                  <select
+                    id="card-choice"
+                    name="card-choice"
+                    value={selectedCardId}
+                    onChange={(event) => setSelectedCardId(Number(event.currentTarget.value))}
+                  >
+                    {presetCards.map((card) => (
+                      <option key={card.id} value={card.id}>{card.name}</option>
+                    ))}
+                  </select>
+                  <button class="primary-button" type="submit" disabled={!canStart}>Bingo starten</button>
+                  {formError && <p class="form-error" role="alert">{formError}</p>}
+                  <p class="form-note">Jede Karte darf später auch von mehreren Spielern gewählt werden.</p>
+                </form>
+              </section>
+
+              <aside class="players-panel" aria-labelledby="players-title">
+                <div class="panel-heading">
+                  <h2 id="players-title">Spielerübersicht</h2>
+                  <span class="panel-count">0 Spieler</span>
                 </div>
-              ))}
+                <div class="empty-players">
+                  <span class="empty-icon" aria-hidden="true">◎</span>
+                  <strong>Noch keine Online-Spieler</strong>
+                  <p>Die gemeinsame Lobby und der Live-Fortschritt kommen mit dem Mehrspieler-Backend.</p>
+                </div>
+              </aside>
+            </div>
+
+            <div class="preview-heading">
+              <h2>Kartenvorschau</h2>
+              <p>Die Vorschau ändert sich mit deiner Kartenauswahl.</p>
+            </div>
+            <CardPreview card={selectedCard} titleId="preview-title" />
+            <div class="info-panel" role="note">
+              <strong>Lokaler Prototyp</strong>
+              <p>Der Start öffnet derzeit nur deine persönliche Kartenvorschau. Es werden noch keine Felder abgehakt oder Daten gespeichert. Andere Spieler können deine Sitzung noch nicht sehen.</p>
             </div>
           </section>
-
-          <div class="info-panel" aria-label="Aktueller Entwicklungsstand">
-            <div class="info-heading">
-              <span class="status-dot" aria-hidden="true" />
-              <strong>Nur Kartenvorschau</strong>
+        ) : (
+          <section class="player-view" aria-labelledby="page-title">
+            <div class="player-heading">
+              <div>
+                <p class="eyebrow">Deine Karte · Lokale Vorschau</p>
+                <h1 id="page-title">WvW Bingo</h1>
+                <p class="lead">{activePlayer.name} · {getCardById(activePlayer.cardId).name}</p>
+              </div>
+              <button class="secondary-button" type="button" onClick={() => setActivePlayer(null)}>
+                Zur Lobby
+              </button>
             </div>
-            <p>
-              Die Felder können noch nicht abgehakt werden. Diese Seite läuft
-              derzeit nur lokal. Es gibt noch keine Spieler-Lobby, keine
-              gespeicherten Spielstände und keine Live-Synchronisierung.
-            </p>
-          </div>
-        </section>
+            <CardPreview card={getCardById(activePlayer.cardId)} titleId="preview-title" />
+            <div class="info-panel" role="note">
+              <strong>Spielansicht in Vorbereitung</strong>
+              <p>Die Felder können noch nicht abgehakt werden. In Schritt 5 wird diese Vorschau zum klickbaren Bingo-Spiel. „Zur Lobby“ wechselt nur die Ansicht; es gibt noch keinen gespeicherten Fortschritt.</p>
+            </div>
+          </section>
+        )}
 
         <footer class="footer">
-          <span>Kartendaten · Schritt 2 von 5</span>
+          <span>Frontend · Lokale Vorschau</span>
           <span>Oberfläche: Deutsch</span>
         </footer>
       </div>
