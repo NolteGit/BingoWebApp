@@ -174,3 +174,15 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Added TypeScript HTTP client, room/player mapping, tests for URL parsing, saved-mask reconstruction, same-origin cookie requests and conflicts. Replaced the old local-only App smoke test.
 - Lobby and Vergleich no longer display synthetic Mira/Tom. Other player's progress is fetched every five seconds, **not** WebSocket push. Presence, public deployment and cross-device recovery remain deferred.
 - **Verified in patch environment:** clean Git patch reconstruction through Step 9, TypeScript source parsing and pure data checks. **Not yet verified:** full npm typecheck/tests/build or actual local browsers (npm registry unavailable). The developer must run the checks in `docs/18-step10-browser-testing.md` before marking complete.
+
+## Step 10 browser verification reported (2026-10-25)
+
+- User screenshots show two real room participants in the comparison panel, including the selected participant's saved marks. User requested commit and continuation. Existing HTTP polling was still every five seconds.
+
+## Step 11 — Live WebSocket room snapshots (2026-10-25, patch prepared)
+
+- Added authenticated `GET /api/rooms/:code/events` WebSocket upgrade, routed to each room's Durable Object. It requires a valid room-scoped HttpOnly cookie and accepted Origin. The browser never sends a token in the URL.
+- Durable Object uses `ctx.acceptWebSocket` (hibernation) with player tags. It broadcasts public canonical room snapshots after joins and saved square writes and on connect/disconnect; `online` is best-effort derived from active socket connections.
+- Frontend connects automatically for joined/resumed players; it rejects stale snapshots, reconnects with bounded backoff, and keeps five-second HTTP polling when disconnected (60-second safety polling while live). Lobby and Vergleich use the same real player state. Saved marks remain server-authoritative via HTTP PUT.
+- Added protocol/URL parsing tests and API-origin/upgrade guard tests. **Not yet verified in full project:** `npm run typecheck`, `npm test`, `npm run build`, real browser WebSocket upgrade and instant updates, reconnection and Wrangler restart. See `docs/19-step11-realtime-testing.md` before marking feature complete.
+- No player deletion, account replacement, cross-device restore, administrative reset, or production deployment is included.

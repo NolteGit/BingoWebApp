@@ -56,6 +56,7 @@ export interface RoomSnapshot {
 }
 
 export interface RoomStub {
+  fetch(request: Request): Promise<Response>
   initialize(roomCode: string): Promise<boolean>
   getSnapshot(): Promise<RoomSnapshot | null>
   joinPlayer(input: JoinPlayerInput): Promise<JoinResult>

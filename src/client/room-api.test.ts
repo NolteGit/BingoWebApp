@@ -30,7 +30,7 @@ describe('room integration', () => {
         hasBingo: false, online: false }],
     }
     expect(entriesFromRoom(room)).toEqual([{ id: 'p1', name: 'Mira', cardId: 7, kind: 'player',
-      checkedMask: checkedIndicesToMask([0, 12]) }])
+      checkedMask: checkedIndicesToMask([0, 12]), online: false }])
   })
 
   it('creates, joins and saves via same-origin cookie-authenticated calls', async () => {

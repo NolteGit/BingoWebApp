@@ -1,6 +1,6 @@
 # 06 — HTTP and realtime contract (proposed v1)
 
-**Status: Step 7–8 confirmed locally on Windows. Step 9 square persistence implemented and awaiting Windows verification.** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates have a backend implementation. Leave, WebSockets and frontend room navigation remain specifications, not working features. Creation returns a future `/r/:code` link not yet wired into the frontend.
+**Status: Steps 7–10 confirmed through local Windows development. Step 11 WebSocket implementation added; two-browser live verification pending.** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates have a backend implementation. Leave remains unimplemented. Frontend room URLs are active. WebSocket code is prepared but must be tested under local Wrangler.
 
 ## General conventions
 
@@ -23,7 +23,7 @@
 | `GET` | `/api/rooms/:code/me` | Session cookie | Identify own persistent player; includes own card ID and checked indices. |
 | `PUT` | `/api/rooms/:code/me/squares/:index` | Session cookie | Set desired boolean checked state. |
 | `POST` | `/api/rooms/:code/me/leave` | Session cookie | Delete own active player and revoke session. |
-| `GET` (upgrade) | `/api/rooms/:code/events` | Room link (cookie optional) | Hibernatable room WebSocket. |
+| `GET` (upgrade) | `/api/rooms/:code/events` | Valid room-scoped session cookie | Hibernatable, read-only room WebSocket. |
 
 ### Create response
 
@@ -125,9 +125,9 @@ Suggested codes: `INVALID_ROOM_CODE`, `ROOM_NOT_FOUND`, `INVALID_NAME`, `NAME_TA
 
 ## WebSocket protocol
 
-Client connects to `wss://<same-host>/api/rooms/:code/events` (using the room-scoped cookie automatically where applicable). Server checks the request Origin. Spectators can subscribe without an edit session.
+Client connects to `wss://<same-host>/api/rooms/:code/events` (using the room-scoped cookie automatically where applicable). Server checks the request Origin. This implementation requires a valid room player session; unauthenticated spectators continue to use public HTTP snapshots. No session token is sent in the URL.
 
-**On connect:** send one full `room.snapshot` so a viewer becomes current immediately. **On each state-changing mutation:** broadcast new canonical snapshot to all connected room subscribers. Include `revision` in every message. No client messages are required for writing marks in v1.
+**On connect:** send one full `room.snapshot` so an authenticated player becomes current immediately. **On each state-changing mutation:** broadcast new canonical snapshot to all connected room subscribers. Include `revision` in every message. No client messages are required for writing marks in v1.
 
 Possible server messages:
 
@@ -139,7 +139,7 @@ Possible server messages:
 {"type":"room.error","code":"ROOM_NOT_FOUND","message":"Raum nicht gefunden."}
 ```
 
-**Client reconnect:** use capped exponential backoff with jitter, then load a fresh snapshot. Do not apply a snapshot with a lower revision than current. Multiple tabs may share one participant identity, and all must stay in sync.
+**Client reconnect:** use capped exponential backoff with jitter; the server sends a full snapshot on each successful connection and HTTP polling remains as fallback. Do not apply a snapshot with a lower revision than current. Multiple tabs may share one participant identity, and all must stay in sync.
 
 **Presence:** `online` is derived from current sockets or a short disconnect grace period. A dropped connection never deletes game state. If one player has multiple tabs, online stays true as long as any valid socket is attached.
 

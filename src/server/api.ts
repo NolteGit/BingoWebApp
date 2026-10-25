@@ -54,12 +54,24 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
     return error(503, 'ROOM_CREATION_FAILED', 'Raum konnte nicht erstellt werden. Bitte erneut versuchen.')
   }
 
-  const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me)(?:\/squares\/([^/]+))?)?$/.exec(url.pathname)
+  const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me|events)(?:\/squares\/([^/]+))?)?$/.exec(url.pathname)
   if (matched) {
     const roomCode = normalizeRoomCode(matched[1])
     if (!roomCode) return error(400, 'INVALID_ROOM_CODE', 'Ungültiger Raumcode.')
     const room = env.BINGO_ROOMS.getByName(roomCode)
     const action = matched[2]
+
+    // A browser WebSocket uses the same room-scoped HttpOnly cookie as REST.
+    // The Durable Object authenticates it before accepting the connection.
+    if (action === 'events' && request.method === 'GET') {
+      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+        return error(426, 'UPGRADE_REQUIRED', 'WebSocket-Verbindung erforderlich.')
+      }
+      if (!request.headers.has('Origin') || !validMutationOrigin(request)) {
+        return error(403, 'FORBIDDEN_ORIGIN', 'Verbindung von dieser Website nicht erlaubt.')
+      }
+      return room.fetch(request)
+    }
 
     if (!action && request.method === 'GET') {
       const snapshot = await room.getSnapshot()

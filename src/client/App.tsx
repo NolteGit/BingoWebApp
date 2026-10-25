@@ -7,6 +7,7 @@ import { ComparisonDrawer } from './ComparisonDrawer'
 import { PlayerOverview } from './PlayerOverview'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
 import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
+import { acceptIncomingSnapshot, connectLiveRoom } from './room-live'
 import {
   ApiError, assertRoomSnapshot, createRoom, errorMessage, getOwnSession, getRoom, joinRoom,
   roomCodeFromPath, saveSquare, type OwnPlayer, type RoomSnapshot,
@@ -27,6 +28,7 @@ export function App() {
   const [working, setWorking] = useState(false)
   const [saving, setSaving] = useState(false)
   const [syncBlocked, setSyncBlocked] = useState(false)
+  const [liveConnected, setLiveConnected] = useState(false)
   const [message, setMessage] = useState('')
   const [draftName, setDraftName] = useState('')
   const [selectedCardId, setSelectedCardId] = useState(1)
@@ -65,21 +67,39 @@ export function App() {
     return () => { cancelled = true }
   }, [roomCode])
 
-  // Polling is temporary until Step 11 WebSockets. Never overwrite private in-flight marks.
+  // Room-scoped WebSocket; storage remains authoritative and reconnects are non-destructive.
+  useEffect(() => {
+    setLiveConnected(false)
+    if (!roomCode || !player) return
+    const connection = connectLiveRoom(roomCode, snapshot => {
+      setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
+      const own = snapshot.players.find(entry => entry.playerId === player.playerId)
+      if (own) {
+        // Another tab might have changed the same player's marks.
+        setPlayer(previous => previous?.playerId === own.playerId &&
+          own.playerRevision > previous.playerRevision
+          ? { ...previous, checkedIndices: own.checkedIndices, playerRevision: own.playerRevision }
+          : previous)
+      }
+    }, setLiveConnected)
+    return () => { connection.close(); setLiveConnected(false) }
+  }, [roomCode, player?.playerId])
+
+  // Polling is a fallback when the live channel disconnects and an occasional safety refresh.
   useEffect(() => {
     if (!roomCode) return
     let cancelled = false
     async function refresh() {
       try {
         const snapshot = assertRoomSnapshot(await getRoom(roomCode!))
-        if (!cancelled) setRoom(snapshot)
+        if (!cancelled) setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
       } catch { /* Keep the last known valid snapshot; show write failures separately. */ }
     }
-    const interval = window.setInterval(() => { void refresh() }, POLL_MS)
+    const interval = window.setInterval(() => { void refresh() }, liveConnected ? 60000 : POLL_MS)
     const onVisible = () => { if (!document.hidden) void refresh() }
     document.addEventListener('visibilitychange', onVisible)
     return () => { cancelled = true; window.clearInterval(interval); document.removeEventListener('visibilitychange', onVisible) }
-  }, [roomCode])
+  }, [roomCode, liveConnected])
 
   // Warn only while an actual write is in flight; ordinary navigation never destroys a player.
   useEffect(() => {
@@ -137,7 +157,10 @@ export function App() {
       setView('game')
       setLobbyModal(null)
       setSelectedComparisonId(null)
-      try { setRoom(assertRoomSnapshot(await getRoom(roomCode))) }
+      try {
+        const snapshot = assertRoomSnapshot(await getRoom(roomCode))
+        setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
+      }
       catch { setMessage('Beitritt erfolgreich. Die Spielerübersicht aktualisiert sich gleich.') }
     } catch (error) { setMessage(errorMessage(error)) }
     finally { setWorking(false) }
@@ -151,16 +174,21 @@ export function App() {
     setMessage('')
     try {
       const saved = await saveSquare(roomCode, index, desiredChecked, originalPlayer.playerRevision)
-      setPlayer({ ...originalPlayer, checkedIndices: saved.checkedIndices,
-        playerRevision: saved.playerRevision })
-      try { setRoom(assertRoomSnapshot(await getRoom(roomCode))) }
+      setPlayer(previous => previous?.playerId === saved.playerId && previous.playerRevision > saved.playerRevision
+        ? previous
+        : { ...originalPlayer, checkedIndices: saved.checkedIndices, playerRevision: saved.playerRevision })
+      try {
+        const snapshot = assertRoomSnapshot(await getRoom(roomCode))
+        setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
+      }
       catch { setMessage('Häkchen gespeichert. Die Spielerübersicht konnte noch nicht aktualisiert werden.') }
     } catch (error) {
       if (error instanceof ApiError && error.code === 'STALE_PLAYER_REVISION') {
         try {
           const latest = await getOwnSession(roomCode)
           setPlayer(latest.player)
-          setRoom(assertRoomSnapshot(await getRoom(roomCode)))
+          const snapshot = assertRoomSnapshot(await getRoom(roomCode))
+          setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
           setSyncBlocked(false)
           setMessage('Deine Karte wurde zwischenzeitlich geändert. Aktueller Stand geladen – bitte Feld erneut auswählen.')
         } catch {
@@ -175,7 +203,8 @@ export function App() {
         try {
           const latest = await getOwnSession(roomCode)
           setPlayer(latest.player)
-          setRoom(assertRoomSnapshot(await getRoom(roomCode)))
+          const snapshot = assertRoomSnapshot(await getRoom(roomCode))
+          setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
           setSyncBlocked(false)
           setMessage('Verbindung unterbrochen. Gespeicherten Stand geladen. Bitte dein letztes Häkchen prüfen.')
         } catch {
@@ -276,7 +305,7 @@ export function App() {
                 <div class="panel-heading"><h2 id="players-title">Spielerübersicht</h2><span class="panel-count">{entries.length} Spieler</span></div>
                 <PlayerOverview entries={entries} selectedId={lobbyPreviewId} onSelect={setLobbyPreviewId}
                   detailId="lobby-player-detail" variant="lobby" />
-                <p class="form-note">Automatische Aktualisierung alle 5 Sekunden.</p>
+                <p class="form-note">{liveConnected ? 'Live verbunden – Änderungen erscheinen sofort.' : 'Aktualisierung alle 5 Sekunden (Fallback).'}</p>
               </aside>
             </div>
             <LobbyModal mode={lobbyModal} card={selectedCard}
@@ -303,7 +332,7 @@ export function App() {
             <ComparisonDrawer open={comparisonOpen} entries={entries} selectedId={selectedComparisonId}
               onSelect={setSelectedComparisonId} onDismiss={() => setComparisonOpen(false)}
               onAfterClose={() => { setComparisonOpen(false); compareButtonRef.current?.focus() }}
-              note="Spielerstände werden derzeit alle 5 Sekunden aktualisiert. Die Vorschau ist schreibgeschützt." />
+              note={liveConnected ? 'Live verbunden. Die Vorschau ist schreibgeschützt.' : 'Verbindung wird wiederhergestellt. Bis dahin Aktualisierung alle 5 Sekunden.'} />
           </section>
         )}
         {message && <p class="room-feedback" role="status">{message}</p>}

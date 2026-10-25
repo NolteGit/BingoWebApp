@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers'
 import { createInitialCheckedMask, getBingoProgress, isFirstBingoTransition, setSquareChecked } from '../shared/bingo'
 import type { ApiBindings } from './api'
 import type { FirstBingo, PublicRoomPlayer, RoomSnapshot, SavedProgress, SquareUpdateInput, SquareUpdateResult } from './room-model'
+import { extractSessionToken, hashSessionToken } from './player-session'
 import type { JoinPlayerInput, JoinResult, OwnPlayer } from './player-session'
 
 /** Each room owns a SQLite database. All player records survive normal restarts. */
@@ -39,6 +40,65 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     const columns = ctx.storage.sql.exec('PRAGMA table_info(players)').toArray()
     if (!columns.some(column => column.name === 'player_revision')) {
       ctx.storage.sql.exec('ALTER TABLE players ADD COLUMN player_revision INTEGER NOT NULL DEFAULT 0')
+    }
+  }
+
+  /** Read-only live channel. Authentication happens before the socket is accepted. */
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+      return new Response('WebSocket erforderlich', { status: 426 })
+    }
+    const room = this.ctx.storage.sql.exec('SELECT room_code FROM room_meta WHERE id = 1').toArray()[0]
+    if (!room) return new Response('Raum nicht gefunden', { status: 404 })
+    const token = extractSessionToken(request.headers.get('Cookie'), String(room.room_code))
+    if (!token) return new Response('Sitzung erforderlich', { status: 401 })
+    const player = await this.getPlayerByTokenHash(await hashSessionToken(token))
+    if (!player) return new Response('Sitzung erforderlich', { status: 401 })
+    // Limit per-room sockets. This channel never accepts state-changing messages.
+    if (this.ctx.getWebSockets().length >= 100) {
+      return new Response('Raum hat zu viele Verbindungen', { status: 503 })
+    }
+    const pair = new WebSocketPair()
+    const [client, server] = Object.values(pair)
+    this.ctx.acceptWebSocket(server, [`player:${player.playerId}`])
+    server.serializeAttachment({ playerId: player.playerId })
+    await this.broadcastSnapshot()
+    return new Response(null, { status: 101, webSocket: client })
+  }
+
+  /** Cloudflare WebSocket Hibernation: no in-memory socket registry to lose. */
+  async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    if (message === 'resync') {
+      const snapshot = await this.getSnapshot()
+      if (snapshot) socket.send(JSON.stringify(snapshot))
+    } else if (typeof message !== 'string' || message.length > 32) {
+      socket.close(1008, 'Ungültige Nachricht')
+    }
+  }
+
+  async webSocketClose(socket: WebSocket): Promise<void> {
+    // Older local workerd compatibility dates require explicitly replying to close.
+    try { socket.close() } catch { /* Already closed. */ }
+    await this.broadcastSnapshot()
+  }
+
+  async webSocketError(socket: WebSocket): Promise<void> {
+    try { socket.close(1011, 'Verbindung unterbrochen') } catch { /* Already closed. */ }
+    await this.broadcastSnapshot()
+  }
+
+  /** Push canonical public data only. Failed sends must never roll back saved marks. */
+  private async broadcastSnapshot(): Promise<void> {
+    try {
+      const snapshot = await this.getSnapshot()
+      if (!snapshot) return
+      const payload = JSON.stringify(snapshot)
+      for (const socket of this.ctx.getWebSockets()) {
+        if (socket.readyState !== 1) continue
+        try { socket.send(payload) } catch { /* A disconnected client will reconnect. */ }
+      }
+    } catch (error) {
+      console.error('Live-Broadcast fehlgeschlagen (SQLite-Daten bleiben gespeichert)', error)
     }
   }
 
@@ -93,6 +153,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     this.ctx.storage.sql.exec(
       'UPDATE room_meta SET revision = revision + 1, last_activity_at = ? WHERE id = 1', now,
     )
+    await this.broadcastSnapshot()
     return { status: 'created', player: {
       playerId: input.playerId, name: input.name, cardId: input.cardId,
       cardVersion: input.cardVersion, checkedIndices: [12], playerRevision: 0, joinedAt: now,
@@ -109,7 +170,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
 
   /** Atomic, authenticated, conditional SET (never an unreliable toggle). */
   async setPlayerSquare(input: SquareUpdateInput): Promise<SquareUpdateResult> {
-    return this.ctx.storage.transactionSync((): SquareUpdateResult => {
+    const result = this.ctx.storage.transactionSync((): SquareUpdateResult => {
       const rooms = this.ctx.storage.sql.exec(
         'SELECT revision, first_bingo_player_id, first_bingo_name, first_bingo_at FROM room_meta WHERE id = 1',
       ).toArray()
@@ -163,6 +224,8 @@ export class BingoRoom extends DurableObject<ApiBindings> {
       return { status: 'updated', state: progressState(desiredMask, currentPlayerRevision + 1,
         currentRoomRevision + 1, winner) }
     })
+    if (result.status === 'updated') await this.broadcastSnapshot()
+    return result
   }
 
   async getSnapshot(): Promise<RoomSnapshot | null> {
@@ -181,7 +244,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
         cardVersion: String(row.card_version), card: JSON.parse(String(row.card_snapshot_json)) as string[],
         checkedIndices: [...progress.checkedIndices], playerRevision: Number(row.player_revision), completed: progress.completedSquares,
         completedLines: progress.completedLines, hasBingo: progress.hasBingo,
-        online: false, // Presence will be derived from WebSockets in a later step.
+        online: this.ctx.getWebSockets(`player:${String(row.player_id)}`).some(socket => socket.readyState === 1),
       }
     })
     return {

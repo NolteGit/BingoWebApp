@@ -165,3 +165,9 @@ The root page `/` creates a room. The generated `/r/CODE` link opens a shared lo
 During this milestone other player snapshots refresh on a **5-second poll**, not WebSockets. No online/offline presence is claimed. Square writes show confirmed server state and lock edits if the saved state cannot be recovered. Do not clear `.wrangler/state` when testing persistence. Public deployment is still deferred pending rate limiting and security checks.
 
 Start Wrangler (`npm run dev:api`) and Vite (`npm run dev`) in two terminals. Follow the [two-browser test guide](docs/18-step10-browser-testing.md), including refresh, restart, navigation, and conflict scenarios. See [safe navigation decision](docs/19-navigation-and-safety.md).
+
+## Step 11 — Real-time room updates (local test pending)
+
+With `npm run dev:api` and `npm run dev` running, authenticated participants connect to `/api/rooms/:code/events` using Cloudflare Durable Object WebSockets. Room snapshots appear immediately in lobby/Vergleich, including best-effort presence. The backend continues to persist all marks in SQLite via authenticated HTTP PUT. If the socket disconnects, the browser reconnects and uses five-second HTTP polling as fallback. No room/player data is deleted on disconnect.
+
+Follow [Step 11 test guide](docs/19-step11-realtime-testing.md) in two separate browser sessions before committing this milestone. WebSocket/live behavior has not yet been manually verified in Windows browsers.

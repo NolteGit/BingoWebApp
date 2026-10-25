@@ -29,8 +29,8 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 - [ ] **Step 10 — Connect frontend to persistent rooms:** create/join by link, real players in lobby/Vergleich, recover cookies and saved marks, safe navigation. *(Patch prepared; two-browser verification pending. See `docs/18-step10-browser-testing.md`.)*
 
 ## 4. Live synchronization
-- [ ] Broadcast room snapshots over **WebSockets** to the lobby and comparison drawer.
-- [ ] Handle **late joins, reconnects, refreshes, offline status**, and independent players choosing the same card.
+- [ ] Broadcast room snapshots over **WebSockets** to the lobby and comparison drawer. *(Step 11 patch prepared: authenticated Hibernation WebSocket, reconnect and HTTP polling fallback; two-browser verification pending.)*
+- [ ] Handle **late joins, reconnects, refreshes, offline status**, and independent players choosing the same card. *(Live connection/presence implemented in Step 11, but manual disconnect/reconnect tests pending.)*
 - [ ] Test simultaneous actions and make sure one player cannot edit another player's card.
 
 ## 5. Release

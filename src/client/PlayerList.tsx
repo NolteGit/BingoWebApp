@@ -35,7 +35,7 @@ export function PlayerList({ entries, onPreview, selectedId = null, detailId }: 
               onClick={(event) => onPreview(entry.id, event.currentTarget)}
             >
               <span class="player-summary__line">
-                <strong>{entry.name}{entry.kind === 'demo' && <small class="player-summary__demo">Demo</small>}</strong>
+                <strong>{entry.name}{entry.kind === 'demo' && <small class="player-summary__demo">Demo</small>}{entry.kind === 'player' && <small class="player-summary__demo">{entry.online ? ' · online' : ' · offline'}</small>}</strong>
                 <span class="player-summary__card">{getCardById(entry.cardId).name}</span>
                 <span class="player-summary__points">{progress.completedSquares}/25 · {progress.completedLines} Bingo</span>
               </span>

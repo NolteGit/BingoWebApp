@@ -11,6 +11,7 @@ function fakeEnvironment(): ApiBindings {
     BINGO_ROOMS: {
       getByName(name) {
         return {
+          async fetch(_request: Request) { return new Response('Unsupported in mock', { status: 501 }) },
           async initialize(roomCode) {
             if (rooms.has(name)) return false
             rooms.set(name, { snapshot: {
@@ -99,6 +100,33 @@ async function createRoom(env: ApiBindings): Promise<string> {
 
 const join = (env: ApiBindings, code: string, name: unknown, cardId: unknown, cookie?: string) =>
   handleRequest(req(`/api/rooms/${code}/join`, 'POST', { body: { name, cardId }, cookie }), env)
+
+describe('WebSocket entry guard', () => {
+  it('requires an Upgrade header before routing to the room', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const response = await handleRequest(req(`/api/rooms/${code}/events`), env)
+    expect(response.status).toBe(426)
+  })
+
+  it('rejects other browser origins before WebSocket upgrade', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const response = await handleRequest(new Request(`http://localhost:8787/api/rooms/${code}/events`, {
+      headers: { Upgrade: 'websocket', Origin: 'https://evil.example' },
+    }), env)
+    expect(response.status).toBe(403)
+  })
+
+  it('routes trusted upgrades to the room Durable Object', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const response = await handleRequest(new Request(`http://localhost:8787/api/rooms/${code}/events`, {
+      headers: { Upgrade: 'websocket', Origin: 'http://localhost:5173' },
+    }), env)
+    expect(response.status).toBe(501) // Mock Durable Object, not a real WebSocket.
+  })
+})
 
 describe('room and player session API', () => {
   it('creates independent rooms and reads them back', async () => {

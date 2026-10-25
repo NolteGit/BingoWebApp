@@ -8,6 +8,7 @@ export interface ComparisonEntry {
   readonly cardId: number
   readonly checkedMask: number
   readonly kind: 'self' | 'demo' | 'player'
+  readonly online?: boolean
 }
 
 function makeDemoMask(indices: ReadonlyArray<number>): number {

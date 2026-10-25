@@ -10,6 +10,7 @@ export function entriesFromRoom(room: RoomSnapshot): ComparisonEntry[] {
     cardId: player.cardId,
     checkedMask: checkedIndicesToMask(player.checkedIndices),
     kind: 'player' as const,
+    online: player.online,
   }))
 }
 
