@@ -1,14 +1,15 @@
+import { getCardById, getFlatSquares } from '../shared/cards'
 import { describe, expect, it, vi } from 'vitest'
 import { ApiError, type OwnPlayer, type RoomSnapshot } from './room-api'
 import { connectionState, recoverSavedState, saveSquareSafely, type ReliabilityApi } from './reliability'
 
 const own: OwnPlayer = {
-  playerId: 'p1', name: 'Alex', cardId: 7, cardVersion: 'wvw-v1', checkedIndices: [12],
+  playerId: 'p1', name: 'Alex', cardId: 7, cardVersion: 'wvw-v2', card: [...getFlatSquares(getCardById(7))], checkedIndices: [12],
   playerRevision: 1, joinedAt: '2026-10-25T00:00:00Z',
 }
 const room: RoomSnapshot = {
   type: 'room.snapshot', roomCode: 'ABCDEFGH', revision: 2, createdAt: '', firstBingo: null,
-  players: [{ ...own, card: [], completed: 1, completedLines: 0, hasBingo: false, online: true }],
+  players: [{ ...own, card: [...own.card], completed: 1, completedLines: 0, hasBingo: false, online: true }],
 }
 const response = { roomCode: 'ABCDEFGH', player: own, revision: 2 }
 function api(): ReliabilityApi {

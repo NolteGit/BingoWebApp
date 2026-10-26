@@ -1,4 +1,5 @@
 import { createInitialCheckedMask, getBingoProgress, setSquareChecked } from '../shared/bingo'
+import type { BingoCard } from '../shared/cards'
 import type { LocalPlayer } from './lobby'
 
 /** Frontend-only examples. Never send these to a room API or present them as live participants. */
@@ -6,6 +7,7 @@ export interface ComparisonEntry {
   readonly id: string
   readonly name: string
   readonly cardId: number
+  readonly card?: BingoCard
   readonly checkedMask: number
   readonly kind: 'self' | 'demo' | 'player'
   readonly online?: boolean

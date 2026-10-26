@@ -26,7 +26,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
         player_id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         name_key TEXT NOT NULL UNIQUE,
-        card_id INTEGER NOT NULL CHECK (card_id BETWEEN 1 AND 10),
+        card_id INTEGER NOT NULL CHECK (card_id BETWEEN 1 AND 11),
         card_version TEXT NOT NULL,
         card_snapshot_json TEXT NOT NULL,
         checked_mask INTEGER NOT NULL,
@@ -40,6 +40,28 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     const columns = ctx.storage.sql.exec('PRAGMA table_info(players)').toArray()
     if (!columns.some(column => column.name === 'player_revision')) {
       ctx.storage.sql.exec('ALTER TABLE players ADD COLUMN player_revision INTEGER NOT NULL DEFAULT 0')
+    }
+    // Older deployed rooms have a 1..10 constraint. Widen it for random card ID 11.
+    // SQLite cannot ALTER a CHECK constraint, so copy the table transactionally.
+    const oldSchema = String(ctx.storage.sql.exec(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'players'",
+    ).toArray()[0]?.sql ?? '')
+    if (oldSchema.includes('card_id BETWEEN 1 AND 10')) {
+      ctx.storage.transactionSync(() => {
+        ctx.storage.sql.exec(`CREATE TABLE players_upgrade (
+          player_id TEXT PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE,
+          card_id INTEGER NOT NULL CHECK (card_id BETWEEN 1 AND 11),
+          card_version TEXT NOT NULL, card_snapshot_json TEXT NOT NULL,
+          checked_mask INTEGER NOT NULL, player_revision INTEGER NOT NULL DEFAULT 0,
+          joined_at TEXT NOT NULL, last_modified_at TEXT NOT NULL,
+          token_hash TEXT NOT NULL UNIQUE
+        )`)
+        ctx.storage.sql.exec(`INSERT INTO players_upgrade
+          SELECT player_id, name, name_key, card_id, card_version, card_snapshot_json,
+          checked_mask, player_revision, joined_at, last_modified_at, token_hash FROM players`)
+        ctx.storage.sql.exec('DROP TABLE players')
+        ctx.storage.sql.exec('ALTER TABLE players_upgrade RENAME TO players')
+      })
     }
   }
 
@@ -118,6 +140,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     return {
       playerId: String(row.player_id), name: String(row.name), cardId: Number(row.card_id),
       cardVersion: String(row.card_version),
+      card: JSON.parse(String(row.card_snapshot_json)) as string[],
       checkedIndices: [...getBingoProgress(Number(row.checked_mask)).checkedIndices],
       playerRevision: Number(row.player_revision),
       joinedAt: String(row.joined_at),
@@ -127,7 +150,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
   /** A valid bearer cookie can only resolve to its own player in this room. */
   async getPlayerByTokenHash(tokenHash: string): Promise<OwnPlayer | null> {
     const rows = this.ctx.storage.sql.exec(
-      'SELECT player_id, name, card_id, card_version, checked_mask, player_revision, joined_at FROM players WHERE token_hash = ?',
+      'SELECT player_id, name, card_id, card_version, card_snapshot_json, checked_mask, player_revision, joined_at FROM players WHERE token_hash = ?',
       tokenHash,
     ).toArray()
     return rows.length ? this.toOwnPlayer(rows[0]) : null
@@ -156,7 +179,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     await this.broadcastSnapshot()
     return { status: 'created', player: {
       playerId: input.playerId, name: input.name, cardId: input.cardId,
-      cardVersion: input.cardVersion, checkedIndices: [12], playerRevision: 0, joinedAt: now,
+      cardVersion: input.cardVersion, card: [...input.cardSnapshot], checkedIndices: [12], playerRevision: 0, joinedAt: now,
     } }
   }
 

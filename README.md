@@ -1,6 +1,6 @@
 # GW2 WvW Bingo
 
-A small German-language, browser-based **multiplayer 5×5 bingo game** for Guild Wars 2 World vs. World. One player creates a room and shares the link. Everyone picks one of ten fixed bingo cards, marks events with a click, and compares progress live.
+A small German-language, browser-based **multiplayer 5×5 bingo game** for Guild Wars 2 World vs. World. One player creates a room and shares the link. Everyone picks one of ten fixed bingo cards or a new random card, marks events with a click, and compares progress live.
 
 **Status:** Deployed on Cloudflare Workers and used successfully in browser testing. Automated tests and typecheck/build were reported passing before the latest UI patches. **Re-run all checks after any update.** See [project status](PROJECT_STATUS.md) for verified details and remaining limitations.
 
@@ -8,7 +8,7 @@ A small German-language, browser-based **multiplayer 5×5 bingo game** for Guild
 
 1. Open the deployed site and create a room.
 2. Copy the invitation link and share it with friends.
-3. Each person enters a display name, selects a card, and starts.
+3. Each person enters a display name, selects one of ten presets or **Zufallskarte**, and starts.
 4. Click a square to mark/unmark it. The **Bonusfeld** in the middle is always checked. A completed row, column, or diagonal counts as a bingo.
 5. **Zur Lobby** is safe navigation: your saved marks remain. **Bingo fortsetzen** resumes them. **Neues Bingo starten** and **Raum verlassen** require confirmation and delete only your own entry and progress.
 
@@ -48,7 +48,7 @@ Open <http://localhost:5173>. Use a second browser profile or private window to 
 - **Backend:** Cloudflare Worker with one SQLite-backed Durable Object per room.
 - **Realtime:** WebSockets with reconnect and polling fallback.
 - **Persistence:** Server-confirmed square updates and room-scoped HttpOnly session cookies.
-- **Cards:** [`data/cards.json`](data/cards.json) is the canonical card catalog.
+- **Cards:** [`data/tasks.json`](data/tasks.json) is the single-line-per-task library; [`data/cards.json`](data/cards.json) references task IDs for the ten original presets. The eleventh option generates a unique card on join. See [task editing and random cards](docs/26-task-library-and-random-cards.md).
 
 ## Data and privacy
 
@@ -70,7 +70,8 @@ To share a source ZIP, **exclude** `.git/`, `.wrangler/`, `node_modules/`, `dist
 | [Architecture](docs/04-architecture.md) | System components and data flow |
 | [API contract](docs/06-api-realtime.md) | HTTP/WebSocket API |
 | [Game rules](docs/07-game-rules.md) | Free field and bingo detection |
-| [Card catalog](docs/13-card-catalog.md) | Human-readable presets |
+| [Task library and random cards](docs/26-task-library-and-random-cards.md) | Add/edit objectives and random cards |
+| [Card catalog](docs/13-card-catalog.md) | Human-readable original presets |
 | [Requirements matrix](docs/14-requirements-traceability.md) | Feature-to-test mapping |
 
 Other numbered documents record the original specification, implementation history, and detailed manual test recipes. Where an older planning note conflicts with current code, use **the implementation, tests, and this status file** as the source of truth.

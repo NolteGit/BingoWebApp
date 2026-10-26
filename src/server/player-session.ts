@@ -19,6 +19,7 @@ export interface OwnPlayer {
   name: string
   cardId: number
   cardVersion: string
+  card: string[]
   checkedIndices: number[]
   playerRevision: number
   joinedAt: string
@@ -34,7 +35,7 @@ export function parsePlayerName(value: unknown): { name: string; nameKey: string
 }
 
 export function parseCardId(value: unknown): number | null {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 10
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 11
     ? value : null
 }
 

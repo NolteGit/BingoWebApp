@@ -73,7 +73,7 @@ function fakeEnvironment(): ApiBindings {
             if (room.names.has(input.nameKey)) return { status: 'name_taken' } as const
             const player: OwnPlayer = {
               playerId: input.playerId, name: input.name, cardId: input.cardId,
-              cardVersion: input.cardVersion, checkedIndices: [12], playerRevision: 0, joinedAt: '2026-10-25T00:01:00.000Z',
+              cardVersion: input.cardVersion, card: input.cardSnapshot, checkedIndices: [12], playerRevision: 0, joinedAt: '2026-10-25T00:01:00.000Z',
             }
             const summary: PublicRoomPlayer = {
               playerId: input.playerId, name: input.name, cardId: input.cardId,
@@ -205,7 +205,7 @@ describe('room and player session API', () => {
     const code = await createRoom(env)
     expect((await join(env, 'AAAAAAAA', 'Mira', 1)).status).toBe(404)
     expect((await join(env, code, 'M', 1)).status).toBe(400)
-    expect((await join(env, code, 'Mira', 11)).status).toBe(400)
+    expect((await join(env, code, 'Mira', 12)).status).toBe(400)
     expect((await join(env, code, 'Mira', '1')).status).toBe(400)
     expect((await handleRequest(req(`/api/rooms/${code}/me`), env)).status).toBe(401)
     expect((await handleRequest(req('/api/rooms/XXXXXXX0'), env)).status).toBe(400)
@@ -411,5 +411,27 @@ describe('explicit own-bingo reset', () => {
     expect((await before.json() as RoomSnapshot).firstBingo?.name).toBe('Mira')
     const removed = await handleRequest(req(`/api/rooms/${code}/me`, 'DELETE', { cookie: mira }), env)
     expect((await removed.json() as {room: RoomSnapshot}).room.firstBingo).toBeNull()
+  })
+})
+
+
+describe('server-assigned random cards', () => {
+  it('creates a unique-field snapshot once and preserves it on resume', async () => {
+    const env = fakeEnvironment()
+    const code = await createRoom(env)
+    const response = await join(env, code, 'Zufall-Spieler', 11)
+    expect(response.status).toBe(201)
+    const cookie = response.headers.get('Set-Cookie')!.split(';')[0]
+    const payload = await response.json() as { player: OwnPlayer }
+    const squares = payload.player.card
+    expect(payload.player.cardId).toBe(11)
+    expect(squares).toHaveLength(25)
+    expect(squares[12]).toBe('Bonusfeld')
+    expect(new Set(squares.filter(v => v !== 'Bonusfeld')).size).toBe(24)
+    const resumed = await join(env, code, 'Zufall-Spieler', 11, cookie)
+    expect(resumed.status).toBe(200)
+    expect((await resumed.json() as { player: OwnPlayer }).player.card).toEqual(squares)
+    const snapshot = await handleRequest(req(`/api/rooms/${code}`), env)
+    expect((await snapshot.json() as RoomSnapshot).players[0].card).toEqual(squares)
   })
 })

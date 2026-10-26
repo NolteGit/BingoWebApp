@@ -17,7 +17,8 @@ describe('player input and private cookies', () => {
   it('accepts integer card ids 1–10 only', () => {
     expect(parseCardId(1)).toBe(1)
     expect(parseCardId(10)).toBe(10)
-    for (const value of [0, 11, 1.5, '7', null]) expect(parseCardId(value)).toBeNull()
+    expect(parseCardId(11)).toBe(11)
+    for (const value of [0, 12, 1.5, '7', null]) expect(parseCardId(value)).toBeNull()
   })
 
   it('generates unguessable tokens and room-scoped HttpOnly cookies', async () => {

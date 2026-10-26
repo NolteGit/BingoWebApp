@@ -1,5 +1,5 @@
 import { createInitialCheckedMask, setSquareChecked } from '../shared/bingo'
-import { getCardById } from '../shared/cards'
+import { cardFromSnapshot } from '../shared/cards'
 
 export interface RoomPlayer {
   playerId: string
@@ -29,6 +29,7 @@ export interface OwnPlayer {
   name: string
   cardId: number
   cardVersion: string
+  card: string[]
   checkedIndices: number[]
   playerRevision: number
   joinedAt: string
@@ -125,7 +126,7 @@ export function assertRoomSnapshot(snapshot: RoomSnapshot): RoomSnapshot {
     throw new Error('Ungültige Raumdaten.')
   }
   for (const player of snapshot.players) {
-    getCardById(player.cardId)
+    cardFromSnapshot(player.cardId, player.card)
     checkedIndicesToMask(player.checkedIndices)
   }
   return snapshot

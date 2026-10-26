@@ -10,7 +10,7 @@ interface PlayerCardDetailProps {
 /** Identical read-only card presentation in both player-preview contexts. */
 export function PlayerCardDetail({ entry }: PlayerCardDetailProps) {
   const progress = getBingoProgress(entry.checkedMask)
-  const card = getCardById(entry.cardId)
+  const card = entry.card ?? getCardById(entry.cardId)
 
   return (
     <section class="player-card-detail" aria-label={`Kartenansicht von ${entry.name}`}>

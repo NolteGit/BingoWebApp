@@ -8,7 +8,7 @@ Every 5×5 arrangement below preserves the PDF's original square placement and h
 
 The PDF contains obvious spelling/layout artifacts. In the transcribed data, `verteitigt` was corrected to **`verteidigt`**, typographically broken `Belagerungswaff e` was combined into `Belagerungswaffe`, and quotation marks were standardized in two recurring speech bubbles (`„Wo ist mein Heiler?“` and `„Wir brauchen mehr dmg!“`). The objective's meaning and its position were not intentionally changed. The source PDF itself has not been modified. If exact verbatim transcription becomes a requirement, review each card against its respective PDF page and record changes in a new version.
 
-**Change control:** Do not randomize card order or silently rewrite objectives. Update `data/cards.json`, this mirror, its `cardVersion` and relevant tests in the same change.
+**Change control (updated):** These ten PDF presets remain in their original positions. Objective wording is now centrally defined in `data/tasks.json`; `data/cards.json` references task IDs. **Zufallskarte** is a separate eleventh choice and does not change these originals. See `docs/26-task-library-and-random-cards.md` for the current editing workflow.
 
 
 ## Karte 1 — PDF-Seite 1

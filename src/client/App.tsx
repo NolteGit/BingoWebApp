@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import { getCardById } from '../shared/cards'
+import { cardFromSnapshot, getCardById } from '../shared/cards'
 import { isSquareChecked } from '../shared/bingo'
 import { LobbyModal, type LobbyModalMode } from './LobbyModal'
 import { PlayableBoard } from './PlayableBoard'
@@ -475,7 +475,7 @@ export function App() {
               {syncBlocked && <button class="preview-link" type="button" disabled={recovering}
                 onClick={() => void recoverNow()}>Erneut prüfen</button>}
             </div>
-            <PlayableBoard card={getCardById(player.cardId)} checkedMask={currentMask}
+            <PlayableBoard card={cardFromSnapshot(player.cardId, player.card)} checkedMask={currentMask}
               onToggleSquare={index => void toggleSquare(index)} disabled={saving || syncBlocked || recovering || !browserOnline} />
             <ComparisonDrawer open={comparisonOpen} entries={entries} selectedId={selectedComparisonId}
               onSelect={setSelectedComparisonId} onDismiss={() => setComparisonOpen(false)}

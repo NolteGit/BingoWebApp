@@ -1,6 +1,6 @@
 import { createPortal } from 'preact/compat'
 import { useEffect, useRef, useState } from 'preact/hooks'
-import { getCardById, presetCards } from '../shared/cards'
+import { getCardById, selectableCards, RANDOM_CARD_ID } from '../shared/cards'
 import { CardPreview } from './CardPreview'
 
 interface CardPickerProps {
@@ -20,7 +20,7 @@ export function CardPickerMenu({ value, onChange, previewId, onPreview, onClose,
   return (
     <div class="card-picker__layout">
       <div class="card-picker__options" role="group" aria-label="Verfügbare Bingokarten">
-        {presetCards.map((card, index) => (
+        {selectableCards.map((card, index) => (
           <button key={card.id} ref={element => { if (optionRefs) optionRefs.current[index] = element }}
             class={`card-picker__option${card.id === value ? ' card-picker__option--selected' : ''}`}
             type="button" aria-pressed={card.id === value}
@@ -35,6 +35,7 @@ export function CardPickerMenu({ value, onChange, previewId, onPreview, onClose,
           <span>Vorschau · noch nicht übernommen</span>
           <button type="button" class="card-picker__close" onClick={onClose} aria-label="Kartenauswahl schließen">×</button>
         </div>
+        {previewId === RANDOM_CARD_ID && <p class="form-note">Beispielkarte – beim Start erhältst du eine neu gemischte Karte.</p>}
         <CardPreview card={getCardById(previewId)} titleId="card-picker-preview-title" />
       </div>
     </div>
@@ -91,7 +92,7 @@ export function CardPicker({ value, onChange }: CardPickerProps) {
   function handleKeyboard(event: KeyboardEvent) {
     if (event.key === 'Escape') { event.preventDefault(); close(true); return }
     const current = optionRefs.current.indexOf(document.activeElement as HTMLButtonElement)
-    const max = presetCards.length - 1
+    const max = selectableCards.length - 1
     const next = event.key === 'ArrowDown' ? Math.min(max, current + 1)
       : event.key === 'ArrowUp' ? Math.max(0, current - 1)
         : event.key === 'Home' ? 0 : event.key === 'End' ? max : -1

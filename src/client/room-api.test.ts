@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, checkedIndicesToMask, createRoom, deleteOwnBingo, getOwnSession, joinRoom, roomCodeFromPath, saveSquare } from './room-api'
 import { getBingoProgress } from '../shared/bingo'
+import { getCardById, getFlatSquares } from '../shared/cards'
 import { entriesFromRoom } from './room-view'
 import type { RoomSnapshot } from './room-api'
 
@@ -25,12 +26,12 @@ describe('room integration', () => {
   it('maps public room players into one reusable leaderboard', () => {
     const room: RoomSnapshot = {
       type: 'room.snapshot', roomCode: '9NC3L2P8', createdAt: '', revision: 1, firstBingo: null,
-      players: [{ playerId: 'p1', name: 'Mira', cardId: 7, cardVersion: 'wvw-v1', card: [],
+      players: [{ playerId: 'p1', name: 'Mira', cardId: 7, cardVersion: 'wvw-v2', card: [...getFlatSquares(getCardById(7))],
         checkedIndices: [0, 12], playerRevision: 1, completed: 2, completedLines: 0,
         hasBingo: false, online: false }],
     }
     expect(entriesFromRoom(room)).toEqual([{ id: 'p1', name: 'Mira', cardId: 7, kind: 'player',
-      checkedMask: checkedIndicesToMask([0, 12]), online: false }])
+      card: getCardById(7), checkedMask: checkedIndicesToMask([0, 12]), online: false }])
   })
 
   it('creates, joins and saves via same-origin cookie-authenticated calls', async () => {

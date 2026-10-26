@@ -4,6 +4,9 @@ The initial frontend, persistence, multiplayer, WebSocket, UX and Cloudflare dep
 
 ## Before sharing or redeploying
 
+- [ ] Verify the new shared task library and random card choice in a fresh two-player room (including refresh and read-only comparison).
+- [ ] Verify existing SQLite player records survive the schema adjustment before deploying to an active room.
+
 - [ ] Run `npm ci`, `npm run typecheck`, `npm test`, `npm run build` on the latest commit.
 - [ ] Test new-room creation, second-player join, progress sync, refresh, and return-to-lobby on the actual deployment.
 - [ ] Test personal **Neues Bingo starten** / **Raum verlassen** confirmations with two players, ensuring other progress is preserved.

@@ -8,13 +8,14 @@ describe('local player selection', () => {
     expect(Object.isFrozen(player)).toBe(true)
     expect(createLocalPlayer('Alex', 1).cardId).toBe(1)
     expect(createLocalPlayer('Alex', 10).cardId).toBe(10)
+    expect(createLocalPlayer('Alex', 11).cardId).toBe(11) // Zufallskarte
   })
 
   it('rejects blank names, overly long names, and invalid presets', () => {
     expect(() => createLocalPlayer('   ', 1)).toThrow()
     expect(() => createLocalPlayer('x'.repeat(MAX_PLAYER_NAME_LENGTH + 1), 1)).toThrow()
     expect(() => createLocalPlayer('Mira', 0)).toThrow()
-    expect(() => createLocalPlayer('Mira', 11)).toThrow()
+    expect(() => createLocalPlayer('Mira', 12)).toThrow()
     expect(() => createLocalPlayer('Mira', 1.5)).toThrow()
   })
 })

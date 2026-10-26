@@ -1,12 +1,12 @@
 # Project status
 
-**Documentation updated: 2026-10-26.** This file summarizes the current project. Historic step-by-step handoffs remain in numbered `docs/` test and design files.
+**Documentation updated: 2026-10-26 (random-card patch).** This file summarizes the current project. Historic step-by-step handoffs remain in numbered `docs/` test and design files.
 
 ## Current implementation
 
 | Feature | State | Evidence / comments |
 | --- | --- | --- |
-| Ten German 5×5 cards and free center | Implemented | `data/cards.json`, card and rules tests |
+| Ten fixed cards, task library, and random choice | Implemented in pending patch | `data/tasks.json`, `data/cards.json`; verify random join and stored snapshot locally |
 | Personal gameplay and bingo detection | Implemented | Click/uncheck, 12 lines, server calculations |
 | Rooms and shareable invitations | Implemented | Real room creation and links, deployed UI demonstrated |
 | Joining and duplicate-name handling | Implemented | Backend rejects duplicate normalized names within one room |
@@ -45,3 +45,7 @@ Test a fresh room with two browsers, a marked square, refreshing, leaving/rejoin
 - Worker rename, Durable Object namespace changes, and production data deletion can make existing games inaccessible.
 - A downloaded project ZIP containing `.git/` or `.wrangler/` is **not** safe to distribute as source. Use a clean Git clone or the source export instructions in `docs/25-sharing-and-privacy.md`.
 - Documentation containing old milestones is historical context; refer to the current tests and code for behavior.
+
+## New task-library feature pending local verification
+
+The new `data/tasks.json` defines every task in one place. Existing presets refer to stable task IDs. Card ID 11 generates and stores a unique random card per player. TypeScript checks passed in the patch-generation environment; the complete Windows test suite and Wrangler migration test must be run before public deployment. See `docs/26-task-library-and-random-cards.md`.

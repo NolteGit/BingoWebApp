@@ -1,51 +1,51 @@
 {
-  "schemaVersion": 1,
-  "cardVersion": "wvw-v1",
+  "schemaVersion": 2,
+  "cardVersion": "wvw-v2",
   "locale": "de-AT",
   "game": "Guild Wars 2 – World vs. World Bingo",
   "gridSize": 5,
   "freeSquareIndex": 12,
   "source": "User-provided GW2 WvW Bingo.pdf; page N corresponds to card ID N.",
-  "editingPolicy": "Preserve square positions; only typographic or obvious orthographic normalization of original source.",
+  "editingPolicy": "Use task IDs from data/tasks.json. Original preset arrangements are preserved; append new tasks to the pool.",
   "cards": [
     {
       "id": 1,
       "name": "Karte 1",
       "rows": [
         [
-          "Jemand lacht im Discord",
-          "Gegnerischer Zerg gesichtet",
-          "Dolyak eskortiert",
-          "Lager verteidigt",
-          "Gegner taucht plötzlich hinter der Gruppe auf"
+          "t001",
+          "t002",
+          "t003",
+          "t004",
+          "t005"
         ],
         [
-          "Belagerungswaffe wird zerstört",
-          "Jemand sagt „Push!“",
-          "Alle im Discord lachen",
-          "Golem wird gesichtet",
-          "Turm verteidigt"
+          "t006",
+          "t007",
+          "t008",
+          "t009",
+          "t010"
         ],
         [
-          "Jemand fragt „Welche Map?“",
-          "Commander verliert die Gruppe",
+          "t011",
+          "t012",
           "Bonusfeld",
-          "Commander sagt „Nur noch dieses eine Ding“",
-          "Jemand rennt voraus"
+          "t013",
+          "t014"
         ],
         [
-          "Jemand stirbt durch Fallschaden",
-          "Commander sagt „Das war Absicht“",
-          "„Wo ist der Commander?“",
-          "Jemand sagt „INC!“",
-          "Commander läuft in die falsche Richtung"
+          "t015",
+          "t016",
+          "t017",
+          "t018",
+          "t019"
         ],
         [
-          "Der komplette Squad macht eine 180°-Wende",
-          "Gegner wird gepullt",
-          "Tor wird zerstört",
-          "Commander sagt „Wartet kurz“",
-          "Mauer wird zerstört"
+          "t020",
+          "t021",
+          "t022",
+          "t023",
+          "t024"
         ]
       ]
     },
@@ -54,39 +54,39 @@
       "name": "Karte 2",
       "rows": [
         [
-          "Jemand sagt „Push!“",
-          "Jemand rennt alleine auf den Gegner zu",
-          "Jemand lacht im Discord",
-          "Jemand rennt voraus",
-          "Gegner wird gepullt"
+          "t007",
+          "t025",
+          "t001",
+          "t014",
+          "t021"
         ],
         [
-          "Festung verteidigt",
-          "Jemand macht einen Emote",
-          "Ein Scout meldet Bewegung",
-          "Gegner kommt plötzlich aus Stealth",
-          "Ein Kampf beginnt völlig ungeplant"
+          "t026",
+          "t027",
+          "t028",
+          "t029",
+          "t030"
         ],
         [
-          "Squad muss auf Nachzügler warten",
-          "Mauer wird zerstört",
+          "t031",
+          "t024",
           "Bonusfeld",
-          "Belagerungswaffe wird aufgebaut",
-          "Dolyak gesehen"
+          "t032",
+          "t033"
         ],
         [
-          "Gegnerischer Zerg gesichtet",
-          "Der komplette Squad macht eine 180°-Wende",
-          "Commander sucht seine eigene Gruppe",
-          "Jemand sagt „INC!“",
-          "Dolyak eskortiert"
+          "t002",
+          "t020",
+          "t034",
+          "t018",
+          "t003"
         ],
         [
-          "Jemand stirbt durch Fallschaden",
-          "Jemand bleibt an einem Hindernis hängen",
-          "Commander macht einen Rückzieher",
-          "Spieler wird wiederbelebt",
-          "Alle im Discord lachen"
+          "t015",
+          "t035",
+          "t036",
+          "t037",
+          "t008"
         ]
       ]
     },
@@ -95,39 +95,39 @@
       "name": "Karte 3",
       "rows": [
         [
-          "Commander sagt „Nur noch dieses eine Ding“",
-          "Gegner kommt plötzlich aus Stealth",
-          "Squad muss auf Nachzügler warten",
-          "Commander verliert die Gruppe",
-          "Turm erobert"
+          "t013",
+          "t029",
+          "t031",
+          "t012",
+          "t038"
         ],
         [
-          "Turm verteidigt",
-          "Jemand sagt „Push!“",
-          "Jemand macht einen Emote",
-          "Festung erobert",
-          "Jemand fällt von einer Klippe"
+          "t010",
+          "t007",
+          "t027",
+          "t039",
+          "t040"
         ],
         [
-          "Ein Ziel wird kurz vor der Eroberung verteidigt",
-          "Jemand fragt „Welche Map?“",
+          "t041",
+          "t011",
           "Bonusfeld",
-          "Jemand sagt „Achtung!“",
-          "„Wo ist mein Heiler?“"
+          "t042",
+          "t043"
         ],
         [
-          "Spieler wird wiederbelebt",
-          "Jemand rennt alleine auf den Gegner zu",
-          "Belagerungswaffe wird aufgebaut",
-          "Festung verteidigt",
-          "Gegner geht in Stealth"
+          "t037",
+          "t025",
+          "t032",
+          "t026",
+          "t044"
         ],
         [
-          "Jemand bleibt an einem Hindernis hängen",
-          "Gegnerischer Zerg gesichtet",
-          "Jemand lacht im Discord",
-          "Commander sagt „Das war Absicht“",
-          "Jemand sagt etwas völlig Unnötiges"
+          "t035",
+          "t002",
+          "t001",
+          "t016",
+          "t045"
         ]
       ]
     },
@@ -136,39 +136,39 @@
       "name": "Karte 4",
       "rows": [
         [
-          "Dolyak gesehen",
-          "Jemand sagt etwas völlig Unnötiges",
-          "Tor wird repariert",
-          "Squad muss auf Nachzügler warten",
-          "Jemand fragt „Welche Map?“"
+          "t033",
+          "t045",
+          "t046",
+          "t031",
+          "t011"
         ],
         [
-          "Mauer wird repariert",
-          "Jemand bleibt zurück",
-          "„Zurück!“ → jemand läuft weiter",
-          "Jemand stirbt durch Fallschaden",
-          "Jemand sagt „Achtung!“"
+          "t047",
+          "t048",
+          "t049",
+          "t015",
+          "t042"
         ],
         [
-          "Die Gruppe nimmt den falschen Weg",
-          "Ein Ziel wird kurz vor der Eroberung verteidigt",
+          "t050",
+          "t041",
           "Bonusfeld",
-          "Gegner wird gepullt",
-          "Jemand rennt alleine auf den Gegner zu"
+          "t021",
+          "t025"
         ],
         [
-          "Festung verteidigt",
-          "Zerg folgt Dolyak statt Commander",
-          "Jemand fällt von einer Klippe",
-          "Commander sagt „Wartet kurz“",
-          "„Wo ist der Commander?“"
+          "t026",
+          "t051",
+          "t040",
+          "t023",
+          "t017"
         ],
         [
-          "Jemand bleibt an einem Hindernis hängen",
-          "Portal wird angekündigt",
-          "Gegner rennt weg",
-          "Commander verliert die Gruppe",
-          "Commander sagt „Nur noch dieses eine Ding“"
+          "t035",
+          "t052",
+          "t053",
+          "t012",
+          "t013"
         ]
       ]
     },
@@ -177,39 +177,39 @@
       "name": "Karte 5",
       "rows": [
         [
-          "Alle im Discord lachen",
-          "Jemand rennt alleine auf den Gegner zu",
-          "Jemand sagt „Achtung!“",
-          "Lager verteidigt",
-          "Commander sagt „Das war Absicht“"
+          "t008",
+          "t025",
+          "t042",
+          "t004",
+          "t016"
         ],
         [
-          "Mauer wird repariert",
-          "Dolyak eskortiert",
-          "„Wo ist mein Heiler?“",
-          "Die Gruppe nimmt den falschen Weg",
-          "Lager erobert"
+          "t047",
+          "t003",
+          "t043",
+          "t050",
+          "t054"
         ],
         [
-          "Commander sucht seine eigene Gruppe",
-          "Jemand fällt von einer Klippe",
+          "t034",
+          "t040",
           "Bonusfeld",
-          "Ein Ziel wird kurz vor der Eroberung verteidigt",
-          "Gegner wird gepullt"
+          "t041",
+          "t021"
         ],
         [
-          "Zerg folgt Dolyak statt Commander",
-          "„Wir brauchen mehr dmg!“",
-          "Gegner kommt plötzlich aus Stealth",
-          "Jemand bleibt an einem Hindernis hängen",
-          "Commander sagt „Wartet kurz“"
+          "t051",
+          "t055",
+          "t029",
+          "t035",
+          "t023"
         ],
         [
-          "Falsche Belagerungswaffe wird aufgebaut",
-          "Golem wird gesichtet",
-          "Commander sagt „Ganz entspannt“",
-          "Gegner rennt weg",
-          "Ein Scout meldet Bewegung"
+          "t056",
+          "t009",
+          "t057",
+          "t053",
+          "t028"
         ]
       ]
     },
@@ -218,39 +218,39 @@
       "name": "Karte 6",
       "rows": [
         [
-          "„Wir brauchen mehr dmg!“",
-          "Jemand sagt „Achtung!“",
-          "Jemand stirbt durch Fallschaden",
-          "Jemand rennt voraus",
-          "Belagerungswaffe wird aufgebaut"
+          "t055",
+          "t042",
+          "t015",
+          "t014",
+          "t032"
         ],
         [
-          "Commander sagt „Das war Absicht“",
-          "Gegnerischer Roamer gesichtet",
-          "Gegner kommt plötzlich aus Stealth",
-          "Zerg folgt Dolyak statt Commander",
-          "Ein Kampf beginnt völlig ungeplant"
+          "t016",
+          "t058",
+          "t029",
+          "t051",
+          "t030"
         ],
         [
-          "Tor wird repariert",
-          "Festung verteidigt",
+          "t046",
+          "t026",
           "Bonusfeld",
-          "Gegner rennt weg",
-          "Jemand bleibt zurück"
+          "t053",
+          "t048"
         ],
         [
-          "Falsche Belagerungswaffe wird aufgebaut",
-          "Commander sagt „Wartet kurz“",
-          "Jemand macht einen Emote",
-          "Pfeilwagen wird entdeckt",
-          "Jemand sagt „INC!“"
+          "t056",
+          "t023",
+          "t027",
+          "t059",
+          "t018"
         ],
         [
-          "Commander sagt „Nur noch dieses eine Ding“",
-          "Jemand fällt von einer Klippe",
-          "Commander verliert die Gruppe",
-          "Kompletter Squad stirbt",
-          "Ein Scout meldet Bewegung"
+          "t013",
+          "t040",
+          "t012",
+          "t060",
+          "t028"
         ]
       ]
     },
@@ -259,39 +259,39 @@
       "name": "Karte 7",
       "rows": [
         [
-          "Zerg folgt Dolyak statt Commander",
-          "Festung verteidigt",
-          "Jemand sagt „Achtung!“",
-          "Turm erobert",
-          "Gegner wird gepullt"
+          "t051",
+          "t026",
+          "t042",
+          "t038",
+          "t021"
         ],
         [
-          "Falsche Belagerungswaffe wird aufgebaut",
-          "Jemand rennt voraus",
-          "Ein Scout meldet Bewegung",
-          "Dolyak eskortiert",
-          "Lager verteidigt"
+          "t056",
+          "t014",
+          "t028",
+          "t003",
+          "t004"
         ],
         [
-          "Die Gruppe nimmt den falschen Weg",
-          "Commander sagt „Ganz entspannt“",
+          "t050",
+          "t057",
           "Bonusfeld",
-          "Jemand sagt „INC!“",
-          "Gegnerischer Roamer gesichtet"
+          "t018",
+          "t058"
         ],
         [
-          "Jemand bleibt zurück",
-          "Jemand macht einen Emote",
-          "Commander sagt „Das war Absicht“",
-          "Pfeilwagen wird entdeckt",
-          "Mauer wird zerstört"
+          "t048",
+          "t027",
+          "t016",
+          "t059",
+          "t024"
         ],
         [
-          "Gegner geht in Stealth",
-          "Gegnerischer Zerg gesichtet",
-          "Commander läuft in die falsche Richtung",
-          "Turm verteidigt",
-          "„Wo ist der Commander?“"
+          "t044",
+          "t002",
+          "t019",
+          "t010",
+          "t017"
         ]
       ]
     },
@@ -300,39 +300,39 @@
       "name": "Karte 8",
       "rows": [
         [
-          "Festung verteidigt",
-          "Dolyak gesehen",
-          "Die Gruppe nimmt den falschen Weg",
-          "Gegner wird gepullt",
-          "Jemand bleibt zurück"
+          "t026",
+          "t033",
+          "t050",
+          "t021",
+          "t048"
         ],
         [
-          "Belagerungswaffe wird aufgebaut",
-          "Golem wird gesichtet",
-          "Tor wird zerstört",
-          "Jemand sagt „Achtung!“",
-          "Commander sagt „Das war Absicht“"
+          "t032",
+          "t009",
+          "t022",
+          "t042",
+          "t016"
         ],
         [
-          "Gegner kommt plötzlich aus Stealth",
-          "Belagerungswaffe wird zerstört",
+          "t029",
+          "t006",
           "Bonusfeld",
-          "Falsche Belagerungswaffe wird aufgebaut",
-          "Jemand stirbt durch Fallschaden"
+          "t056",
+          "t015"
         ],
         [
-          "Jemand fragt „Welche Map?“",
-          "Dolyak eskortiert",
-          "Jemand sagt etwas völlig Unnötiges",
-          "Jemand sagt „Push!“",
-          "Commander sagt „Nur noch dieses eine Ding“"
+          "t011",
+          "t003",
+          "t045",
+          "t007",
+          "t013"
         ],
         [
-          "Jemand bleibt an einem Hindernis hängen",
-          "Jemand lacht im Discord",
-          "Ein Ziel wird kurz vor der Eroberung verloren",
-          "Portal wird angekündigt",
-          "Turm erobert"
+          "t035",
+          "t001",
+          "t061",
+          "t052",
+          "t038"
         ]
       ]
     },
@@ -341,39 +341,39 @@
       "name": "Karte 9",
       "rows": [
         [
-          "Belagerungswaffe wird aufgebaut",
-          "Lager verteidigt",
-          "Gegnerischer Zerg gesichtet",
-          "Belagerungswaffe wird zerstört",
-          "Tor wird repariert"
+          "t032",
+          "t004",
+          "t002",
+          "t006",
+          "t046"
         ],
         [
-          "Jemand rennt alleine auf den Gegner zu",
-          "Tor wird zerstört",
-          "Kompletter Squad stirbt",
-          "„Wo ist mein Heiler?“",
-          "Turm erobert"
+          "t025",
+          "t022",
+          "t060",
+          "t043",
+          "t038"
         ],
         [
-          "Jemand sagt „Achtung!“",
-          "Gegner taucht plötzlich hinter der Gruppe auf",
+          "t042",
+          "t005",
           "Bonusfeld",
-          "Golem wird gesichtet",
-          "Der komplette Squad macht eine 180°-Wende"
+          "t009",
+          "t020"
         ],
         [
-          "Jemand rennt voraus",
-          "Jemand sagt „INC!“",
-          "Commander verliert die Gruppe",
-          "Commander sucht seine eigene Gruppe",
-          "Die Gruppe nimmt den falschen Weg"
+          "t014",
+          "t018",
+          "t012",
+          "t034",
+          "t050"
         ],
         [
-          "Jemand fragt „Welche Map?“",
-          "Alle im Discord lachen",
-          "Lager erobert",
-          "Dolyak gesehen",
-          "Jemand bleibt an einem Hindernis hängen"
+          "t011",
+          "t008",
+          "t054",
+          "t033",
+          "t035"
         ]
       ]
     },
@@ -382,39 +382,39 @@
       "name": "Karte 10",
       "rows": [
         [
-          "Ein Kampf beginnt völlig ungeplant",
-          "Zerg folgt Dolyak statt Commander",
-          "Lager verteidigt",
-          "Jemand stirbt durch Fallschaden",
-          "Der komplette Squad macht eine 180°-Wende"
+          "t030",
+          "t051",
+          "t004",
+          "t015",
+          "t020"
         ],
         [
-          "Dolyak gesehen",
-          "Commander macht einen Rückzieher",
-          "Commander sagt „Nur noch dieses eine Ding“",
-          "Golem wird gesichtet",
-          "Ein Scout meldet Bewegung"
+          "t033",
+          "t036",
+          "t013",
+          "t009",
+          "t028"
         ],
         [
-          "Jemand bleibt an einem Hindernis hängen",
-          "Gegner kommt plötzlich aus Stealth",
+          "t035",
+          "t029",
           "Bonusfeld",
-          "Festung erobert",
-          "Ein Ziel wird kurz vor der Eroberung verteidigt"
+          "t039",
+          "t041"
         ],
         [
-          "Jemand rennt alleine auf den Gegner zu",
-          "Gegner rennt weg",
-          "Gegner wird gepullt",
-          "Commander verliert die Gruppe",
-          "Die Gruppe nimmt den falschen Weg"
+          "t025",
+          "t053",
+          "t021",
+          "t012",
+          "t050"
         ],
         [
-          "„Wir brauchen mehr dmg!“",
-          "Tor wird zerstört",
-          "Commander läuft in die falsche Richtung",
-          "Jemand macht einen Emote",
-          "Alle im Discord lachen"
+          "t055",
+          "t022",
+          "t019",
+          "t027",
+          "t008"
         ]
       ]
     }

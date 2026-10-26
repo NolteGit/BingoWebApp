@@ -1,4 +1,5 @@
 import { getBingoProgress } from '../shared/bingo'
+import { cardFromSnapshot } from '../shared/cards'
 import type { ComparisonEntry } from './comparison'
 import { checkedIndicesToMask, type OwnPlayer, type RoomSnapshot } from './room-api'
 
@@ -8,6 +9,7 @@ export function entriesFromRoom(room: RoomSnapshot): ComparisonEntry[] {
     id: player.playerId,
     name: player.name,
     cardId: player.cardId,
+    card: cardFromSnapshot(player.cardId, player.card),
     checkedMask: checkedIndicesToMask(player.checkedIndices),
     kind: 'player' as const,
     online: player.online,

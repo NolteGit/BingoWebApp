@@ -29,8 +29,8 @@
 | --- | --- | --- |
 | `playerId` | random opaque ID/UUID | Stable within the room. |
 | `name` | 2–24 Unicode code points | Trimmed, NFC-normalized display name. Unique case-insensitively among active players in room. |
-| `cardId` | integer 1–10 | One predefined preset. |
-| `cardVersion` | string | E.g. `wvw-v1` matching `data/cards.json`. |
+| `cardId` | integer 1–11 | Presets 1–10 or randomized assignment 11 (`Zufallskarte`). |
+| `cardVersion` | string | Current assignments use `wvw-v2`; earlier stored cards may have older versions. |
 | `cardSnapshot` | JSON array of 25 German strings | Immutable labels used in that session. |
 | `checkedMask` | 25-bit unsigned integer | One bit for each index 0–24; center bit 12 always set. |
 | `joinedAt` | ISO timestamp | Active join time. |
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS players (
   player_id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   name_key TEXT NOT NULL UNIQUE,
-  card_id INTEGER NOT NULL CHECK (card_id BETWEEN 1 AND 10),
+  card_id INTEGER NOT NULL CHECK (card_id BETWEEN 1 AND 11),
   card_version TEXT NOT NULL,
   card_snapshot_json TEXT NOT NULL,
   checked_mask INTEGER NOT NULL,
@@ -82,7 +82,7 @@ When implementing, ensure the schema conforms to the actual SQLite APIs availabl
   "playerId": "p_83f2",
   "name": "Mira",
   "cardId": 7,
-  "cardVersion": "wvw-v1",
+  "cardVersion": "wvw-v2",
   "card": ["Zerg folgt Dolyak statt Commander", "... 24 more labels ..."],
   "checkedIndices": [0, 12],
   "completed": 2,
@@ -125,3 +125,7 @@ The SQLite `players` table is now created by `BingoRoom` and populated on `POST 
 - A repeated write for an already-matching square is a no-op and keeps revisions unchanged. A different write carrying a stale player revision returns a conflict and does not modify storage.
 - `room_meta`'s existing `first_bingo_player_id`, `first_bingo_name` and `first_bingo_at` columns now record the first server-recognized Bingo transition once, and are included in public snapshots as `firstBingo`.
 - `online` remains `false` until presence via WebSockets exists. The browser still uses local state until frontend room integration.
+
+## Current task library (October 2026)
+
+The canonical task texts live in `data/tasks.json` (one stable ID and label per line). The ten preset rows in `data/cards.json` reference these IDs. A new choice, card ID 11, selects 24 unique objectives at join time. **Every player stores a fixed 25-label card snapshot in SQLite**, so editing the task library or reconnecting never reshuffles an active card. The `BingoRoom` constructor migrates the earlier 1–10 SQLite constraint to 1–11 transactionally. The code and tests are authoritative if any earlier milestone notes above appear outdated. See `docs/26-task-library-and-random-cards.md`.

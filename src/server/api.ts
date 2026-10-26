@@ -1,4 +1,4 @@
-import { cardCatalog, getCardById, getFlatSquares } from '../shared/cards'
+import { cardCatalog, generateRandomCard, getCardById, getFlatSquares, RANDOM_CARD_ID } from '../shared/cards'
 import { generateRoomCode, normalizeRoomCode } from './room-code'
 import {
   createSessionToken, extractSessionToken, expiredSessionCookie, hashSessionToken, parseCardId,
@@ -129,12 +129,15 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
       const player = parsePlayerName(data.name)
       if (!player) return error(400, 'INVALID_NAME', 'Bitte einen Namen mit 2 bis 24 Zeichen eingeben.')
       const cardId = parseCardId(data.cardId)
-      if (!cardId) return error(400, 'INVALID_CARD', 'Bitte eine gültige Karte (1–10) auswählen.')
+      if (!cardId) return error(400, 'INVALID_CARD', 'Bitte eine gültige Karte (1–10 oder Zufallskarte) auswählen.')
 
+      // Randomize once on the server. The exact card is stored with the player,
+      // not regenerated when a browser refreshes or another player opens a preview.
+      const assignedCard = cardId === RANDOM_CARD_ID ? generateRandomCard() : getCardById(cardId)
       const token = createSessionToken()
       const result = await room.joinPlayer({
         playerId: crypto.randomUUID(), name: player.name, nameKey: player.nameKey, cardId,
-        cardVersion: cardCatalog.cardVersion, cardSnapshot: [...getFlatSquares(getCardById(cardId))],
+        cardVersion: cardCatalog.cardVersion, cardSnapshot: [...getFlatSquares(assignedCard)],
         tokenHash: await hashSessionToken(token),
       })
       if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
