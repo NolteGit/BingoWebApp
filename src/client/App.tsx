@@ -6,7 +6,7 @@ import { LobbyModal, type LobbyModalMode } from './LobbyModal'
 import { PlayableBoard } from './PlayableBoard'
 import { CardPicker } from './CardPicker'
 import { NewBingoDialog } from './NewBingoDialog'
-import { ComparisonDrawer } from './ComparisonDrawer'
+import { PlayerOverviewDialog } from './PlayerOverviewDialog'
 import { PlayerOverview } from './PlayerOverview'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
 import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
@@ -44,15 +44,13 @@ export function App() {
   const [selectedCardId, setSelectedCardId] = useState(1)
   const [lobbyModal, setLobbyModal] = useState<LobbyModalMode>(null)
   const [playerAction, setPlayerAction] = useState<'restart' | 'leave' | null>(null)
-  const [comparisonOpen, setComparisonOpen] = useState(false)
-  const [selectedComparisonId, setSelectedComparisonId] = useState<string | null>(null)
-  const [lobbyPreviewId, setLobbyPreviewId] = useState<string | null>(null)
+  const [overviewOpen, setOverviewOpen] = useState(false)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
   const newBingoButtonRef = useRef<HTMLButtonElement>(null)
   const leaveRoomButtonRef = useRef<HTMLButtonElement>(null)
   const playerDialogTriggerRef = useRef<HTMLButtonElement | null>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
-  const compareButtonRef = useRef<HTMLButtonElement>(null)
+  const overviewButtonRef = useRef<HTMLButtonElement>(null)
   // Mutable guards close the gap before Preact has rendered the new disabled state.
   const writeBusyRef = useRef(false)
   const recoveryBusyRef = useRef(false)
@@ -175,10 +173,8 @@ export function App() {
     setRoom(null)
     setPlayer(null)
     setView('lobby')
-    setComparisonOpen(false)
+    setOverviewOpen(false)
     setLobbyModal(null)
-    setSelectedComparisonId(null)
-    setLobbyPreviewId(null)
     setMessage('')
   }
 
@@ -214,10 +210,8 @@ export function App() {
       setPlayer(null)
       setDraftName('')
       setSelectedCardId(1)
-      setLobbyPreviewId(null)
       setPlayerAction(null)
-      setComparisonOpen(false)
-      setSelectedComparisonId(null)
+      setOverviewOpen(false)
       setView('lobby')
       if (action === 'leave') {
         // Navigate only after successful deletion; room and other players remain intact.
@@ -245,12 +239,10 @@ export function App() {
       setPlayer(response.player)
       setView('game')
       setLobbyModal(null)
-      setSelectedComparisonId(null)
       try {
         const snapshot = assertRoomSnapshot(await getRoom(roomCode))
         setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
-      }
-      catch { setMessage(t('joinedPending')) }
+      } catch { setMessage(t('joinedPending')) }
     } catch (error) { setMessage(errorMessage(error, locale)) }
     finally { setWorking(false) }
   }
@@ -399,19 +391,12 @@ export function App() {
         ) : view === 'lobby' || !player ? (
           <section class="lobby lobby--compact" aria-labelledby="page-title">
             <div class="lobby-header">
-              <h1 id="page-title">{t('lobby')}</h1>
-              <button class="lobby-info-button" ref={rulesButtonRef} type="button"
-                onClick={() => showLobbyModal('rules', rulesButtonRef.current)}>
-                <span aria-hidden="true">ⓘ</span> {t('rulesInfo')}
-              </button>
-            </div>
-            <div class="room-link-row">
-              <span>{t('roomCode')} <strong>{roomCode}</strong></span>
-              <div class="room-link-actions">
-                <button class="secondary-button" type="button" onClick={() => void copyLink()}>{t('copyLink')}</button>
+              <div>
+                <h1 id="page-title">{t('lobby')}</h1>
+                <p class="lobby-header__subtitle">{t('createHeading')}</p>
               </div>
             </div>
-            <div class="lobby-layout">
+            <div class="lobby-layout lobby-layout--three">
               <section class="join-panel" aria-labelledby="join-title">
                 {player ? (
                   <>
@@ -447,9 +432,21 @@ export function App() {
               </section>
               <aside class="players-panel" aria-labelledby="players-title">
                 <div class="panel-heading"><h2 id="players-title">{t('playerOverview')}</h2><span class="panel-count">{t('playerCount', {count: entries.length})}</span></div>
-                <PlayerOverview entries={entries} selectedId={lobbyPreviewId} onSelect={setLobbyPreviewId}
-                  detailId="lobby-player-detail" variant="lobby" />
+                <PlayerOverview entries={entries} />
                 <p class="form-note">{liveConnected ? t('liveUpdate') : t('pollingUpdate')}</p>
+              </aside>
+              <aside class="room-tools" aria-label={t('roomCode')}>
+                <div class="room-tools__card">
+                  <span class="room-tools__label">{t('roomCode')}</span>
+                  <strong class="room-tools__code">{roomCode}</strong>
+                  <button class="secondary-button" type="button" onClick={() => void copyLink()}>{t('copyLink')}</button>
+                </div>
+                <button class="room-tools__rules" ref={rulesButtonRef} type="button"
+                  onClick={() => showLobbyModal('rules', rulesButtonRef.current)}>
+                  <span aria-hidden="true" class="room-tools__rules-icon">ⓘ</span>
+                  <span>{t('rulesInfo')}</span>
+                  <span aria-hidden="true">›</span>
+                </button>
               </aside>
             </div>
             <div class="room-navigation-footer">
@@ -469,10 +466,10 @@ export function App() {
                 <span class="room-card-label">{cardName(player.cardId)}</span>
               </div>
               <div class="player-actions">
-                <button ref={compareButtonRef} class="primary-button compare-trigger" type="button"
-                  onClick={() => { setSelectedComparisonId(null); setComparisonOpen(true) }}>{t('compare')}</button>
+                <button ref={overviewButtonRef} class="secondary-button overview-trigger" type="button"
+                  onClick={() => setOverviewOpen(true)}>{t('playerOverview')}</button>
                 <button class="secondary-button" type="button" disabled={saving}
-                  onClick={() => { setComparisonOpen(false); setView('lobby'); setMessage('') }}>{t('toLobby')}</button>
+                  onClick={() => { setOverviewOpen(false); setView('lobby'); setMessage('') }}>{t('toLobby')}</button>
                 <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
                   disabled={working || saving || recovering || syncBlocked}
                   onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>{t('leave')}</button>
@@ -486,10 +483,9 @@ export function App() {
             </div>
             <PlayableBoard card={cardFromSnapshot(player.cardId, player.card)} checkedMask={currentMask}
               onToggleSquare={index => void toggleSquare(index)} disabled={saving || syncBlocked || recovering || !browserOnline} />
-            <ComparisonDrawer open={comparisonOpen} entries={entries} selectedId={selectedComparisonId}
-              onSelect={setSelectedComparisonId} onDismiss={() => setComparisonOpen(false)}
-              onAfterClose={() => { setComparisonOpen(false); compareButtonRef.current?.focus() }}
-              note={liveConnected ? t('previewOnlyLive') : t('previewOnlyPolling')} />
+            <PlayerOverviewDialog open={overviewOpen} entries={entries}
+              live={liveConnected} onDismiss={() => setOverviewOpen(false)}
+              onAfterClose={() => { setOverviewOpen(false); overviewButtonRef.current?.focus() }} />
           </section>
         )}
         <NewBingoDialog open={playerAction !== null} mode={playerAction ?? 'restart'} busy={working}

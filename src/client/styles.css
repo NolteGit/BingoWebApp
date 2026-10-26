@@ -1205,3 +1205,313 @@ h1 {
   .status-pill { margin-left: 0; }
   .language-switch { margin-left: auto; }
 }
+
+/* Step 18 — Paper-card-inspired visual system.
+   Artwork is intentionally optional. When assets are chosen, set
+   --bingo-background-image and --bingo-panel-image to url('/art/...')
+   and replace the simple B brand mark. No remote assets are required. */
+:root {
+  --bingo-ink: #29251f;
+  --bingo-muted: #766954;
+  --bingo-paper: #f8f1df;
+  --bingo-paper-raised: #fff9ec;
+  --bingo-line: #cdbb99;
+  --bingo-burgundy: #8b2426;
+  --bingo-burgundy-hover: #a32d2f;
+  --bingo-gold: #c8a15e;
+  --bingo-forest: #246a4c;
+  --bingo-background-image: none;
+  --bingo-panel-image: none;
+  color: var(--bingo-ink);
+  background: #0b1928;
+}
+
+.page-shell {
+  background-image: var(--bingo-background-image),
+    radial-gradient(ellipse at 85% 5%, #2d3858aa, transparent 46%),
+    radial-gradient(ellipse at 10% 95%, #162d3c, transparent 46%);
+  background-color: #0b1928;
+  background-position: center;
+  background-size: cover;
+}
+.app-frame {
+  width: min(100%, 980px);
+  background: var(--bingo-paper);
+  border: 1px solid #94754d;
+  border-radius: 17px;
+  box-shadow: 0 20px 70px #030916a1, 0 0 0 4px #07152230;
+}
+.topbar {
+  min-height: 68px;
+  padding-block: 14px;
+  background: #101f31;
+  border-bottom: 2px solid var(--bingo-gold);
+  color: #fff4dd;
+}
+.brand-mark {
+  background-color: var(--bingo-gold);
+  color: #1a1c21;
+  border: 1px solid #e6c991;
+  border-radius: 9px;
+}
+.brand-name { font-family: Georgia, 'Times New Roman', serif; font-size: 1.08rem; letter-spacing: .01em; }
+.status-pill { color: #c5ead3; border-color: #487656; background: #194333; }
+.language-switch button:hover,
+.language-switch button:focus-visible { background: #364252; color: #fff3dc; }
+.language-switch .language-switch__active { color: #e7c987; }
+
+.lobby--compact,
+.player-view--compact {
+  color: var(--bingo-ink);
+  background-image: var(--bingo-panel-image),
+    radial-gradient(circle at 100% 0%, #e2c89a44, transparent 44%),
+    linear-gradient(115deg, #fff9e9 0%, #f7eed8 70%, #f3e6cb 100%);
+  background-size: cover;
+  background-position: center;
+}
+.lobby-header h1, .player-identity h1,
+.player-view--compact h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #452b29;
+  letter-spacing: -.02em;
+}
+.lobby-header { padding-bottom: 10px; border-bottom: 1px solid #cdbb995c; }
+.lobby-info-button, .preview-link { color: var(--bingo-burgundy); }
+.lobby-info-button:hover, .preview-link:hover { color: #af3436; }
+.room-link-row { color: var(--bingo-muted); }
+.room-link-row strong { color: #5a2b23; }
+.room-navigation-link { color: #816a50; }
+.room-navigation-link:hover:enabled { color: var(--bingo-burgundy); }
+
+.join-panel, .players-panel {
+  color: var(--bingo-ink);
+  background: #fffaeeed;
+  border: 1px solid var(--bingo-line);
+  border-radius: 13px;
+  box-shadow: 0 5px 18px #6c4e2612, inset 0 1px #ffffffcc;
+}
+.join-panel h2, .players-panel h2, .preview-heading h2 { color: #432823; font-family: Georgia, 'Times New Roman', serif; }
+.room-entry p, .join-panel p, .players-panel p { color: var(--bingo-muted); }
+.join-form label { color: #4e352e; }
+.join-form input, .join-form select, .card-picker__trigger {
+  border: 1px solid #c4ac86;
+  color: #2e2a22;
+  background: #fffdf6;
+  border-radius: 8px;
+}
+.join-form input::placeholder { color: #8c8171; }
+.card-picker__trigger:hover { border-color: var(--bingo-burgundy); }
+.primary-button {
+  background: var(--bingo-burgundy);
+  color: #fff9ee;
+  border-color: #762022;
+  box-shadow: 0 2px 3px #5b191629;
+}
+.primary-button:hover:enabled { background: var(--bingo-burgundy-hover); }
+.primary-button:disabled { background: #a9a39b; border-color: #a9a39b; color: #f3efe6; box-shadow: none; }
+.secondary-button {
+  color: #64352a;
+  background: #fff8e9;
+  border-color: #bd9b68;
+  box-shadow: 0 1px 2px #6c4e2614;
+}
+.secondary-button:hover { background: #f1e4cb; }
+.primary-button:focus-visible, .secondary-button:focus-visible,
+.join-form input:focus-visible, .card-picker__trigger:focus-visible {
+  outline: 3px solid #cf9b54;
+  outline-offset: 2px;
+}
+.panel-count { color: #70593c; border-color: #d9c7a9; background: #f9eed7; }
+.form-note { color: #806e56; }
+.form-error { color: #982c27; }
+.empty-players { color: #44382e; }
+.empty-players p { color: var(--bingo-muted); }
+
+/* This is a static scoreboard in both places, not a card-selector. */
+.player-overview { display: block; width: 100%; min-width: 0; }
+.player-list { gap: 7px; }
+.player-summary {
+  display: block;
+  background: #fff9ed;
+  border-color: #dfc9a7;
+  color: var(--bingo-ink);
+  border-radius: 9px;
+  cursor: default;
+  padding: 10px 11px;
+  box-shadow: inset 0 1px #fff;
+}
+.player-summary:hover { background: #fff9ed; border-color: #dfc9a7; }
+.player-summary__line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 9px;
+  align-items: center;
+}
+.player-summary__identity { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.player-summary__identity strong { color: #352920; font-weight: 700; font-size: .85rem; overflow-wrap: anywhere; }
+.player-summary__presence { display: inline-block; width: 7px; height: 7px; flex: none; border-radius: 100%; background: #a4a4a4; }
+.player-summary__presence--online { background: #309765; box-shadow: 0 0 0 2px #30976521; }
+.player-summary__card { color: #795c43; font-size: .75rem; }
+.player-summary__points { color: #463728; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.player-summary__demo { color: #896c43; font-size: .67rem; }
+
+/* The active card is visually derived from the user's printed card. */
+.player-view--compact .player-heading { margin-bottom: 16px; }
+.room-card-label { background: #fff7e6; color: #65452d; border: 1px solid #c9af82; }
+.player-view--compact .overview-trigger { background: #dfbd80; color: #4a2822; border-color: #c59e60; }
+.player-view--compact .overview-trigger:hover { background: #efd09a; }
+.player-view--compact .player-actions .secondary-button:last-child {
+  color: #8c2c2c;
+  border-color: #ce9992;
+  background: #f8eadd;
+}
+.save-status { color: #436b50; }
+.progress-header { color: #5c4c3e; }
+.progress-header strong { color: #672c23; }
+.game-progress-bar, .game-progress-bar::-webkit-progress-bar { background: #e0d0b1; }
+.game-progress-bar { accent-color: #367b56; }
+.game-progress-bar::-webkit-progress-value { background: #367b56; }
+.game-progress-bar::-moz-progress-bar { background: #367b56; }
+.bingo-message { background: #fff9e7; color: #64372d; border-color: #dcc6a0; }
+.bingo-message strong { color: #8b2426; }
+.play-square,
+.preview-square {
+  background: #fff9eb;
+  color: #2d2b26;
+  border-color: #c5ab7f;
+  box-shadow: inset 0 1px 0 #fffef8, 0 2px 3px #6d48221a;
+  border-radius: 9px;
+}
+.play-square:not(:disabled):hover { background: #f6e7c8; border-color: #a7824c; }
+.play-square--checked,
+.play-square--checked:not(:disabled):hover {
+  background: #266247;
+  color: #fffaf0;
+  border-color: #549371;
+}
+.play-square--winning,
+.play-square--winning:not(:disabled):hover {
+  background: #266247;
+  color: #fffaf0;
+  border: 2px solid #c99d4b;
+}
+.play-square--free, .play-square--free:disabled,
+.preview-square--free {
+  background: #f9e6d5;
+  color: #8b2426;
+  border-color: #ac6a58;
+  box-shadow: inset 0 0 0 1px #e7bd9b;
+}
+.play-square--free small, .preview-square--free small { color: #872d2b; }
+.play-square--winning.play-square--free { border-color: #bd8a35; }
+.play-square__mark { color: inherit; }
+
+/* Centered, lightweight overlay: matches the lobby's player overview. */
+.player-overview-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(520px, calc(100vw - 26px));
+  max-width: calc(100vw - 26px);
+  max-height: min(85dvh, 620px);
+  padding: 22px;
+  overflow-y: auto;
+  border: 1px solid #b79561;
+  border-radius: 14px;
+  color: var(--bingo-ink);
+  background: #fff6e5;
+  box-shadow: 0 26px 90px #05111bcc;
+}
+.player-overview-dialog::backdrop { background: #061422a8; }
+.player-overview-dialog .dialog-topline h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 1.55rem; color: #5b2d2a; }
+.overview-dialog__note { color: #7b6c5a; font-size: .79rem; line-height: 1.5; margin: 6px 0 0; }
+.overview-dialog__summary { display: flex; justify-content: flex-end; margin: 14px 0 10px; }
+.player-overview-dialog .empty-players { min-height: 140px; }
+
+/* The card picker and confirmation dialogs use the same paper surfaces. */
+.card-picker__popover, .lobby-modal, .new-bingo-dialog {
+  color: var(--bingo-ink);
+  background: #fff7e7;
+  border-color: #c5a77b;
+}
+.card-picker__option { color: #3e3229; }
+.card-picker__option:hover, .card-picker__option:focus-visible { background: #f2dfbf; border-color: #cfad72; }
+.card-picker__option--selected { color: #852525; border-color: #bd9a60; }
+.card-picker__close, .player-overview__close { background: #fffbef; border-color: #b9986c; color: #5c3428; }
+.card-picker__detail-heading, .card-picker__detail .preview-caption span { color: #786b58; }
+.lobby-modal__body p, .lobby-rules, .lobby-modal__muted { color: #6f614f !important; }
+.lobby-modal h2, .lobby-modal h3, .new-bingo-dialog h2 { color: #5b2d2a; font-family: Georgia, 'Times New Roman', serif; }
+.new-bingo-dialog p { color: #695b4a; }
+.new-bingo-dialog .danger-button { background: #8b2426; border-color: #812122; color: #fff9eb; }
+.room-feedback { background: #f2e2cb; color: #78382a; border-top-color: #cdbb99; }
+
+@media (max-width: 650px) {
+  .app-frame { border-radius: 12px; }
+  .lobby--compact, .player-view--compact { padding-inline: 11px; }
+  .join-panel, .players-panel { padding: 15px !important; }
+  .player-view--compact .play-square { box-shadow: none; }
+  .player-summary__line { grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px; }
+  .player-summary { padding: 9px 7px; }
+  .player-summary__identity { gap: 4px; }
+}
+@media (max-width: 380px) {
+  .player-summary__line { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; }
+  .player-summary__identity { grid-column: 1 / -1; }
+  .player-summary__card { grid-column: 1; }
+  .player-summary__points { grid-column: 2; }
+  .player-overview-dialog { padding: 16px; }
+}
+
+/* Desktop lobby: join, live player overview, and a quieter link/rules rail. */
+.lobby-header__subtitle {
+  margin: 5px 0 0;
+  color: #77604c;
+  font-size: .87rem;
+  font-weight: 550;
+}
+.lobby--compact .lobby-layout--three {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(175px, .68fr);
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 19px;
+}
+.lobby-layout--three .join-panel,
+.lobby-layout--three .players-panel { padding: 16px; }
+.room-tools { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.room-tools__card,
+.room-tools__rules {
+  border: 1px solid var(--bingo-line);
+  border-radius: 12px;
+  padding: 15px 12px;
+  background: #fffaeeed;
+  box-shadow: 0 4px 14px #6c4e2612;
+}
+.room-tools__card { display: flex; flex-direction: column; align-items: stretch; gap: 9px; }
+.room-tools__label { color: #725b49; font-size: .78rem; }
+.room-tools__code { font-weight: 750; font-variant-numeric: tabular-nums; color: #632f29; letter-spacing: .035em; }
+.room-tools__card .secondary-button { white-space: normal; width: 100%; padding: 10px 5px; font-size: .83rem; }
+.room-tools__rules {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  color: #713531; text-align: left; cursor: pointer;
+  font: inherit; font-size: .84rem; font-weight: 700;
+}
+.room-tools__rules:hover { border-color: #ac7f58; background: #f9ecd6; }
+.room-tools__rules:focus-visible { outline: 3px solid #cf9b54; outline-offset: 2px; }
+.room-tools__rules > :last-child { margin-left: auto; font-size: 1.35rem; }
+.room-tools__rules-icon { font-size: 1.15rem; }
+
+@media (max-width: 850px) {
+  .lobby--compact .lobby-layout--three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .room-tools { grid-column: 1 / -1; flex-direction: row; }
+  .room-tools__card, .room-tools__rules { flex: 1; }
+}
+@media (max-width: 700px) {
+  .lobby--compact .lobby-layout--three { grid-template-columns: minmax(0, 1fr); }
+  .room-tools { grid-column: 1; order: -1; }
+  .lobby-layout--three .join-panel, .lobby-layout--three .players-panel { padding: 15px; }
+}
+@media (max-width: 425px) {
+  .room-tools { flex-direction: column; }
+  .room-tools__card { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .room-tools__card .secondary-button { width: 100%; }
+}

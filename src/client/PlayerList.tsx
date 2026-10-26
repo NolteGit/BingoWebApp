@@ -4,13 +4,10 @@ import type { ComparisonEntry } from './comparison'
 
 interface PlayerListProps {
   entries: ReadonlyArray<ComparisonEntry>
-  onPreview: (id: string, trigger: HTMLButtonElement) => void
-  selectedId?: string | null
-  detailId?: string
 }
 
-/** A single compact player summary, shared by lobby and comparison drawer. */
-export function PlayerList({ entries, onPreview, selectedId = null, detailId }: PlayerListProps) {
+/** Read-only player summaries, shared by the lobby and the in-game overlay. */
+export function PlayerList({ entries }: PlayerListProps) {
   const { t, cardName } = useI18n()
   if (entries.length === 0) {
     return (
@@ -23,24 +20,21 @@ export function PlayerList({ entries, onPreview, selectedId = null, detailId }: 
 
   return (
     <ul class="player-list" aria-label={t('playersAndProgress')}>
-      {entries.map((entry) => {
+      {entries.map(entry => {
         const progress = getBingoProgress(entry.checkedMask)
         return (
-          <li key={entry.id}>
-            <button
-              class={`player-summary${selectedId === entry.id ? ' player-summary--selected' : ''}`}
-              aria-expanded={selectedId === entry.id}
-              aria-controls={selectedId === entry.id ? detailId : undefined}
-              type="button"
-              aria-label={t('playerSummaryAria', {name: entry.name, card: cardName(entry.cardId), squares: progress.completedSquares, lines: progress.completedLines})}
-              onClick={(event) => onPreview(entry.id, event.currentTarget)}
-            >
-              <span class="player-summary__line">
-                <strong>{entry.name}{entry.kind === 'demo' && <small class="player-summary__demo">Demo</small>}{entry.kind === 'player' && <small class="player-summary__demo">{` · ${entry.online ? t('online') : t('offline')}`}</small>}</strong>
-                <span class="player-summary__card">{cardName(entry.cardId)}</span>
-                <span class="player-summary__points">{progress.completedSquares}/25 · {t('bingoCount', {count: progress.completedLines})}</span>
+          <li key={entry.id} class="player-summary">
+            <span class="player-summary__line">
+              <span class="player-summary__identity">
+                {entry.kind === 'player' && <span class={`player-summary__presence${entry.online ? ' player-summary__presence--online' : ''}`}
+                  title={entry.online ? t('online') : t('offline')}
+                  aria-label={entry.online ? t('online') : t('offline')} />}
+                <strong>{entry.name}</strong>
+                {entry.kind === 'demo' && <small class="player-summary__demo">Demo</small>}
               </span>
-            </button>
+              <span class="player-summary__card">{cardName(entry.cardId)}</span>
+              <span class="player-summary__points">{progress.completedSquares}/25 · {t('bingoCount', { count: progress.completedLines })}</span>
+            </span>
           </li>
         )
       })}
