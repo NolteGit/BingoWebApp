@@ -8,6 +8,7 @@ import { CardPicker } from './CardPicker'
 import { NewBingoDialog } from './NewBingoDialog'
 import { PlayerOverviewDialog } from './PlayerOverviewDialog'
 import { PlayerOverview } from './PlayerOverview'
+import { UiIcon } from './UiIcon'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
 import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
 import { acceptIncomingSnapshot, connectLiveRoom } from './room-live'
@@ -352,7 +353,7 @@ export function App() {
     <main class="page-shell">
       <div class="app-frame">
         <header class="topbar">
-          <span class="brand-mark" aria-hidden="true">B</span>
+          <span class="brand-mark brand-mark--gw2" aria-hidden="true">2</span>
           <span class="brand-name">GW2 Bingo</span>
           <span class="status-pill">{roomCode ? t('roomCodeTag', {code: roomCode}) : t('multiplayer')}</span>
           <div class="language-switch" role="group" aria-label="Interface language">
@@ -371,7 +372,7 @@ export function App() {
               <h2>{t('createHeading')}</h2>
               <p>{t('createDescription')}</p>
               <button type="button" class="primary-button" disabled={working || hasInvalidRoomPath} onClick={() => void createNewRoom()}>
-                {working ? t('creatingRoom') : t('createRoom')}
+                <UiIcon name="plus" />{working ? t('creatingRoom') : t('createRoom')}
               </button>
               {hasInvalidRoomPath && <>
                 <p role="alert">{t('invalidLink')}</p>
@@ -409,7 +410,7 @@ export function App() {
                         onClick={() => { playerDialogTriggerRef.current = newBingoButtonRef.current; setPlayerAction('restart') }}>{t('restart')}</button>
                       <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
                         disabled={working || saving || recovering || syncBlocked}
-                        onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>{t('leave')}</button>
+                        onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}><UiIcon name="exit" />{t('leave')}</button>
                     </div>
                     <p class="form-note">{t('lobbyProgressNote')}</p>
                   </>
@@ -439,11 +440,11 @@ export function App() {
                 <div class="room-tools__card">
                   <span class="room-tools__label">{t('roomCode')}</span>
                   <strong class="room-tools__code">{roomCode}</strong>
-                  <button class="secondary-button" type="button" onClick={() => void copyLink()}>{t('copyLink')}</button>
+                  <button class="secondary-button" type="button" onClick={() => void copyLink()}><UiIcon name="link" />{t('copyLink')}</button>
                 </div>
                 <button class="room-tools__rules" ref={rulesButtonRef} type="button"
                   onClick={() => showLobbyModal('rules', rulesButtonRef.current)}>
-                  <span aria-hidden="true" class="room-tools__rules-icon">ⓘ</span>
+                  <UiIcon name="info" />
                   <span>{t('rulesInfo')}</span>
                   <span aria-hidden="true">›</span>
                 </button>
@@ -467,12 +468,12 @@ export function App() {
               </div>
               <div class="player-actions">
                 <button ref={overviewButtonRef} class="secondary-button overview-trigger" type="button"
-                  onClick={() => setOverviewOpen(true)}>{t('playerOverview')}</button>
+                  onClick={() => setOverviewOpen(true)}><UiIcon name="users" />{t('playerOverview')}</button>
                 <button class="secondary-button" type="button" disabled={saving}
-                  onClick={() => { setOverviewOpen(false); setView('lobby'); setMessage('') }}>{t('toLobby')}</button>
+                  onClick={() => { setOverviewOpen(false); setView('lobby'); setMessage('') }}><UiIcon name="home" />{t('toLobby')}</button>
                 <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
                   disabled={working || saving || recovering || syncBlocked}
-                  onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>{t('leave')}</button>
+                  onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}><UiIcon name="exit" />{t('leave')}</button>
               </div>
             </div>
             <div class={`save-status save-status--${connection}`} role="status" aria-live="polite">

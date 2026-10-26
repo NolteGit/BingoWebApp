@@ -1515,3 +1515,216 @@ h1 {
   .room-tools__card { flex-direction: row; flex-wrap: wrap; align-items: center; }
   .room-tools__card .secondary-button { width: 100%; }
 }
+
+/* Step 19 — Subtle GW2-inspired finish, without changing the game layout.
+   The supplied logo is used only as a low-contrast lobby watermark. The
+   monogram is original CSS lettering, not a replacement for official art. */
+:root {
+  --bingo-focus: #b67f39;
+  --bingo-control-radius: 10px;
+  --bingo-control-shadow: 0 2px 5px #46301919;
+}
+
+/* A restrained red/gold detail in the navy frame, not a large fantasy banner. */
+.topbar {
+  position: relative;
+  background: linear-gradient(105deg, #101d2d 5%, #172639 100%);
+}
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 30px;
+  width: 74px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #a64c43 28%, #c79c58 68%, transparent);
+  pointer-events: none;
+}
+.brand-mark--gw2 {
+  position: relative;
+  overflow: hidden;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #7f2324;
+  text-shadow: 0 1px 0 #f4dba9;
+  background: linear-gradient(145deg, #f5daa2, #cca45e);
+  box-shadow: inset 0 1px 0 #ffedc0, 0 2px 5px #00000022;
+}
+.brand-mark--gw2::after {
+  content: '';
+  position: absolute;
+  width: 27px;
+  height: 2px;
+  right: -8px;
+  bottom: 8px;
+  transform: rotate(-36deg);
+  background: #a83c33;
+  border-radius: 50%;
+  opacity: .7;
+}
+.brand-name { font-weight: 700; }
+.status-pill { font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+
+/* Quiet guild-inspired paper watermark on larger screens only.
+   The source JPG is intentionally unmodified and displayed decoratively. */
+.lobby--compact { position: relative; isolation: isolate; }
+.lobby--compact::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  right: 24px;
+  width: min(195px, 26%);
+  aspect-ratio: 474 / 295;
+  background: url('/art/gw2-logo-reference.jpg') center / contain no-repeat;
+  mix-blend-mode: multiply;
+  opacity: .105;
+  pointer-events: none;
+}
+.lobby-header { position: relative; }
+.lobby-header::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  bottom: -4px;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  border: 1px solid #b89454;
+  background: #ead19e;
+  pointer-events: none;
+}
+
+/* Unified button rhythm: one control height, one radius, and clear states. */
+.primary-button,
+.secondary-button,
+.danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border-radius: var(--bingo-control-radius);
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: var(--bingo-control-shadow);
+  transition: background-color 140ms ease, border-color 140ms ease,
+    box-shadow 140ms ease, transform 140ms ease;
+}
+.ui-icon {
+  display: block;
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+  stroke-width: 1.9;
+}
+.primary-button:enabled:hover,
+.secondary-button:enabled:hover,
+.danger-button:enabled:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px #46301929;
+}
+.primary-button:enabled:active,
+.secondary-button:enabled:active,
+.danger-button:enabled:active { transform: translateY(0); box-shadow: var(--bingo-control-shadow); }
+.primary-button:disabled,
+.secondary-button:disabled,
+.danger-button:disabled { cursor: not-allowed; box-shadow: none; transform: none; }
+.secondary-button:disabled:hover { background: #fff8e9; }
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.danger-button:focus-visible,
+.room-tools__rules:focus-visible,
+.room-navigation-link:focus-visible,
+.card-picker__option:focus-visible,
+.card-picker__close:focus-visible,
+.language-switch button:focus-visible,
+.play-square:focus-visible {
+  outline: 3px solid var(--bingo-focus);
+  outline-offset: 3px;
+}
+
+/* Inputs and picker share the same control treatment, with restrained focus. */
+.join-form input, .join-form select, .card-picker__trigger {
+  min-height: 43px;
+  border-radius: var(--bingo-control-radius);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.join-form input:focus-visible,
+.join-form select:focus-visible,
+.card-picker__trigger:focus-visible {
+  border-color: var(--bingo-focus);
+  outline: 2px solid #c79e6280;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px #b67f3919;
+}
+.card-picker__popover {
+  border-radius: 15px;
+  box-shadow: 0 18px 54px #0712206e, 0 3px 12px #6041221a;
+}
+.card-picker__option--selected {
+  background: #f5e7cf;
+  font-weight: 700;
+}
+.card-picker__option:hover,
+.card-picker__option:focus-visible { background: #f5e4c8; }
+
+/* Compact invitation rail and rule action are visually related to the form. */
+.room-tools__card, .room-tools__rules,
+.join-panel, .players-panel { box-shadow: 0 4px 14px #5b391719, inset 0 1px 0 #fffefa; }
+.room-tools__rules {
+  min-height: 48px;
+  border-radius: var(--bingo-control-radius);
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+.room-tools__rules .ui-icon { color: var(--bingo-burgundy); width: 19px; height: 19px; }
+.room-tools__rules:hover { box-shadow: 0 4px 11px #5b39171c; }
+.room-tools__rules > :last-child { font-size: 1.2rem; }
+.room-tools__card .secondary-button { min-height: 41px; }
+
+/* Keep the scoreboard and its popup calm; only enhance depth/focus. */
+.player-overview-dialog {
+  background: linear-gradient(160deg, #fff9ed, #f7e8cf);
+  box-shadow: 0 24px 75px #07142099, 0 0 0 1px #fff5df5c inset;
+}
+.player-overview-dialog::backdrop { background: #061422a0; backdrop-filter: blur(2px); }
+.player-summary { box-shadow: inset 0 1px 0 #fffefa, 0 1px 2px #6c4e260c; }
+
+/* The original card's warm print feel, with modern feedback for interactive tiles. */
+.play-square,
+.preview-square { border-radius: 9px; }
+.play-square {
+  transition: background-color 140ms ease, border-color 140ms ease,
+    box-shadow 140ms ease, transform 140ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .play-square:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 #fffbf0, 0 4px 9px #61432124;
+  }
+}
+.play-square:not(:disabled):active { transform: translateY(0); }
+.play-square--checked { box-shadow: inset 0 1px 0 #ffffff21, 0 2px 4px #25513a30; }
+.play-square--free, .preview-square--free {
+  background-image: linear-gradient(145deg, #fff2df, #f4d9c6);
+}
+.play-square--free small, .preview-square--free small { letter-spacing: .065em; }
+
+@media (max-width: 700px) {
+  .lobby--compact::before { display: none; }
+}
+@media (max-width: 540px) {
+  .topbar::before { left: 18px; }
+  .primary-button, .secondary-button, .danger-button { min-height: 42px; padding: 9px 12px; }
+  .player-heading--compact .player-actions { gap: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .primary-button, .secondary-button, .danger-button,
+  .room-tools__rules, .join-form input, .join-form select,
+  .card-picker__trigger, .play-square { transition: none; }
+}
