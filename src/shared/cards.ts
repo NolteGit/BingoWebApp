@@ -124,7 +124,7 @@ export function generateRandomCard(chooseIndex: (maxExclusive: number) => number
   }
   const squares = tasks.slice(0, 24)
   squares.splice(FREE_SQUARE_INDEX, 0, FREE_SQUARE_LABEL)
-  return makeCard(RANDOM_CARD_ID, 'Zufallskarte', squares)
+  return makeCard(RANDOM_CARD_ID, 'Random card', squares)
 }
 
 /** Cryptographically sourced, unbiased bounded integer for server-side shuffling. */

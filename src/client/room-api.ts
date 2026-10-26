@@ -1,3 +1,4 @@
+import { strings, translate, type Locale, type TranslationKey } from './i18n'
 import { createInitialCheckedMask, setSquareChecked } from '../shared/bingo'
 import { cardFromSnapshot } from '../shared/cards'
 
@@ -68,16 +69,16 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
     response = await fetch(path, { ...init, credentials: 'same-origin', cache: 'no-store',
       headers: { ...(init?.body ? { 'Content-Type': 'application/json' } : {}), ...init?.headers } })
   } catch {
-    throw new ApiError(0, 'NETWORK', 'Keine Verbindung zum Server. Bitte erneut versuchen.')
+    throw new ApiError(0, 'NETWORK', 'Cannot reach the server. Please try again.')
   }
   let result: unknown
   try { result = await response.json() } catch {
-    throw new ApiError(response.status, 'INVALID_RESPONSE', 'Ungültige Serverantwort.')
+    throw new ApiError(response.status, 'INVALID_RESPONSE', 'Invalid server response.')
   }
   if (!response.ok) {
     const payload = result as { error?: { code?: string; message?: string } }
     throw new ApiError(response.status, payload?.error?.code ?? 'REQUEST_FAILED',
-      payload?.error?.message ?? 'Anfrage fehlgeschlagen.')
+      payload?.error?.message ?? 'Request failed.')
   }
   return result as T
 }
@@ -112,7 +113,7 @@ export function roomCodeFromPath(path: string): string | null {
 
 /** Validate server indices before converting to the shared bingo bitmask. */
 export function checkedIndicesToMask(indices: readonly number[]): number {
-  if (!Array.isArray(indices) || !indices.includes(12)) throw new Error('Ungültige gespeicherte Bingokarte.')
+  if (!Array.isArray(indices) || !indices.includes(12)) throw new Error('Invalid saved bingo card.')
   let mask = createInitialCheckedMask()
   for (const index of indices) {
     mask = setSquareChecked(mask, index, true)
@@ -123,7 +124,7 @@ export function checkedIndicesToMask(indices: readonly number[]): number {
 /** Don't let malformed or unknown card IDs reach the player overview. */
 export function assertRoomSnapshot(snapshot: RoomSnapshot): RoomSnapshot {
   if (snapshot.type !== 'room.snapshot' || !Array.isArray(snapshot.players)) {
-    throw new Error('Ungültige Raumdaten.')
+    throw new Error('Invalid room data.')
   }
   for (const player of snapshot.players) {
     cardFromSnapshot(player.cardId, player.card)
@@ -132,6 +133,12 @@ export function assertRoomSnapshot(snapshot: RoomSnapshot): RoomSnapshot {
   return snapshot
 }
 
-export function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Unbekannter Fehler. Bitte erneut versuchen.'
+export function errorMessage(error: unknown, locale: Locale = 'de'): string {
+  if (error instanceof ApiError) {
+    if (Object.prototype.hasOwnProperty.call(strings.de, error.code)) {
+      return translate(locale, error.code as TranslationKey)
+    }
+    return error.message
+  }
+  return error instanceof Error ? error.message : translate(locale, 'unknownError')
 }

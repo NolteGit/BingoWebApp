@@ -11,12 +11,12 @@ export interface LocalPlayer {
 /** Validate the join form without inventing a room, player ID, or backend session. */
 export function createLocalPlayer(rawName: string, cardId: number): LocalPlayer {
   if (typeof rawName !== 'string') {
-    throw new TypeError('Spielername muss Text sein.')
+    throw new TypeError('Player name must be text.')
   }
 
   const name = rawName.trim().replace(/\s+/g, ' ')
   if (!name || name.length > MAX_PLAYER_NAME_LENGTH) {
-    throw new RangeError(`Spielername muss 1 bis ${MAX_PLAYER_NAME_LENGTH} Zeichen haben.`)
+    throw new RangeError(`Player name must contain 1 to ${MAX_PLAYER_NAME_LENGTH} characters.`)
   }
 
   // This throws for any nonexistent preset, including non-integers.

@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { createPortal } from 'preact/compat'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { getCardById, selectableCards, RANDOM_CARD_ID } from '../shared/cards'
@@ -17,25 +18,26 @@ interface CardPickerMenuProps extends CardPickerProps {
 
 /** Shared menu contents: hover/focus previews do not change the player's selection. */
 export function CardPickerMenu({ value, onChange, previewId, onPreview, onClose, optionRefs }: CardPickerMenuProps) {
+  const { t, cardName } = useI18n()
   return (
     <div class="card-picker__layout">
-      <div class="card-picker__options" role="group" aria-label="Verfügbare Bingokarten">
+      <div class="card-picker__options" role="group" aria-label={t('availableCards')}>
         {selectableCards.map((card, index) => (
           <button key={card.id} ref={element => { if (optionRefs) optionRefs.current[index] = element }}
             class={`card-picker__option${card.id === value ? ' card-picker__option--selected' : ''}`}
             type="button" aria-pressed={card.id === value}
             onMouseEnter={() => onPreview(card.id)} onFocus={() => onPreview(card.id)}
             onClick={() => onChange(card.id)}>
-            {card.name}{card.id === value && <span aria-hidden="true">✓</span>}
+            {cardName(card.id)}{card.id === value && <span aria-hidden="true">✓</span>}
           </button>
         ))}
       </div>
       <div class="card-picker__detail">
         <div class="card-picker__detail-heading">
-          <span>Vorschau · noch nicht übernommen</span>
-          <button type="button" class="card-picker__close" onClick={onClose} aria-label="Kartenauswahl schließen">×</button>
+          <span>{t('previewPending')}</span>
+          <button type="button" class="card-picker__close" onClick={onClose} aria-label={t('closePicker')}>×</button>
         </div>
-        {previewId === RANDOM_CARD_ID && <p class="form-note">Beispielkarte – beim Start erhältst du eine neu gemischte Karte.</p>}
+        {previewId === RANDOM_CARD_ID && <p class="form-note">{t('sampleRandom')}</p>}
         <CardPreview card={getCardById(previewId)} titleId="card-picker-preview-title" />
       </div>
     </div>
@@ -44,6 +46,7 @@ export function CardPickerMenu({ value, onChange, previewId, onPreview, onClose,
 
 /** A custom picker is needed because native OS select menus cannot show reliable hover previews. */
 export function CardPicker({ value, onChange }: CardPickerProps) {
+  const { t, cardName } = useI18n()
   const [open, setOpen] = useState(false)
   const [previewId, setPreviewId] = useState(value)
   const [position, setPosition] = useState({ top: 12, left: 12 })
@@ -107,10 +110,10 @@ export function CardPicker({ value, onChange }: CardPickerProps) {
       <button id="card-choice" ref={triggerRef} class="card-picker__trigger" type="button"
         aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? 'card-picker-popover' : undefined}
         onClick={() => open ? close(true) : openPicker()}>
-        {getCardById(value).name}<span aria-hidden="true">⌄</span>
+        {cardName(value)}<span aria-hidden="true">⌄</span>
       </button>
       {open && typeof document !== 'undefined' && createPortal(
-        <div id="card-picker-popover" ref={popoverRef} role="dialog" aria-label="Bingokarte auswählen"
+        <div id="card-picker-popover" ref={popoverRef} role="dialog" aria-label={t('chooseCardDialog')}
           class="card-picker__popover" style={{ top: position.top, left: position.left }} onKeyDown={handleKeyboard}>
           <CardPickerMenu value={value} previewId={previewId} onPreview={setPreviewId}
             onChange={cardId => { onChange(cardId); close(true) }} onClose={() => close(true)} optionRefs={optionRefs} />

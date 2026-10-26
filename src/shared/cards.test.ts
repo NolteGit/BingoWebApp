@@ -36,7 +36,7 @@ describe('canonical WvW card catalog', () => {
     expect(getCardById(1).rows[0][0]).toBe('Jemand lacht im Discord')
     expect(getCardById(1).rows[0][4]).toBe('Gegner taucht plötzlich hinter der Gruppe auf')
     expect(getCardById(10).rows[4][4]).toBe('Alle im Discord lachen')
-    expect(getCardById(RANDOM_CARD_ID).name).toBe('Zufallskarte')
+    expect(getCardById(RANDOM_CARD_ID).name).toBe('Random card')
     expect(() => getCardById(12)).toThrow(RangeError)
   })
 

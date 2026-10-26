@@ -10,7 +10,7 @@
   "cards": [
     {
       "id": 1,
-      "name": "Karte 1",
+      "name": "Card 1",
       "rows": [
         [
           "t001",
@@ -51,7 +51,7 @@
     },
     {
       "id": 2,
-      "name": "Karte 2",
+      "name": "Card 2",
       "rows": [
         [
           "t007",
@@ -92,7 +92,7 @@
     },
     {
       "id": 3,
-      "name": "Karte 3",
+      "name": "Card 3",
       "rows": [
         [
           "t013",
@@ -133,7 +133,7 @@
     },
     {
       "id": 4,
-      "name": "Karte 4",
+      "name": "Card 4",
       "rows": [
         [
           "t033",
@@ -174,7 +174,7 @@
     },
     {
       "id": 5,
-      "name": "Karte 5",
+      "name": "Card 5",
       "rows": [
         [
           "t008",
@@ -215,7 +215,7 @@
     },
     {
       "id": 6,
-      "name": "Karte 6",
+      "name": "Card 6",
       "rows": [
         [
           "t055",
@@ -256,7 +256,7 @@
     },
     {
       "id": 7,
-      "name": "Karte 7",
+      "name": "Card 7",
       "rows": [
         [
           "t051",
@@ -297,7 +297,7 @@
     },
     {
       "id": 8,
-      "name": "Karte 8",
+      "name": "Card 8",
       "rows": [
         [
           "t026",
@@ -338,7 +338,7 @@
     },
     {
       "id": 9,
-      "name": "Karte 9",
+      "name": "Card 9",
       "rows": [
         [
           "t032",
@@ -379,7 +379,7 @@
     },
     {
       "id": 10,
-      "name": "Karte 10",
+      "name": "Card 10",
       "rows": [
         [
           "t030",

@@ -1,3 +1,5 @@
+import type { TranslationKey } from './i18n'
+
 import {
   ApiError, assertRoomSnapshot, checkedIndicesToMask, getOwnSession, getRoom, saveSquare,
   type OwnPlayer, type RoomSnapshot, type SquareResponse,
@@ -14,13 +16,13 @@ export async function recoverSavedState(
   const room = assertRoomSnapshot(snapshot)
   const player = session.player
   if (session.roomCode !== code || room.roomCode !== code || player.playerId !== expectedPlayerId) {
-    throw new Error('Spielsitzung passt nicht zum gespeicherten Spieler.')
+    throw new Error('Session does not match the saved player.')
   }
   if (!room.players.some(entry => entry.playerId === player.playerId)) {
-    throw new Error('Spieler wurde in der Raumübersicht nicht gefunden.')
+    throw new Error('Player not found in room overview.')
   }
   if (player.playerRevision < minimumPlayerRevision) {
-    throw new Error('Server meldet einen älteren als den zuletzt bestätigten Spielstand.')
+    throw new Error('Server reported an older game state than the last confirmed state.')
   }
   checkedIndicesToMask(player.checkedIndices)
   return { player, room }
@@ -50,7 +52,7 @@ export async function saveSquareSafely(
   try {
     const saved = await api.saveSquare(code, index, checked, player.playerRevision)
     if (saved.playerId !== player.playerId || saved.playerRevision < player.playerRevision) {
-      throw new Error('Ungültige Speicherbestätigung.')
+      throw new Error('Invalid save confirmation.')
     }
     checkedIndicesToMask(saved.checkedIndices)
     return { status: 'saved', state: saved }
@@ -81,11 +83,7 @@ export function connectionState(input: {
   return input.live ? 'live' : 'polling'
 }
 
-export const CONNECTION_LABELS: Record<ConnectionState, string> = {
-  live: 'Live · gespeichert',
-  polling: 'Verbunden · gespeichert (Abfrage)',
-  saving: 'Speichern…',
-  recovering: 'Synchronisiere…',
-  offline: 'Verbindung verloren · letzter bestätigter Stand',
-  unverified: 'Speicherung unbestätigt · Klicks gesperrt',
+export const CONNECTION_LABEL_KEYS: Record<ConnectionState, TranslationKey> = {
+  live: 'connectLive', polling: 'connectPolling', saving: 'connectSaving',
+  recovering: 'connectRecovering', offline: 'connectOffline', unverified: 'connectUnverified',
 }

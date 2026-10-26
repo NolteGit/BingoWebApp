@@ -61,7 +61,7 @@ describe('save/recovery safety', () => {
     await expect(recoverSavedState('ABCDEFGH', 'p1', 1, calls)).rejects.toThrow()
     vi.mocked(calls.getOwnSession).mockResolvedValueOnce({ ...response, roomCode: 'IJKLMNOP' })
     await expect(recoverSavedState('ABCDEFGH', 'p1', 1, calls)).rejects.toThrow()
-    await expect(recoverSavedState('ABCDEFGH', 'p1', 2, calls)).rejects.toThrow('älteren')
+    await expect(recoverSavedState('ABCDEFGH', 'p1', 2, calls)).rejects.toThrow('older game state')
   })
   it('refuses malformed stored square data before allowing edits', async () => {
     const calls = api()

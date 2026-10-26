@@ -1176,3 +1176,32 @@ h1 {
     line-height: 1.2;
   }
 }
+
+/* Compact DE/EN control: the gameplay actions remain the visual priority. */
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  color: #7f98ad;
+  font-size: 0.72rem;
+}
+.language-switch button {
+  border: 0;
+  background: transparent;
+  color: #9eafbf;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 5px 4px;
+  border-radius: 4px;
+}
+.language-switch button:hover,
+.language-switch button:focus-visible { color: #f1f5fa; background: #294154; }
+.language-switch .language-switch__active { color: #b5ead4; }
+@media (max-width: 540px) {
+  .topbar { flex-wrap: wrap; gap: 7px 10px; }
+  .brand-name { margin-right: auto; }
+  .status-pill { margin-left: 0; }
+  .language-switch { margin-left: auto; }
+}

@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useEffect, useRef } from 'preact/hooks'
 import type { ComparisonEntry } from './comparison'
 import { PlayerOverview } from './PlayerOverview'
@@ -14,6 +15,7 @@ interface ComparisonDrawerProps {
 
 /** The list remains visible while a player's card expands alongside or below it. */
 export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismiss, onAfterClose, note }: ComparisonDrawerProps) {
+  const { t } = useI18n()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -33,11 +35,11 @@ export function ComparisonDrawer({ open, entries, selectedId, onSelect, onDismis
       onClose={onAfterClose}
     >
       <div class="dialog-topline">
-        <h2 id="compare-title">Spielervergleich</h2>
-        <button class="secondary-button" type="button" onClick={onDismiss}>Schließen</button>
+        <h2 id="compare-title">{t('gameComparison')}</h2>
+        <button class="secondary-button" type="button" onClick={onDismiss}>{t('close')}</button>
       </div>
       <p class="comparison-note" id="compare-note">
-        {note ?? 'Nur dein eigener Fortschritt ist echt. Mira und Tom sind Beispieldaten.'}
+        {note ?? t('comparisonDemo')}
       </p>
       <PlayerOverview
         entries={entries}

@@ -1,11 +1,12 @@
 import { render } from 'preact'
 import { App } from './App'
+import { LanguageProvider } from './i18n'
 import './styles.css'
 
 const root = document.getElementById('app')
 
 if (!root) {
-  throw new Error('Anwendung konnte nicht gestartet werden: #app fehlt.')
+  throw new Error('Application root #app is missing.')
 }
 
-render(<App />, root)
+render(<LanguageProvider><App /></LanguageProvider>, root)

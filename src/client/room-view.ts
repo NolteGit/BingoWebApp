@@ -1,3 +1,4 @@
+import { translate, type Locale } from './i18n'
 import { getBingoProgress } from '../shared/bingo'
 import { cardFromSnapshot } from '../shared/cards'
 import type { ComparisonEntry } from './comparison'
@@ -21,7 +22,7 @@ export function maskForOwnPlayer(player: OwnPlayer | null): number {
 }
 
 /** A compact status phrase; the counter itself is calculated from saved marks. */
-export function playerStatus(player: OwnPlayer): string {
+export function playerStatus(player: OwnPlayer, locale: Locale = 'de'): string {
   const progress = getBingoProgress(maskForOwnPlayer(player))
-  return `${progress.completedSquares}/25 Felder · ${progress.completedLines} Bingo`
+  return `${progress.completedSquares}/25 ${translate(locale, 'fields')} · ${translate(locale, 'bingoCount', {count: progress.completedLines})}`
 }

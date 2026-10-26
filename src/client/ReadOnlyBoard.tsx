@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { BINGO_LINES, getBingoProgress, isSquareChecked } from '../shared/bingo'
 import { FREE_SQUARE_INDEX, getFlatSquares, type BingoCard } from '../shared/cards'
 
@@ -8,11 +9,12 @@ interface ReadOnlyBoardProps {
 
 /** Comparison only: ordinary divs, no click handlers and no ability to change another card. */
 export function ReadOnlyBoard({ card, checkedMask }: ReadOnlyBoardProps) {
+  const { t, cardName } = useI18n()
   const progress = getBingoProgress(checkedMask)
   const winningSquares = new Set(progress.completedLineIndices.flatMap((line) => BINGO_LINES[line]))
 
   return (
-    <div class="board-preview compare-board" role="group" aria-label={`Schreibgeschützte Bingokarte: ${card.name}`}>
+    <div class="board-preview compare-board" role="group" aria-label={t('readOnlyBoard', {card: cardName(card.id)})}>
       {getFlatSquares(card).map((objective, index) => {
         const checked = isSquareChecked(checkedMask, index)
         const isFree = index === FREE_SQUARE_INDEX
@@ -24,8 +26,8 @@ export function ReadOnlyBoard({ card, checkedMask }: ReadOnlyBoardProps) {
           >
             {checked && <span class="play-square__mark" aria-hidden="true">✓</span>}
             <span class="play-square__text">{objective}</span>
-            {isFree && <small>FREIFELD</small>}
-            <span class="sr-only">{isFree ? ', Freifeld' : checked ? ', abgehakt' : ', offen'}</span>
+            {isFree && <small>{t('freeField')}</small>}
+            <span class="sr-only">{`, ${isFree ? t('freeFieldAria') : checked ? t('checked') : t('unchecked')}`}</span>
           </div>
         )
       })}

@@ -7,7 +7,7 @@
 1. Current user instructions in the conversation (explicitly agreed changes may supersede docs).
 2. `docs/01-product-spec.md` and `docs/07-game-rules.md` for user-visible semantics.
 3. `docs/06-api-realtime.md`, `docs/05-data-model.md` and `docs/08-security-reliability.md` for implementation contracts.
-4. `data/tasks.json` for task IDs and objective wording, `data/cards.json` for the ten original presets and positions, and `docs/26-task-library-and-random-cards.md` for editing and random-card rules. `docs/13-card-catalog.md` is the original human-readable mirror.
+4. `src/client/i18n.tsx` for localized interface copy, `data/tasks.json` for task IDs and objective wording, `data/cards.json` for the ten original presets and positions, and `docs/26-task-library-and-random-cards.md` for editing and random-card rules. `docs/13-card-catalog.md` is the original human-readable mirror.
 5. `docs/adr/` for technical decisions and their rationale.
 6. `PROJECT_STATUS.md` for **verified** implementation status. Verify against code and tests before claiming anything works.
 
@@ -15,7 +15,7 @@ If requirements conflict, call out the conflict instead of silently changing beh
 
 ## Invariants — do not regress
 
-- End-user experience **entirely in German**; technical docs/code in English.
+- Interface defaults to **German** and offers a **DE / EN** switch; objectives, including the center `Bonusfeld`, remain German. New UI text belongs only in `src/client/i18n.tsx`. Internal code/docs are English.
 - Preserve the ten original 5×5 presets and positions. An eleventh **Zufallskarte** choice generates a new 24-task mixture per joining player. Tasks are centralized by stable ID; never randomize existing players' stored cards.
 - Index 12 (row 3, column 3) is an **immutable free square** and starts checked.
 - One room has many players. More than one player may select the same card. Each player's marks are independent.

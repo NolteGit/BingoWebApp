@@ -1,11 +1,12 @@
 # Project status
 
-**Documentation updated: 2026-10-26 (random-card patch).** This file summarizes the current project. Historic step-by-step handoffs remain in numbered `docs/` test and design files.
+**Documentation updated: 2026-10-26 (DE/EN interface patch).** This file summarizes the current project. Historic step-by-step handoffs remain in numbered `docs/` test and design files.
 
 ## Current implementation
 
 | Feature | State | Evidence / comments |
 | --- | --- | --- |
+| DE/EN interface toggle, German by default | Implemented in pending patch | `src/client/i18n.tsx`; tasks remain German, switching never changes stored data |
 | Ten fixed cards, task library, and random choice | Implemented in pending patch | `data/tasks.json`, `data/cards.json`; verify random join and stored snapshot locally |
 | Personal gameplay and bingo detection | Implemented | Click/uncheck, 12 lines, server calculations |
 | Rooms and shareable invitations | Implemented | Real room creation and links, deployed UI demonstrated |
@@ -23,7 +24,8 @@
 ## Verification
 
 - **Previously verified locally:** TypeScript check, production build, and **101 automated tests** during the Step 13 deployment preparation stage.
-- Later UI, personal-reset, leave-room, and mobile patches were delivered and deployed/visually reviewed, but a *fresh complete test run of this exact repository snapshot* has **not** been supplied in the conversation.
+- Recent random-card testing reported **115/117 passing**, with two outdated card-ID assertions. A follow-up correction patch was supplied; a passing full test run of that correction has not yet been reported.
+- The new DE/EN patch has passed both TypeScript configurations in the patch-generation environment. Full Vitest and production build could not run there because the uploaded Windows dependencies lack the Linux-native build bindings. These checks still need to run locally.
 - Production pages, joining, saved progress and comparison have been demonstrated in screenshots. This is not a substitute for exhaustive outage, concurrency or security testing.
 
 Before sharing a new release:
@@ -46,6 +48,6 @@ Test a fresh room with two browsers, a marked square, refreshing, leaving/rejoin
 - A downloaded project ZIP containing `.git/` or `.wrangler/` is **not** safe to distribute as source. Use a clean Git clone or the source export instructions in `docs/25-sharing-and-privacy.md`.
 - Documentation containing old milestones is historical context; refer to the current tests and code for behavior.
 
-## New task-library feature pending local verification
+## Recent task-library and translation changes pending local verification
 
-The new `data/tasks.json` defines every task in one place. Existing presets refer to stable task IDs. Card ID 11 generates and stores a unique random card per player. TypeScript checks passed in the patch-generation environment; the complete Windows test suite and Wrangler migration test must be run before public deployment. See `docs/26-task-library-and-random-cards.md`.
+The new `data/tasks.json` defines every task in one place. Existing presets refer to stable task IDs. Card ID 11 generates and stores a unique random card per player. The interface is now localized through `src/client/i18n.tsx`, always begins in German, and switches immediately between German and English while keeping task text German. Both TypeScript configurations pass; the complete Windows test suite and Wrangler deployment test still need to run. See `docs/26-task-library-and-random-cards.md` and `docs/27-interface-language.md`.

@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import type { ComparisonEntry } from './comparison'
 import { PlayerCardDetail } from './PlayerCardDetail'
@@ -64,6 +65,7 @@ export function nextSelectedPlayerId(selectedId: string | null, clickedId: strin
 
 /** Identical fixed-row leaderboard for lobby and comparison; read-only cards float beside it. */
 export function PlayerOverview({ entries, selectedId, onSelect, detailId, variant }: PlayerOverviewProps) {
+  const { t } = useI18n()
   const [position, setPosition] = useState<PreviewPosition | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const selected = entries.find((entry) => entry.id === selectedId) ?? null
@@ -98,13 +100,13 @@ export function PlayerOverview({ entries, selectedId, onSelect, detailId, varian
           class="player-overview__detail"
           id={detailId}
           role="region"
-          aria-label={`Karte von ${selected.name}`}
+          aria-label={t('cardOf', {name: selected.name})}
           style={{ left: position?.left ?? 12, top: position?.top ?? 12, width: position?.width ?? 480 }}
         >
           <button
             class="player-overview__close"
             type="button"
-            aria-label="Kartenvorschau schließen"
+            aria-label={t('closePreview')}
             onClick={() => onSelect(null)}
           >×</button>
           <PlayerCardDetail entry={selected} />

@@ -1,14 +1,16 @@
 # GW2 WvW Bingo
 
-A small German-language, browser-based **multiplayer 5×5 bingo game** for Guild Wars 2 World vs. World. One player creates a room and shares the link. Everyone picks one of ten fixed bingo cards or a new random card, marks events with a click, and compares progress live.
+A small German-first, bilingual (DE/EN), browser-based **multiplayer 5×5 bingo game** for Guild Wars 2 World vs. World. One player creates a room and shares the link. Everyone picks one of ten fixed bingo cards or a new random card, marks events with a click, and compares progress live.
 
 **Status:** Deployed on Cloudflare Workers and used successfully in browser testing. Automated tests and typecheck/build were reported passing before the latest UI patches. **Re-run all checks after any update.** See [project status](PROJECT_STATUS.md) for verified details and remaining limitations.
 
 ## Play
 
+The interface starts in **German** on every page load. Use the small **DE / EN** switch in the header to change the interface to English. Bingo objectives (including the center Bonusfeld) stay in German in either mode. Language is a local, temporary UI setting and never changes shared cards or stored progress.
+
 1. Open the deployed site and create a room.
 2. Copy the invitation link and share it with friends.
-3. Each person enters a display name, selects one of ten presets or **Zufallskarte**, and starts.
+3. Each person enters a display name, selects one of ten presets or **Zufallskarte / Random card**, and starts.
 4. Click a square to mark/unmark it. The **Bonusfeld** in the middle is always checked. A completed row, column, or diagonal counts as a bingo.
 5. **Zur Lobby** is safe navigation: your saved marks remain. **Bingo fortsetzen** resumes them. **Neues Bingo starten** and **Raum verlassen** require confirmation and delete only your own entry and progress.
 
@@ -71,9 +73,10 @@ To share a source ZIP, **exclude** `.git/`, `.wrangler/`, `node_modules/`, `dist
 | [API contract](docs/06-api-realtime.md) | HTTP/WebSocket API |
 | [Game rules](docs/07-game-rules.md) | Free field and bingo detection |
 | [Task library and random cards](docs/26-task-library-and-random-cards.md) | Add/edit objectives and random cards |
+| [Interface translations](docs/27-interface-language.md) | Manage German/English UI wording |
 | [Card catalog](docs/13-card-catalog.md) | Human-readable original presets |
 | [Requirements matrix](docs/14-requirements-traceability.md) | Feature-to-test mapping |
 
 Other numbered documents record the original specification, implementation history, and detailed manual test recipes. Where an older planning note conflicts with current code, use **the implementation, tests, and this status file** as the source of truth.
 
-**Language:** User interface and card objectives are in German; source code and technical documentation are in English.
+**Language:** The interface supports DE/EN. Bingo objectives remain German. Translations are maintained in [`src/client/i18n.tsx`](src/client/i18n.tsx); see [language toggle guide](docs/27-interface-language.md).

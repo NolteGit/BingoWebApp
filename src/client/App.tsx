@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import { cardFromSnapshot, getCardById } from '../shared/cards'
 import { isSquareChecked } from '../shared/bingo'
@@ -10,7 +11,7 @@ import { PlayerOverview } from './PlayerOverview'
 import { MAX_PLAYER_NAME_LENGTH } from './lobby'
 import { entriesFromRoom, maskForOwnPlayer, playerStatus } from './room-view'
 import { acceptIncomingSnapshot, connectLiveRoom } from './room-live'
-import { CONNECTION_LABELS, connectionState, recoverSavedState, saveSquareSafely } from './reliability'
+import { CONNECTION_LABEL_KEYS, connectionState, recoverSavedState, saveSquareSafely } from './reliability'
 import {
   ApiError, assertRoomSnapshot, createRoom, deleteOwnBingo, errorMessage, getOwnSession, getRoom, joinRoom,
   roomCodeFromPath, type OwnPlayer, type RoomSnapshot,
@@ -22,6 +23,7 @@ type View = 'lobby' | 'game'
 
 /** The server owns game progress. This UI never clears stored marks on navigation. */
 export function App() {
+  const { locale, setLocale, t, cardName } = useI18n()
   const [roomCode, setRoomCode] = useState<string | null>(() =>
     typeof window === 'undefined' ? null : roomCodeFromPath(window.location.pathname))
   const [room, setRoom] = useState<RoomSnapshot | null>(null)
@@ -89,7 +91,7 @@ export function App() {
       setServerReachable(true)
       setView(own ? 'game' : 'lobby')
     }).catch(error => {
-      if (!cancelled) { setServerReachable(false); setMessage(errorMessage(error)) }
+      if (!cancelled) { setServerReachable(false); setMessage(errorMessage(error, locale)) }
     }).finally(() => { if (!cancelled) setLoadingRoom(false) })
     return () => { cancelled = true }
   }, [roomCode, loadAttempt])
@@ -190,7 +192,7 @@ export function App() {
       setLoadingRoom(true)
       setRoomCode(created.roomCode)
       setView('lobby')
-    } catch (error) { setMessage(errorMessage(error)) }
+    } catch (error) { setMessage(errorMessage(error, locale)) }
     finally { setWorking(false) }
   }
 
@@ -206,7 +208,7 @@ export function App() {
       if (currentRoomRef.current !== oldRoomCode || currentPlayerRef.current?.playerId !== oldPlayerId) return
       if (response.status !== 'deleted' || response.playerId !== oldPlayerId ||
         response.room?.roomCode !== oldRoomCode) {
-        throw new Error('Löschung konnte nicht bestätigt werden. Bitte erneut versuchen.')
+        throw new Error(t('deleteUnconfirmed'))
       }
       const confirmedRoom = assertRoomSnapshot(response.room)
       setPlayer(null)
@@ -222,14 +224,14 @@ export function App() {
         window.history.pushState({}, '', '/')
         setRoomCode(null)
         setRoom(null)
-        setMessage('Du hast den Raum verlassen.')
+        setMessage(t('roomLeft'))
       } else {
         setRoom(confirmedRoom)
-        setMessage('Altes Bingo gelöscht. Du kannst jetzt neu starten.')
+        setMessage(t('bingoDeleted'))
       }
     } catch (error) {
       // A lost response must not silently discard the local confirmed state.
-      setMessage(`Löschung nicht bestätigt: ${errorMessage(error)} Bitte ggf. Seite neu laden.`)
+      setMessage(t('deleteFailure', {error: errorMessage(error, locale)}))
     } finally { setWorking(false) }
   }
 
@@ -248,8 +250,8 @@ export function App() {
         const snapshot = assertRoomSnapshot(await getRoom(roomCode))
         setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
       }
-      catch { setMessage('Beitritt erfolgreich. Die Spielerübersicht aktualisiert sich gleich.') }
-    } catch (error) { setMessage(errorMessage(error)) }
+      catch { setMessage(t('joinedPending')) }
+    } catch (error) { setMessage(errorMessage(error, locale)) }
     finally { setWorking(false) }
   }
 
@@ -264,13 +266,13 @@ export function App() {
       // Ignore a response for a room/player that was navigated away from in the meantime.
       if (currentRoomRef.current !== roomCode || currentPlayerRef.current?.playerId !== active.playerId) return
       if ((currentPlayerRef.current?.playerRevision ?? 0) > recovered.player.playerRevision) {
-        throw new Error('Ein neuerer Spielstand wird noch abgeglichen.')
+        throw new Error(t('newerStatePending'))
       }
       setPlayer(previous => previous?.playerId === active.playerId ? recovered.player : previous)
       setRoom(previous => acceptIncomingSnapshot(previous, recovered.room) ? recovered.room : previous)
       setSyncBlocked(false)
       setServerReachable(true)
-      setMessage('Verbindung wiederhergestellt. Gespeicherten Stand geladen – bitte letztes Häkchen prüfen.')
+      setMessage(t('restored'))
     } catch {
       if (currentRoomRef.current === roomCode) {
         setSyncBlocked(true)
@@ -324,21 +326,21 @@ export function App() {
           if (currentRoomRef.current === activeRoom) {
             setRoom(previous => acceptIncomingSnapshot(previous, snapshot) ? snapshot : previous)
           }
-        } catch { setMessage('Feld gespeichert. Spielerübersicht wird wieder synchronisiert.') }
+        } catch { setMessage(t('savedOverviewSync')) }
       } else if (result.status === 'recovered') {
         setPlayer(previous => previous?.playerId === result.player.playerId &&
           previous.playerRevision <= result.player.playerRevision ? result.player : previous)
         setRoom(previous => acceptIncomingSnapshot(previous, result.room) ? result.room : previous)
         setServerReachable(true)
         setMessage(result.conflict
-          ? 'Karte wurde in einem anderen Tab geändert. Aktuellen Stand geladen – bitte erneut klicken.'
-          : 'Speicherantwort verloren. Serverstand geprüft – bitte letztes Häkchen kontrollieren.')
+          ? t('conflict')
+          : t('lostSave'))
       } else {
         setSyncBlocked(true)
         setServerReachable(false)
         setMessage(result.authFailed
-          ? 'Spielsitzung nicht bestätigt. Fortschritt bleibt erhalten; Sitzung im selben Browser wiederherstellen.'
-          : 'Speicherung unbestätigt. Prüfe den Serverstand automatisch – weitere Klicks vorerst gesperrt.')
+          ? t('authUnverified')
+          : t('saveUnverified'))
       }
     } finally {
       writeBusyRef.current = false
@@ -350,8 +352,8 @@ export function App() {
     if (!roomCode) return
     try {
       await navigator.clipboard.writeText(`${window.location.origin}/r/${roomCode}`)
-      setMessage('Einladungslink kopiert.')
-    } catch { setMessage('Bitte den Raumlink aus der Adresszeile kopieren.') }
+      setMessage(t('linkCopied'))
+    } catch { setMessage(t('copyFallback')) }
   }
 
   return (
@@ -360,93 +362,100 @@ export function App() {
         <header class="topbar">
           <span class="brand-mark" aria-hidden="true">B</span>
           <span class="brand-name">GW2 Bingo</span>
-          <span class="status-pill">{roomCode ? `Raum ${roomCode}` : 'Mehrspieler'}</span>
+          <span class="status-pill">{roomCode ? t('roomCodeTag', {code: roomCode}) : t('multiplayer')}</span>
+          <div class="language-switch" role="group" aria-label="Interface language">
+            <button type="button" class={locale === 'de' ? 'language-switch__active' : ''}
+              aria-pressed={locale === 'de'} onClick={() => { setLocale('de'); setMessage('') }}>DE</button>
+            <span aria-hidden="true">/</span>
+            <button type="button" class={locale === 'en' ? 'language-switch__active' : ''}
+              aria-pressed={locale === 'en'} onClick={() => { setLocale('en'); setMessage('') }}>EN</button>
+          </div>
         </header>
 
         {roomCode === null ? (
           <section class="lobby lobby--compact" aria-labelledby="page-title">
-            <div class="lobby-header"><h1 id="page-title">Lobby</h1></div>
+            <div class="lobby-header"><h1 id="page-title">{t('lobby')}</h1></div>
             <div class="join-panel room-entry">
-              <h2>Gemeinsam Bingo spielen</h2>
-              <p>Erstelle einen Raum und teile den Link mit deinen Freunden. Wer später dazukommt, kann direkt mitspielen.</p>
+              <h2>{t('createHeading')}</h2>
+              <p>{t('createDescription')}</p>
               <button type="button" class="primary-button" disabled={working || hasInvalidRoomPath} onClick={() => void createNewRoom()}>
-                {working ? 'Raum wird erstellt…' : 'Neuen Raum erstellen'}
+                {working ? t('creatingRoom') : t('createRoom')}
               </button>
               {hasInvalidRoomPath && <>
-                <p role="alert">Ungültiger Raumlink. Bitte den vollständigen Einladungslink verwenden.</p>
-                <button class="secondary-button" type="button" onClick={() => { window.history.pushState({}, '', '/'); setMessage('') }}>Zur Startseite</button>
+                <p role="alert">{t('invalidLink')}</p>
+                <button class="secondary-button" type="button" onClick={() => { window.history.pushState({}, '', '/'); setMessage('') }}>{t('startPage')}</button>
               </>}
             </div>
           </section>
         ) : loadingRoom ? (
-          <section class="lobby lobby--compact" aria-live="polite"><h1>Lade Raum…</h1></section>
+          <section class="lobby lobby--compact" aria-live="polite"><h1>{t('loadingRoom')}</h1></section>
         ) : !room ? (
           <section class="lobby lobby--compact">
-            <h1>Raum nicht erreichbar</h1>
-            <p>Der Raum konnte nicht geladen werden. Die gespeicherten Daten werden dadurch nicht gelöscht.</p>
-            <button class="secondary-button" type="button" onClick={() => setLoadAttempt(previous => previous + 1)}>Erneut laden</button>
-            <button class="secondary-button" type="button" onClick={() => { window.history.pushState({}, '', '/'); setRoomCode(null); setMessage('') }}>Zur Startseite</button>
+            <h1>{t('roomUnavailable')}</h1>
+            <p>{t('roomUnavailableNote')}</p>
+            <button class="secondary-button" type="button" onClick={() => setLoadAttempt(previous => previous + 1)}>{t('retry')}</button>
+            <button class="secondary-button" type="button" onClick={() => { window.history.pushState({}, '', '/'); setRoomCode(null); setMessage('') }}>{t('startPage')}</button>
           </section>
         ) : view === 'lobby' || !player ? (
           <section class="lobby lobby--compact" aria-labelledby="page-title">
             <div class="lobby-header">
-              <h1 id="page-title">Lobby</h1>
+              <h1 id="page-title">{t('lobby')}</h1>
               <button class="lobby-info-button" ref={rulesButtonRef} type="button"
                 onClick={() => showLobbyModal('rules', rulesButtonRef.current)}>
-                <span aria-hidden="true">ⓘ</span> Regeln & Infos
+                <span aria-hidden="true">ⓘ</span> {t('rulesInfo')}
               </button>
             </div>
             <div class="room-link-row">
-              <span>Raumcode: <strong>{roomCode}</strong></span>
+              <span>{t('roomCode')} <strong>{roomCode}</strong></span>
               <div class="room-link-actions">
-                <button class="secondary-button" type="button" onClick={() => void copyLink()}>Link kopieren</button>
+                <button class="secondary-button" type="button" onClick={() => void copyLink()}>{t('copyLink')}</button>
               </div>
             </div>
             <div class="lobby-layout">
               <section class="join-panel" aria-labelledby="join-title">
                 {player ? (
                   <>
-                    <h2 id="join-title">Willkommen zurück, {player.name}</h2>
-                    <p>{getCardById(player.cardId).name} · {playerStatus(player)}</p>
+                    <h2 id="join-title">{t('welcomeBack', {name: player.name})}</h2>
+                    <p>{cardName(player.cardId)} · {playerStatus(player, locale)}</p>
                     <div class="returning-player-actions">
-                      <button class="primary-button" type="button" onClick={() => { setMessage(''); setView('game') }}>Bingo fortsetzen</button>
+                      <button class="primary-button" type="button" onClick={() => { setMessage(''); setView('game') }}>{t('resume')}</button>
                       <button ref={newBingoButtonRef} class="secondary-button" type="button"
                         disabled={working || saving || recovering || syncBlocked}
-                        onClick={() => { playerDialogTriggerRef.current = newBingoButtonRef.current; setPlayerAction('restart') }}>Neues Bingo starten</button>
+                        onClick={() => { playerDialogTriggerRef.current = newBingoButtonRef.current; setPlayerAction('restart') }}>{t('restart')}</button>
                       <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
                         disabled={working || saving || recovering || syncBlocked}
-                        onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>Raum verlassen</button>
+                        onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>{t('leave')}</button>
                     </div>
-                    <p class="form-note">Dein Fortschritt bleibt beim Wechsel zur Lobby gespeichert.</p>
+                    <p class="form-note">{t('lobbyProgressNote')}</p>
                   </>
                 ) : (
                   <>
-                    <h2 id="join-title">Bingo beitreten</h2>
+                    <h2 id="join-title">{t('joinHeading')}</h2>
                     <form class="join-form" onSubmit={(event) => void join(event)}>
-                      <label for="player-name">Dein Name</label>
+                      <label for="player-name">{t('yourName')}</label>
                       <input id="player-name" type="text" autoComplete="nickname" maxLength={MAX_PLAYER_NAME_LENGTH}
-                        placeholder="Spielername eingeben" value={draftName}
+                        placeholder={t('namePlaceholder')} value={draftName}
                         onInput={event => { setDraftName(event.currentTarget.value); setMessage('') }} required />
-                      <div class="card-field-label"><label for="card-choice">Karte auswählen</label></div>
+                      <div class="card-field-label"><label for="card-choice">{t('selectCard')}</label></div>
                       <CardPicker value={selectedCardId} onChange={setSelectedCardId} />
                       <button class="primary-button" type="submit" disabled={!joinEnabled}>
-                        {working ? 'Beitritt läuft…' : 'Bingo starten'}
+                        {working ? t('joining') : t('startBingo')}
                       </button>
                     </form>
                   </>
                 )}
               </section>
               <aside class="players-panel" aria-labelledby="players-title">
-                <div class="panel-heading"><h2 id="players-title">Spielerübersicht</h2><span class="panel-count">{entries.length} Spieler</span></div>
+                <div class="panel-heading"><h2 id="players-title">{t('playerOverview')}</h2><span class="panel-count">{t('playerCount', {count: entries.length})}</span></div>
                 <PlayerOverview entries={entries} selectedId={lobbyPreviewId} onSelect={setLobbyPreviewId}
                   detailId="lobby-player-detail" variant="lobby" />
-                <p class="form-note">{liveConnected ? 'Live verbunden – Änderungen erscheinen sofort.' : 'Aktualisierung alle 5 Sekunden (Fallback).'}</p>
+                <p class="form-note">{liveConnected ? t('liveUpdate') : t('pollingUpdate')}</p>
               </aside>
             </div>
             <div class="room-navigation-footer">
               <button class="room-navigation-link" type="button" disabled={working || saving || syncBlocked}
-                title="Zur Startseite wechseln. Der bisherige Raum und Spielstand bleiben gespeichert."
-                onClick={returnToRoomStart}>← Zur Startseite (weiteren Raum erstellen)</button>
+                title={t('startPageHint')}
+                onClick={returnToRoomStart}>{t('startPageNewRoom')}</button>
             </div>
             <LobbyModal mode={lobbyModal} card={selectedCard}
               onDismiss={() => setLobbyModal(null)}
@@ -457,30 +466,30 @@ export function App() {
             <div class="player-heading player-heading--compact">
               <div class="player-identity">
                 <h1 id="page-title">{player.name}</h1>
-                <span class="room-card-label">{getCardById(player.cardId).name}</span>
+                <span class="room-card-label">{cardName(player.cardId)}</span>
               </div>
               <div class="player-actions">
                 <button ref={compareButtonRef} class="primary-button compare-trigger" type="button"
-                  onClick={() => { setSelectedComparisonId(null); setComparisonOpen(true) }}>Vergleich</button>
+                  onClick={() => { setSelectedComparisonId(null); setComparisonOpen(true) }}>{t('compare')}</button>
                 <button class="secondary-button" type="button" disabled={saving}
-                  onClick={() => { setComparisonOpen(false); setView('lobby'); setMessage('') }}>Zur Lobby</button>
+                  onClick={() => { setComparisonOpen(false); setView('lobby'); setMessage('') }}>{t('toLobby')}</button>
                 <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
                   disabled={working || saving || recovering || syncBlocked}
-                  onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>Raum verlassen</button>
+                  onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>{t('leave')}</button>
               </div>
             </div>
             <div class={`save-status save-status--${connection}`} role="status" aria-live="polite">
               <span class="save-status__dot" aria-hidden="true" />
-              <span>{CONNECTION_LABELS[connection]}</span>
+              <span>{t(CONNECTION_LABEL_KEYS[connection])}</span>
               {syncBlocked && <button class="preview-link" type="button" disabled={recovering}
-                onClick={() => void recoverNow()}>Erneut prüfen</button>}
+                onClick={() => void recoverNow()}>{t('retrySync')}</button>}
             </div>
             <PlayableBoard card={cardFromSnapshot(player.cardId, player.card)} checkedMask={currentMask}
               onToggleSquare={index => void toggleSquare(index)} disabled={saving || syncBlocked || recovering || !browserOnline} />
             <ComparisonDrawer open={comparisonOpen} entries={entries} selectedId={selectedComparisonId}
               onSelect={setSelectedComparisonId} onDismiss={() => setComparisonOpen(false)}
               onAfterClose={() => { setComparisonOpen(false); compareButtonRef.current?.focus() }}
-              note={liveConnected ? 'Live verbunden. Die Vorschau ist schreibgeschützt.' : 'Verbindung wird wiederhergestellt. Bis dahin Aktualisierung alle 5 Sekunden.'} />
+              note={liveConnected ? t('previewOnlyLive') : t('previewOnlyPolling')} />
           </section>
         )}
         <NewBingoDialog open={playerAction !== null} mode={playerAction ?? 'restart'} busy={working}

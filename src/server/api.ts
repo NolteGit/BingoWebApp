@@ -48,7 +48,7 @@ function rateLimitKey(request: Request): string {
 async function checkRateLimit(request: Request, binding: RateLimiterBinding): Promise<Response | null> {
   const { success } = await binding.limit({ key: rateLimitKey(request) })
   return success ? null : json({ error: {
-    code: 'RATE_LIMITED', message: 'Zu viele Anfragen. Bitte in einer Minute erneut versuchen.',
+    code: 'RATE_LIMITED', message: 'Too many requests. Please try again in a minute.',
   } }, 429, { 'Retry-After': '60' })
 }
 
@@ -66,7 +66,7 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
   if (url.pathname === '/api/health' && request.method === 'GET') return json({ status: 'ok' })
 
   if (url.pathname === '/api/rooms' && request.method === 'POST') {
-    if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+    if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Requests from other websites are not allowed.')
     const limited = await checkRateLimit(request, env.ROOM_CREATE_LIMITER)
     if (limited) return limited
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -75,13 +75,13 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
         return json({ roomCode, roomUrl: `/r/${roomCode}` }, 201, { Location: `/r/${roomCode}` })
       }
     }
-    return error(503, 'ROOM_CREATION_FAILED', 'Raum konnte nicht erstellt werden. Bitte erneut versuchen.')
+    return error(503, 'ROOM_CREATION_FAILED', 'Could not create a room. Please try again.')
   }
 
   const matched = /^\/api\/rooms\/([^/]+)(?:\/(join|me|events)(?:\/squares\/([^/]+))?)?$/.exec(url.pathname)
   if (matched) {
     const roomCode = normalizeRoomCode(matched[1])
-    if (!roomCode) return error(400, 'INVALID_ROOM_CODE', 'Ungültiger Raumcode.')
+    if (!roomCode) return error(400, 'INVALID_ROOM_CODE', 'Invalid room code.')
     const room = env.BINGO_ROOMS.getByName(roomCode)
     const action = matched[2]
 
@@ -89,21 +89,21 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
     // The Durable Object authenticates it before accepting the connection.
     if (action === 'events' && request.method === 'GET') {
       if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
-        return error(426, 'UPGRADE_REQUIRED', 'WebSocket-Verbindung erforderlich.')
+        return error(426, 'UPGRADE_REQUIRED', 'WebSocket upgrade required.')
       }
       if (!request.headers.has('Origin') || !validMutationOrigin(request)) {
-        return error(403, 'FORBIDDEN_ORIGIN', 'Verbindung von dieser Website nicht erlaubt.')
+        return error(403, 'FORBIDDEN_ORIGIN', 'Connection from this website is not allowed.')
       }
       return room.fetch(request)
     }
 
     if (!action && request.method === 'GET') {
       const snapshot = await room.getSnapshot()
-      return snapshot ? json(snapshot) : error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      return snapshot ? json(snapshot) : error(404, 'ROOM_NOT_FOUND', 'Room not found.')
     }
 
     if (action === 'join' && request.method === 'POST') {
-      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Requests from other websites are not allowed.')
       // If an existing session is valid, never overwrite the card or create another player.
       const resumed = await getSessionPlayer(request, room, roomCode)
       if (resumed) {
@@ -113,23 +113,23 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
       const limited = await checkRateLimit(request, env.ROOM_JOIN_LIMITER)
       if (limited) return limited
       const length = Number(request.headers.get('Content-Length') ?? '0')
-      if (length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+      if (length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Request is too large.')
       let body: unknown
       try {
         const raw = await request.text()
-        if (raw.length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+        if (raw.length > 1024) return error(413, 'PAYLOAD_TOO_LARGE', 'Request is too large.')
         body = JSON.parse(raw)
       } catch {
-        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+        return error(400, 'INVALID_JSON', 'Invalid JSON request.')
       }
       if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+        return error(400, 'INVALID_JSON', 'Invalid JSON request.')
       }
       const data = body as Record<string, unknown>
       const player = parsePlayerName(data.name)
-      if (!player) return error(400, 'INVALID_NAME', 'Bitte einen Namen mit 2 bis 24 Zeichen eingeben.')
+      if (!player) return error(400, 'INVALID_NAME', 'Please enter a name containing 2 to 24 characters.')
       const cardId = parseCardId(data.cardId)
-      if (!cardId) return error(400, 'INVALID_CARD', 'Bitte eine gültige Karte (1–10 oder Zufallskarte) auswählen.')
+      if (!cardId) return error(400, 'INVALID_CARD', 'Please choose a valid card (1–10 or random).')
 
       // Randomize once on the server. The exact card is stored with the player,
       // not regenerated when a browser refreshes or another player opens a preview.
@@ -140,8 +140,8 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
         cardVersion: cardCatalog.cardVersion, cardSnapshot: [...getFlatSquares(assignedCard)],
         tokenHash: await hashSessionToken(token),
       })
-      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
-      if (result.status === 'name_taken') return error(409, 'NAME_TAKEN', 'Dieser Name ist bereits vergeben.')
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Room not found.')
+      if (result.status === 'name_taken') return error(409, 'NAME_TAKEN', 'This name is already in use.')
       const snapshot = await room.getSnapshot()
       return json({ roomCode, player: result.player, revision: snapshot?.revision ?? 0, resumed: false },
         201, { 'Set-Cookie': sessionCookie(roomCode, token, url.protocol === 'https:') })
@@ -149,14 +149,14 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
 
     if (action === 'me' && matched[3] === undefined && request.method === 'DELETE') {
       if (!validMutationOrigin(request)) {
-        return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+        return error(403, 'FORBIDDEN_ORIGIN', 'Requests from other websites are not allowed.')
       }
       const token = extractSessionToken(request.headers.get('Cookie'), roomCode)
-      if (!token) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      if (!token) return error(401, 'SESSION_REQUIRED', 'No valid game session for this room.')
       const result = await room.removePlayerByTokenHash(await hashSessionToken(token))
-      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Room not found.')
       if (result.status === 'session_required') {
-        return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+        return error(401, 'SESSION_REQUIRED', 'No valid game session for this room.')
       }
       const snapshot = await room.getSnapshot()
       return json({ status: 'deleted', roomCode, playerId: result.playerId, room: snapshot }, 200, {
@@ -165,48 +165,48 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
     }
 
     if (action === 'me' && matched[3] !== undefined && request.method === 'PUT') {
-      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Anfragen von anderen Websites sind nicht erlaubt.')
+      if (!validMutationOrigin(request)) return error(403, 'FORBIDDEN_ORIGIN', 'Requests from other websites are not allowed.')
       const indexText = matched[3]
       if (!/^(?:[0-9]|1[0-9]|2[0-4])$/.test(indexText)) {
-        return error(400, 'INVALID_SQUARE', 'Feldnummer muss zwischen 0 und 24 liegen.')
+        return error(400, 'INVALID_SQUARE', 'Square index must be between 0 and 24.')
       }
       const index = Number(indexText)
       const token = extractSessionToken(request.headers.get('Cookie'), roomCode)
-      if (!token) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      if (!token) return error(401, 'SESSION_REQUIRED', 'No valid game session for this room.')
       let body: unknown
       try {
         if (Number(request.headers.get('Content-Length') ?? '0') > 256) {
-          return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+          return error(413, 'PAYLOAD_TOO_LARGE', 'Request is too large.')
         }
         const raw = await request.text()
-        if (raw.length > 256) return error(413, 'PAYLOAD_TOO_LARGE', 'Anfrage ist zu groß.')
+        if (raw.length > 256) return error(413, 'PAYLOAD_TOO_LARGE', 'Request is too large.')
         body = JSON.parse(raw)
       } catch {
-        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+        return error(400, 'INVALID_JSON', 'Invalid JSON request.')
       }
       if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        return error(400, 'INVALID_JSON', 'Ungültige JSON-Anfrage.')
+        return error(400, 'INVALID_JSON', 'Invalid JSON request.')
       }
       const data = body as Record<string, unknown>
       if (typeof data.checked !== 'boolean' ||
         typeof data.expectedPlayerRevision !== 'number' ||
         !Number.isSafeInteger(data.expectedPlayerRevision) || data.expectedPlayerRevision < 0) {
-        return error(400, 'INVALID_SQUARE_UPDATE', 'checked und expectedPlayerRevision sind erforderlich.')
+        return error(400, 'INVALID_SQUARE_UPDATE', 'checked and expectedPlayerRevision are required.')
       }
       if (index === 12 && !data.checked) {
-        return error(400, 'FREE_SQUARE_LOCKED', 'Das Bonusfeld kann nicht abgewählt werden.')
+        return error(400, 'FREE_SQUARE_LOCKED', 'The free center space cannot be unchecked.')
       }
       const result = await room.setPlayerSquare({
         tokenHash: await hashSessionToken(token), index, checked: data.checked,
         expectedPlayerRevision: data.expectedPlayerRevision,
       })
-      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (result.status === 'room_not_found') return error(404, 'ROOM_NOT_FOUND', 'Room not found.')
       if (result.status === 'session_required') {
-        return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+        return error(401, 'SESSION_REQUIRED', 'No valid game session for this room.')
       }
       if (result.status === 'stale') {
         return json({ error: { code: 'STALE_PLAYER_REVISION',
-          message: 'Fortschritt hat sich geändert. Bitte aktualisieren und erneut versuchen.' },
+          message: 'Progress changed. Please refresh and try again.' },
           current: result.state }, 409)
       }
       return json({ ...result.state, status: result.status })
@@ -214,12 +214,12 @@ export async function handleRequest(request: Request, env: ApiBindings): Promise
 
     if (action === 'me' && matched[3] === undefined && request.method === 'GET') {
       const snapshot = await room.getSnapshot()
-      if (!snapshot) return error(404, 'ROOM_NOT_FOUND', 'Raum nicht gefunden.')
+      if (!snapshot) return error(404, 'ROOM_NOT_FOUND', 'Room not found.')
       const player = await getSessionPlayer(request, room, roomCode)
-      if (!player) return error(401, 'SESSION_REQUIRED', 'Keine gültige Spielsitzung für diesen Raum.')
+      if (!player) return error(401, 'SESSION_REQUIRED', 'No valid game session for this room.')
       return json({ roomCode, player, revision: snapshot.revision })
     }
   }
 
-  return error(404, 'NOT_FOUND', 'API-Endpunkt nicht gefunden.')
+  return error(404, 'NOT_FOUND', 'API endpoint not found.')
 }

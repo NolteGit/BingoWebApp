@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useEffect, useRef } from 'preact/hooks'
 
 interface ExitDialogProps {
@@ -9,6 +10,7 @@ interface ExitDialogProps {
 
 /** Native <dialog> supplies modal keyboard/focus behavior without an extra UI dependency. */
 export function ExitDialog({ open, onCancel, onConfirm, onAfterClose }: ExitDialogProps) {
+  const { t } = useI18n()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -27,15 +29,14 @@ export function ExitDialog({ open, onCancel, onConfirm, onAfterClose }: ExitDial
       onCancel={(event) => { event.preventDefault(); onCancel() }}
       onClose={onAfterClose}
     >
-      <p class="eyebrow">Fortschritt verwerfen</p>
-      <h2 id="exit-title">Bingokarte verlassen?</h2>
+      <p class="eyebrow">{t('progressDiscard')}</p>
+      <h2 id="exit-title">{t('exitCardTitle')}</h2>
       <p id="exit-description">
-        Wenn du das Spiel verlässt, werden deine aktuelle Bingokarte und dein Fortschritt gelöscht.
-        Im lokalen Prototyp bleibt nichts gespeichert. Ein Abbruch ändert nichts an deinen Häkchen.
+        {t('exitCardDescription')}
       </p>
       <div class="exit-actions">
-        <button class="secondary-button" type="button" onClick={onCancel} autoFocus>Abbrechen</button>
-        <button class="danger-button" type="button" onClick={onConfirm}>Verlassen und löschen</button>
+        <button class="secondary-button" type="button" onClick={onCancel} autoFocus>{t('cancel')}</button>
+        <button class="danger-button" type="button" onClick={onConfirm}>{t('exitAndDelete')}</button>
       </div>
     </dialog>
   )

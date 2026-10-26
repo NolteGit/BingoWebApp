@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useEffect, useRef } from 'preact/hooks'
 
 interface CardChangeDialogProps {
@@ -10,6 +11,7 @@ interface CardChangeDialogProps {
 
 /** Switching presets discards local progress only after explicit confirmation. */
 export function CardChangeDialog({ open, nextCardName, onCancel, onConfirm, onAfterClose }: CardChangeDialogProps) {
+  const { t } = useI18n()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -28,14 +30,13 @@ export function CardChangeDialog({ open, nextCardName, onCancel, onConfirm, onAf
       onCancel={(event) => { event.preventDefault(); onCancel() }}
       onClose={onAfterClose}
     >
-      <h2 id="change-card-title">Karte wechseln?</h2>
+      <h2 id="change-card-title">{t('changeCardTitle')}</h2>
       <p id="change-card-description">
-        Wenn du zu <strong>{nextCardName}</strong> wechselst, werden deine bisherigen Häkchen und Bingo-Linien zurückgesetzt.
-        Die aktuelle Karte bleibt erhalten, wenn du abbrichst.
+        {t('changeCardDescription1')} <strong>{nextCardName}</strong> {t('changeCardDescription2')}
       </p>
       <div class="exit-actions">
-        <button class="secondary-button" type="button" onClick={onCancel} autoFocus>Abbrechen</button>
-        <button class="danger-button" type="button" onClick={onConfirm}>Wechseln und zurücksetzen</button>
+        <button class="secondary-button" type="button" onClick={onCancel} autoFocus>{t('cancel')}</button>
+        <button class="danger-button" type="button" onClick={onConfirm}>{t('changeAndReset')}</button>
       </div>
     </dialog>
   )

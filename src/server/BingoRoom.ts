@@ -71,7 +71,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
       return new Response('WebSocket erforderlich', { status: 426 })
     }
     const room = this.ctx.storage.sql.exec('SELECT room_code FROM room_meta WHERE id = 1').toArray()[0]
-    if (!room) return new Response('Raum nicht gefunden', { status: 404 })
+    if (!room) return new Response('Room not found', { status: 404 })
     const token = extractSessionToken(request.headers.get('Cookie'), String(room.room_code))
     if (!token) return new Response('Sitzung erforderlich', { status: 401 })
     const player = await this.getPlayerByTokenHash(await hashSessionToken(token))
@@ -94,7 +94,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
       const snapshot = await this.getSnapshot()
       if (snapshot) socket.send(JSON.stringify(snapshot))
     } else if (typeof message !== 'string' || message.length > 32) {
-      socket.close(1008, 'Ungültige Nachricht')
+      socket.close(1008, 'Invalid message')
     }
   }
 
@@ -278,7 +278,7 @@ export class BingoRoom extends DurableObject<ApiBindings> {
     if (result.status === 'removed') {
       // A removed session can no longer receive live room snapshots.
       for (const socket of this.ctx.getWebSockets(`player:${result.playerId}`)) {
-        try { socket.close(1000, 'Bingo neu gestartet') } catch { /* Already closed. */ }
+        try { socket.close(1000, 'Bingo restarted') } catch { /* Already closed. */ }
       }
       await this.broadcastSnapshot()
     }

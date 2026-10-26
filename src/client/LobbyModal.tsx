@@ -1,3 +1,4 @@
+import { useI18n } from './i18n'
 import { useEffect, useRef } from 'preact/hooks'
 import type { BingoCard } from '../shared/cards'
 import { CardPreview } from './CardPreview'
@@ -13,6 +14,7 @@ interface LobbyModalProps {
 
 /** Click-open modal works for mouse, keyboard and touch (no hover-only content). */
 export function LobbyModal({ mode, card, onDismiss, onAfterClose }: LobbyModalProps) {
+  const { t, cardName } = useI18n()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -31,25 +33,25 @@ export function LobbyModal({ mode, card, onDismiss, onAfterClose }: LobbyModalPr
       onClose={onAfterClose}
     >
       <div class="lobby-modal__header">
-        <h2 id="lobby-modal-title">{mode === 'preview' ? `${card.name} ansehen` : 'Regeln & Infos'}</h2>
-        <button class="secondary-button" type="button" onClick={onDismiss}>Schließen</button>
+        <h2 id="lobby-modal-title">{mode === 'preview' ? t('previewCardTitle', {card: cardName(card.id)}) : t('rulesInfo')}</h2>
+        <button class="secondary-button" type="button" onClick={onDismiss}>{t('close')}</button>
       </div>
       {mode === 'rules' ? (
         <div class="lobby-modal__body">
-          <h3>So funktioniert Bingo</h3>
+          <h3>{t('rulesHeading')}</h3>
           <ol class="lobby-rules">
-            <li>Das mittlere <strong>Bonusfeld</strong> ist ein Freifeld und zählt sofort.</li>
-            <li>Hake ein Feld ab, sobald das Ereignis während des Spiels passiert.</li>
-            <li>Führe Ereignisse nicht absichtlich herbei – der Spaß steht im Vordergrund.</li>
-            <li>Wer zuerst eine Reihe, Spalte oder Diagonale vervollständigt, ruft <strong>„Bingo!“</strong></li>
+            <li>{t('rule1Start')} <strong>Bonusfeld</strong> {t('rule1End')}</li>
+            <li>{t('rule2')}</li>
+            <li>{t('rule3')}</li>
+            <li>{t('rule4Start')} <strong>“Bingo!”</strong></li>
           </ol>
-          <h3>Auswahl der Karten</h3>
-          <p>Alle zehn Karten sind frei wählbar. <strong>Mehrere Spieler dürfen dieselbe Karte verwenden.</strong> Jede Person verfolgt ihren Fortschritt unabhängig.</p>
-          <p class="lobby-modal__muted">Deine Karte wird im gemeinsamen Raum gespeichert. Mehrere Spieler können unabhängig dieselbe Karte wählen.</p>
+          <h3>{t('cardChoices')}</h3>
+          <p>{t('rulesCards')} <strong>{t('rulesCardsBold')}</strong> {t('rulesCardsEnd')}</p>
+          <p class="lobby-modal__muted">{t('rulesSaved')}</p>
         </div>
       ) : mode === 'preview' ? (
         <div class="lobby-modal__body">
-          <p class="lobby-modal__muted">Nur ansehen: Die Karte wird erst mit „Bingo starten“ übernommen.</p>
+          <p class="lobby-modal__muted">{t('previewNote')}</p>
           <CardPreview card={card} titleId="lobby-preview-title" />
         </div>
       ) : null}
