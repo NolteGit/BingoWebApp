@@ -50,5 +50,7 @@ describe('player hover preview', () => {
     expect(positionPlayerPreview({ left: 550, right: 790, top: 850 }, 1000, 900)).toEqual({ left: 106, top: 410 })
     const small = positionPlayerPreview({ left: 20, right: 290, top: 500 }, 320, 600)
     expect(small).toEqual({ left: 12, top: 110 })
+    // The position must stay inside the minimum viewport margin even at the top-left edge.
+    expect(positionPlayerPreview({ left: 4, right: 100, top: -20 }, 320, 400)).toEqual({ left: 12, top: 12 })
   })
 })

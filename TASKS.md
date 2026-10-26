@@ -11,7 +11,7 @@ The initial frontend, persistence, multiplayer, WebSocket, UX and Cloudflare dep
 - [ ] Verify the new shared task library and random card choice in a fresh two-player room (including refresh and read-only comparison).
 - [ ] Verify existing SQLite player records survive the schema adjustment before deploying to an active room.
 
-- [ ] Run `npm ci`, `npm run typecheck`, `npm test`, `npm run build` on the latest commit.
+- [ ] Before the final deployment, run `npm ci`, `npm run typecheck`, `npm test` and `npm run build` on the exact commit to release. (Typecheck and build were reported passing on 2026-10-26; the one failing test expectation was subsequently corrected.)
 - [ ] Test new-room creation, second-player join, progress sync, refresh, and return-to-lobby on the actual deployment.
 - [ ] Test personal **Neues Bingo starten** / **Raum verlassen** confirmations with two players, ensuring other progress is preserved.
 - [ ] Test 320–390px phone-width gameplay and card previews without horizontal scrolling.

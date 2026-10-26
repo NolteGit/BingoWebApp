@@ -20,6 +20,15 @@ export function PlayerList({ entries }: PlayerListProps) {
   const activeId = pinnedId ?? hoveredId
   const active = entries.find(entry => entry.id === activeId)
 
+  // Drop a selection when its player leaves the room while a preview is open.
+  useEffect(() => {
+    if (activeId && !active) {
+      setPinnedId(null)
+      setHoveredId(null)
+      anchorRef.current = null
+    }
+  }, [activeId, active])
+
   function positionAt(button: HTMLButtonElement) {
     anchorRef.current = button
     setPosition(positionPlayerPreview(button.getBoundingClientRect(), window.innerWidth, window.innerHeight))
