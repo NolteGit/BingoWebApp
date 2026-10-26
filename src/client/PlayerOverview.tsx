@@ -5,7 +5,7 @@ interface PlayerOverviewProps {
   entries: ReadonlyArray<ComparisonEntry>
 }
 
-/** One summary-only view for the lobby and active-game dialog. */
+/** One player list with read-only preview for both lobby and active-game dialog. */
 export function PlayerOverview({ entries }: PlayerOverviewProps) {
   return (
     <div class="player-overview">

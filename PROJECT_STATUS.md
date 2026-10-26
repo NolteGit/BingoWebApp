@@ -12,7 +12,7 @@
 | Rooms and shareable invitations | Implemented | Real room creation and links, deployed UI demonstrated |
 | Joining and duplicate-name handling | Implemented | Backend rejects duplicate normalized names within one room |
 | Saved progress and resume | Implemented | SQLite and room-scoped session cookie; browser/restart tests performed |
-| Shared lobby and card comparison | Implemented | Read-only previews; multi-browser screenshots supplied |
+| Shared lobby and card comparison | Implemented; hover-preview patch prepared | Both views use one player list; hover, focus or tap reveals a floating read-only live board without extra API calls. Local browser check still recommended. |
 | Live updates and presence | Implemented | WebSocket channel with polling fallback; online state best-effort |
 | Save recovery and conflict handling | Implemented | Server-confirmed writes, revision checks, uncertainty recovery |
 | Personal restart and room leave | Implemented | Explicit confirmation; deletes own record, not the room |
@@ -53,3 +53,7 @@ Test a fresh room with two browsers, a marked square, refreshing, leaving/rejoin
 ## Recent task-library and translation changes pending local verification
 
 The new `data/tasks.json` defines every task in one place. Existing presets refer to stable task IDs. Card ID 11 generates and stores a unique random card per player. The interface is now localized through `src/client/i18n.tsx`, always begins in German, and switches immediately between German and English while keeping task text German. Both TypeScript configurations pass; the complete Windows test suite and Wrangler deployment test still need to run. See `docs/26-task-library-and-random-cards.md` and `docs/27-interface-language.md`.
+
+## Player-row hover preview (prepared patch)
+
+The shared `PlayerList` displays each room player’s stored 5×5 board from the current public room snapshot on hover, focus or tap. It uses the existing `ReadOnlyBoard` rendering, including checked squares and completed Bingo lines. The popup is viewport-positioned to avoid expanding the lobby or in-game dialog. Touch users can pin and dismiss it; no new endpoints or writes are involved. Check mouse hover in both locations, tap and keyboard navigation before deployment.

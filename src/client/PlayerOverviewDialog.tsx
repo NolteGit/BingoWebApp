@@ -11,7 +11,7 @@ interface PlayerOverviewDialogProps {
   live: boolean
 }
 
-/** The same player summary as the lobby, without opponent-card previews. */
+/** The same player list and hover-card previews as the lobby. */
 export function PlayerOverviewDialog({ open, entries, onDismiss, onAfterClose, live }: PlayerOverviewDialogProps) {
   const { t } = useI18n()
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -38,7 +38,7 @@ export function PlayerOverviewDialog({ open, entries, onDismiss, onAfterClose, l
       <div class="overview-dialog__summary">
         <span class="panel-count">{t('playerCount', { count: entries.length })}</span>
       </div>
-      <PlayerOverview entries={entries} />
+      {open && <PlayerOverview entries={entries} />}
     </dialog>
   )
 }

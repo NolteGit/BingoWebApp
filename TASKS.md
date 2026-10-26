@@ -4,6 +4,8 @@ The initial frontend, persistence, multiplayer, WebSocket, UX and Cloudflare dep
 
 ## Before sharing or redeploying
 
+- [ ] Verify player-row hover previews in the lobby and in-game overview: correct saved random card, live marks, positioning at viewport edges, mouse/keyboard/touch dismissal.
+
 - [ ] Verify printed A4 sheets in Firefox/Chromium (one page, background graphics, long objectives, random cards, no name or saved marks). See `docs/30-printable-paper-sheet.md`.
 - [ ] Check the DE/EN toggle on desktop and mobile: German on reload, English labels/errors, unchanged German tasks and saved progress.
 - [ ] Verify the new shared task library and random card choice in a fresh two-player room (including refresh and read-only comparison).

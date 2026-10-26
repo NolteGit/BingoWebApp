@@ -1728,3 +1728,102 @@ h1 {
   .room-tools__rules, .join-form input, .join-form select,
   .card-picker__trigger, .play-square { transition: none; }
 }
+
+/* Shared hover/focus preview, positioned outside the scrollable player list.
+   The popup remains inside the native dialog when used in the in-game overview. */
+.player-list-wrap { min-width: 0; }
+.player-summary__button {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: zoom-in;
+}
+.player-summary__button:focus-visible { outline: 3px solid var(--bingo-focus); outline-offset: 4px; }
+.player-summary--previewing, .player-summary--previewing:hover,
+.player-summary:focus-within {
+  background: #f6e8cb;
+  border-color: #bb9357;
+}
+.player-hover-card {
+  position: fixed;
+  z-index: 1500;
+  box-sizing: border-box;
+  width: min(432px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid #ad8a55;
+  border-radius: 13px;
+  background: #fff4dc;
+  color: #392b20;
+  box-shadow: 0 18px 60px #06142177, 0 3px 10px #35220e33;
+  pointer-events: none;
+}
+.player-hover-card--pinned { pointer-events: auto; }
+.player-hover-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+.player-hover-card__heading h3 {
+  margin: 0 0 3px;
+  color: #6d2926;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.13rem;
+  overflow-wrap: anywhere;
+}
+.player-hover-card__heading p {
+  margin: 0;
+  font-size: .73rem;
+  color: #765e45;
+}
+.player-hover-card__close {
+  flex: none;
+  padding: 1px 7px;
+  border: 1px solid #d5b78c;
+  border-radius: 7px;
+  background: #fffaf0;
+  color: #6d2926;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.player-hover-card__close:focus-visible { outline: 3px solid var(--bingo-focus); outline-offset: 2px; }
+.player-hover-card .compare-board {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+}
+.player-hover-card .compare-square {
+  min-width: 0;
+  min-height: 73px;
+  padding: 13px 3px 5px;
+  gap: 2px;
+  border-radius: 6px;
+  font-size: .57rem;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  cursor: default;
+}
+.player-hover-card .play-square__mark { top: 3px; right: 4px; font-size: .8rem; }
+.player-hover-card .compare-square small { font-size: .45rem; letter-spacing: 0; }
+.player-hover-card__hint { margin: 9px 0 0; font-size: .7rem; color: #806c55; }
+@media (max-width: 420px) {
+  .player-hover-card { padding: 9px; }
+  .player-hover-card .compare-square { padding: 12px 1px 4px; font-size: .53rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-hover-card .compare-square { transition: none; }
+}
+/* Inspection never acts like interactive gameplay, even when the popup is pinned. */
+.player-hover-card .compare-board { pointer-events: none; }

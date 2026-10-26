@@ -18,3 +18,7 @@ The image is a third-party game mark, **not an original or open-license asset**.
 ## Checks before deploying
 
 Run `npm run typecheck`, `npm test`, and `npm run build`. In a browser, verify the start page, room lobby, card picker and bingo board at desktop width and at 320–430px. Try all three in-game actions, open and close Spielerübersicht, switch to English, and verify keyboard Tab/Enter/Escape navigation. The two confirmation actions should still delete only the current player after explicit approval.
+
+## Player-row live preview extension (2026-10-26)
+
+The shared `PlayerList` now uses a focusable row button. Hovering or focusing a row opens a compact read-only 5×5 card preview outside the scrollable list. A click/tap pins the preview until it is closed or focus/click moves elsewhere. The preview reuses `ReadOnlyBoard`, and the `ComparisonEntry.card` snapshot ensures random-card layouts never regenerate. Its marks follow the same live room snapshot that updates the leaderboard. No API or persistence changes are needed.

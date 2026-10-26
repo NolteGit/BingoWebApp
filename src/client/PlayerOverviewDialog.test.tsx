@@ -11,7 +11,7 @@ import { getComparisonEntries } from './comparison'
 const noop = () => undefined
 const entries = getComparisonEntries({ name: 'Alex', cardId: 2 }, createInitialCheckedMask())
 
-describe('shared player overview without card previews', () => {
+describe('shared player overview with read-only hover preview', () => {
   it('renders the same compact player list in the lobby and in-game dialog', () => {
     const list = render(<PlayerOverview entries={entries} />)
     const dialog = render(<PlayerOverviewDialog open entries={entries} live onDismiss={noop} onAfterClose={noop} />)
@@ -23,10 +23,12 @@ describe('shared player overview without card previews', () => {
     }
     expect(dialog.match(/class="player-summary"/g)).toHaveLength(3)
     expect(list.match(/class="player-summary"/g)).toHaveLength(3)
+    // The board appears on hover/focus/tap, not before a player is selected.
     expect(dialog).not.toContain('class="play-square')
     expect(dialog).not.toContain('Kartenansicht von')
-    expect(dialog).not.toContain('aria-expanded')
-    expect(dialog.match(/<button\b/g)).toHaveLength(1)
+    expect(dialog).toContain('aria-expanded="false"')
+    expect(dialog.match(/class="player-summary__button"/g)).toHaveLength(3)
+    expect(dialog.match(/<button\b/g)).toHaveLength(4)
   })
 
   it('keeps the same empty state in both places', () => {
