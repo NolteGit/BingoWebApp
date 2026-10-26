@@ -13,6 +13,7 @@ The interface starts in **German** on every page load. Use the small **DE / EN**
 3. Each person enters a display name, selects one of ten presets or **Zufallskarte / Random card**, and starts.
 4. Click a square to mark/unmark it. The **Bonusfeld** in the middle is always checked. A completed row, column, or diagonal counts as a bingo.
 5. **Zur Lobby** is safe navigation: your saved marks remain. **Bingo fortsetzen** resumes them. **Neues Bingo starten** and **Raum verlassen** require confirmation and delete only your own entry and progress.
+6. On the active bingo card, select **Karte drucken / Print card** to print an unmarked sheet or save it as a PDF using the browser's print dialog. The saved card layout (including random cards) and player name are printed without the online checks.
 
 Multiple players may select the same preset; their marks are independent. The player list and read-only card comparisons update via WebSockets, with HTTP polling as fallback.
 

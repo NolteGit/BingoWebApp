@@ -1,0 +1,107 @@
+/* A quiet print action next to the assigned card label. */
+.print-card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 37px;
+  padding: 7px 10px;
+  border: 1px solid #cbb28b;
+  border-radius: 9px;
+  background: #fff9eb;
+  color: #704537;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+.print-card-action:hover { background: #f7e7cc; border-color: #a97e48; }
+.print-card-action:focus-visible { outline: 3px solid var(--bingo-focus); outline-offset: 3px; }
+.print-card-action .ui-icon { width: 16px; height: 16px; }
+
+/* The print sheet is separate from the interactive board and its saved marks. */
+.print-sheet { display: none; }
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  html, body { width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  .page-shell {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+  .app-frame { display: none !important; }
+  .print-sheet {
+    display: block !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #28231e;
+    background: #fff;
+    font-family: Georgia, 'Times New Roman', serif;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .print-sheet__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8mm;
+    min-height: 28mm;
+    padding-bottom: 5mm;
+    margin-bottom: 6mm;
+    border-bottom: 1.4pt solid #8b2426;
+  }
+  .print-sheet__header h1 {
+    margin: 0 0 2mm;
+    font-size: 26pt;
+    line-height: 1.1;
+    letter-spacing: 0;
+    color: #692725;
+  }
+  .print-sheet__name {
+    margin: 0;
+    font-size: 13pt;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .print-sheet__card-name { font-size: 11pt; white-space: nowrap; }
+  .print-sheet__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    gap: 1.3mm;
+    width: 100%;
+    height: 215mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .print-sheet__square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 2mm 1.2mm;
+    border: 0.7pt solid #765e49;
+    border-radius: 2mm;
+    background: #fff;
+    color: #25211d;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    line-height: 1.23;
+    overflow-wrap: break-word;
+    hyphens: none;
+    break-inside: avoid;
+  }
+  .print-sheet__square--free {
+    border: 1.2pt solid #8b2426;
+    background: #f8ebe2;
+    color: #8b2426;
+    font-weight: 700;
+  }
+}

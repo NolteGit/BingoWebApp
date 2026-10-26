@@ -4,6 +4,7 @@ import { cardFromSnapshot, getCardById } from '../shared/cards'
 import { isSquareChecked } from '../shared/bingo'
 import { LobbyModal, type LobbyModalMode } from './LobbyModal'
 import { PlayableBoard } from './PlayableBoard'
+import { PrintableCard } from './PrintableCard'
 import { CardPicker } from './CardPicker'
 import { NewBingoDialog } from './NewBingoDialog'
 import { PlayerOverviewDialog } from './PlayerOverviewDialog'
@@ -465,6 +466,15 @@ export function App() {
               <div class="player-identity">
                 <h1 id="page-title">{player.name}</h1>
                 <span class="room-card-label">{cardName(player.cardId)}</span>
+                <button class="print-card-action" type="button" onClick={() => window.print()}>
+                  <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true" focusable="false">
+                    <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <path d="M6 14h12v7H6zM18 12h.01" />
+                  </svg>
+                  {t('printCard')}
+                </button>
               </div>
               <div class="player-actions">
                 <button ref={overviewButtonRef} class="secondary-button overview-trigger" type="button"
@@ -494,6 +504,9 @@ export function App() {
           onAfterClose={() => playerDialogTriggerRef.current?.focus()} />
         {message && <p class="room-feedback" role="status">{message}</p>}
       </div>
+      {room && player && view === 'game' && (
+        <PrintableCard name={player.name} card={cardFromSnapshot(player.cardId, player.card)} />
+      )}
     </main>
   )
 }
