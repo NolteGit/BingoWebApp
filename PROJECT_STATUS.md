@@ -18,6 +18,7 @@
 | Personal restart and room leave | Implemented | Explicit confirmation; deletes own record, not the room |
 | Cloudflare production hosting | Deployed | Public UI/gameplay confirmed via user screenshots |
 | Mobile 5×5 board layout | Implemented | Responsive CSS; retest on actual narrow mobile devices |
+| Printable A4 paper-reference sheet | Implemented in prepared patch | Print-only ribbon, 5×5 grid, anonymous rules footer. Both TypeScript checks pass; A4 layout rendered to one page via WeasyPrint; verify Firefox/Chromium print dialogs locally (docs/30-printable-paper-sheet.md). |
 | Automatic room expiry | **Not implemented** | Previously discussed 24-hour expiry is a future option |
 | Independent backups / cross-device recovery | **Not implemented** | Do not describe the service as recoverable after lost cookies or deleted storage |
 
@@ -25,6 +26,7 @@
 
 - **Previously verified locally:** TypeScript check, production build, and **101 automated tests** during the Step 13 deployment preparation stage.
 - Recent random-card testing reported **115/117 passing**, with two outdated card-ID assertions. A follow-up correction patch was supplied; a passing full test run of that correction has not yet been reported.
+- The updated print-only A4 patch has also passed both TypeScript configurations. A separate HTML print-layout proof rendered as one A4 PDF with WeasyPrint; this is not a Firefox/Chromium preview test.
 - The new DE/EN patch has passed both TypeScript configurations in the patch-generation environment. Full Vitest and production build could not run there because the uploaded Windows dependencies lack the Linux-native build bindings. These checks still need to run locally.
 - Production pages, joining, saved progress and comparison have been demonstrated in screenshots. This is not a substitute for exhaustive outage, concurrency or security testing.
 

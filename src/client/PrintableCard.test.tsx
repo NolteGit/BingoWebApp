@@ -7,10 +7,15 @@ import { PrintableCard } from './PrintableCard'
 const preset = getCardById(1)
 
 describe('printable card', () => {
-  it('prints the assigned name and 25 original objectives with no marks or progress', () => {
-    const html = render(<LanguageProvider><PrintableCard name="Mira" card={preset} /></LanguageProvider>)
-    expect(html).toContain('GW2 Bingo')
-    expect(html).toContain('Mira')
+  it('prints an anonymous original 25-square card with decorative header and rules', () => {
+    const html = render(<LanguageProvider><PrintableCard card={preset} /></LanguageProvider>)
+    expect(html).toContain('WvW-BINGO')
+    expect(html).not.toContain('Mira')
+    expect(html).toContain('REGELN')
+    expect(html).toContain('Das mittlere Feld ist ein Freifeld')
+    expect(html).toContain('print-sheet__ribbon')
+    expect(html.match(/class="print-sheet__rule"/g)).toHaveLength(4)
+    expect(html).toContain('print-sheet__free-note')
     expect(html).toContain('Karte 1')
     expect(html.match(/class="print-sheet__square/g)).toHaveLength(25)
     for (const task of getFlatSquares(preset)) expect(html).toContain(task)
@@ -25,17 +30,19 @@ describe('printable card', () => {
     const squares = [...getFlatSquares(getCardById(RANDOM_CARD_ID))]
     squares[0] = 'Unique server-assigned objective'
     const assigned = cardFromSnapshot(RANDOM_CARD_ID, squares)
-    const html = render(<LanguageProvider initialLocale="en"><PrintableCard name="Alex" card={assigned} /></LanguageProvider>)
+    const html = render(<LanguageProvider initialLocale="en"><PrintableCard card={assigned} /></LanguageProvider>)
     expect(html).toContain('Random card')
     expect(html).toContain('Unique server-assigned objective')
     expect(html).toContain('Bonusfeld')
+    expect(html).toContain('RULES')
     expect(html.match(/class="print-sheet__square/g)).toHaveLength(25)
-    expect(html).not.toContain('FREE SPACE')
+    expect(html).toContain('FREE SPACE')
   })
 
-  it('escapes the player name instead of interpreting markup', () => {
-    const html = render(<PrintableCard name={'<script>alert(1)</script>'} card={preset} />)
-    expect(html).not.toContain('<script>')
-    expect(html).toContain('&lt;script&gt;')
+  it('never includes a player name or checked state in print markup', () => {
+    const html = render(<PrintableCard card={preset} />)
+    expect(html).not.toContain('print-sheet__name')
+    expect(html).not.toContain('checkedMask')
+    expect(html).not.toContain('Mira')
   })
 })

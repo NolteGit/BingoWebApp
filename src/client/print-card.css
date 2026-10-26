@@ -1,38 +1,4 @@
-/* A quiet print action next to the assigned card label. */
-
-/* Print refinements. Important rules also work if an older print block follows. */
-@media print {
-  /* Printed sheets are anonymous even if the source still provides a name. */
-  .print-sheet__name { display: none !important; }
-
-  /* Center the heading for either the simple or ribbon-style print header. */
-  .print-sheet__header {
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-  }
-  .print-sheet__header h1,
-  .print-sheet__banner h1 {
-    width: 100% !important;
-    margin-inline: auto !important;
-    text-align: center !important;
-  }
-  .print-sheet__banner {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* Slightly larger but still safe for long German bingo objectives. */
-  .print-sheet__square { font-size: 10.25pt !important; line-height: 1.2 !important; }
-  .print-sheet__square--free { font-size: 11.5pt !important; }
-
-  /* Applies when the Step 22 rules footer exists. */
-  .print-sheet__rules { font-size: 9.7pt !important; line-height: 1.25 !important; }
-  .print-sheet__rules h2 { font-size: 10.4pt !important; }
-}
-
+/* The print action belongs to the live interface; the paper sheet is separate. */
 .print-card-action {
   display: inline-flex;
   align-items: center;
@@ -54,88 +20,234 @@
 .print-card-action:focus-visible { outline: 3px solid var(--bingo-focus); outline-offset: 3px; }
 .print-card-action .ui-icon { width: 16px; height: 16px; }
 
-/* The print sheet is separate from the interactive board and its saved marks. */
 .print-sheet { display: none; }
 
 @media print {
-  @page { size: A4 portrait; margin: 12mm; }
-  html, body { width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  /* Full A4 canvas with generous insets: no elements rely on the printer's bleed area. */
+  @page { size: A4 portrait; margin: 0; }
+  html, body, #app {
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
   .page-shell {
     display: block !important;
     min-height: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
-    background: #fff !important;
+    background: white !important;
   }
   .app-frame { display: none !important; }
+
   .print-sheet {
+    box-sizing: border-box;
+    position: relative;
     display: block !important;
-    width: 100%;
+    width: 210mm;
+    height: 297mm;
     margin: 0;
-    padding: 0;
-    color: #28231e;
-    background: #fff;
+    padding: 16mm 18.5mm 16mm;
+    overflow: hidden;
+    color: #211e1b;
+    background: #f5ecd6;
     font-family: Georgia, 'Times New Roman', serif;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    break-inside: avoid;
+    break-after: avoid;
   }
+  .print-sheet::before {
+    content: '';
+    position: absolute;
+    top: 7mm;
+    right: 7mm;
+    bottom: 7mm;
+    left: 7mm;
+    z-index: 2;
+    border: .75mm solid #8c201e;
+    box-shadow: inset 0 0 0 .4mm #d6b878;
+    pointer-events: none;
+  }
+  .print-sheet__corners span {
+    position: absolute;
+    z-index: 1;
+    width: 6.1mm;
+    height: 6.1mm;
+    background: #c79a3b;
+    transform: rotate(45deg);
+    box-shadow: .5mm .5mm 1mm #4a35174d;
+  }
+  .print-sheet__corners span:nth-child(1) { top: 12mm; left: 12mm; }
+  .print-sheet__corners span:nth-child(2) { top: 12mm; right: 12mm; }
+  .print-sheet__corners span:nth-child(3) { bottom: 12mm; left: 12mm; }
+  .print-sheet__corners span:nth-child(4) { bottom: 12mm; right: 12mm; }
+
   .print-sheet__header {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 8mm;
-    min-height: 28mm;
-    padding-bottom: 5mm;
-    margin-bottom: 6mm;
-    border-bottom: 1.4pt solid #8b2426;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 31mm;
+    gap: 2.3mm;
+    text-align: center;
+  }
+  .print-sheet__ribbon {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 116mm;
+    height: 15mm;
+    background: #8e201f;
+    color: white;
+    box-shadow: 0 1mm 1.2mm #37221c44;
+  }
+  .print-sheet__ribbon::before,
+  .print-sheet__ribbon::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 2mm;
+    width: 28mm;
+    height: 14mm;
+    background: #8e201f;
+    filter: drop-shadow(0 .5mm .4mm #37221c33);
+  }
+  .print-sheet__ribbon::before {
+    right: calc(100% - 3mm);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10mm 50%);
+  }
+  .print-sheet__ribbon::after {
+    left: calc(100% - 3mm);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 10mm) 50%, 100% 100%, 0 100%);
   }
   .print-sheet__header h1 {
-    margin: 0 0 2mm;
-    font-size: 26pt;
-    line-height: 1.1;
-    letter-spacing: 0;
-    color: #692725;
-  }
-  .print-sheet__name {
     margin: 0;
-    font-size: 13pt;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
+    padding: 0;
+    color: white;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 20pt;
+    font-weight: 700;
+    letter-spacing: .015em;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
   }
-  .print-sheet__card-name { font-size: 11pt; white-space: nowrap; }
+  .print-sheet__card-name {
+    margin: 0;
+    color: #251f1a;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
   .print-sheet__grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     grid-template-rows: repeat(5, minmax(0, 1fr));
-    gap: 1.3mm;
-    width: 100%;
-    height: 215mm;
+    gap: .2mm;
+    width: 173mm;
+    height: 173mm;
+    margin: 0 auto;
     break-inside: avoid;
     page-break-inside: avoid;
   }
   .print-sheet__square {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     min-width: 0;
     min-height: 0;
-    padding: 2mm 1.2mm;
-    border: 0.7pt solid #765e49;
-    border-radius: 2mm;
-    background: #fff;
-    color: #25211d;
-    text-align: center;
+    padding: 1.4mm 1mm;
+    border: .38mm solid #322e28;
+    border-radius: 6mm;
+    background: #fffaf0;
+    box-shadow: 0 .55mm .7mm #1a17135c;
+    color: #161513;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 10pt;
-    line-height: 1.23;
+    font-size: 10.7pt;
+    font-weight: 400;
+    line-height: 1.19;
+    text-align: center;
     overflow-wrap: break-word;
     hyphens: none;
     break-inside: avoid;
   }
+  .print-sheet__task { max-width: 100%; }
   .print-sheet__square--free {
-    border: 1.2pt solid #8b2426;
-    background: #f8ebe2;
-    color: #8b2426;
-    font-weight: 700;
+    border-color: #8e201f;
+    background: #fbefdc;
+    color: #801d1c;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 13.5pt;
+    font-weight: bold;
   }
+  .print-sheet__square--free::before {
+    content: '◆';
+    color: #b89040;
+    font-size: 15pt;
+    line-height: 1.2;
+    margin-bottom: 1mm;
+  }
+  .print-sheet__free-note {
+    margin-top: 1.5mm;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 7.8pt;
+    font-weight: 750;
+    letter-spacing: .06em;
+  }
+
+  .print-sheet__rules {
+    position: absolute;
+    left: 18.5mm;
+    right: 18.5mm;
+    bottom: 16mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 34mm;
+    padding: 4mm 6mm;
+    border-radius: 6.2mm;
+    background: #26211e;
+    color: #fff;
+    box-shadow: 0 .6mm .8mm #1a17145e;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8.9pt;
+    line-height: 1.22;
+  }
+  .print-sheet__rules h2 {
+    margin: 0 0 1.1mm;
+    color: white;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 10.8pt;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+  }
+  .print-sheet__rule {
+    display: flex;
+    align-items: baseline;
+    gap: 1.2mm;
+    margin: .35mm 0;
+  }
+  .print-sheet__rule-icon {
+    display: inline-block;
+    flex: 0 0 4mm;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    font-weight: 800;
+    text-align: center;
+    color: #e0b349;
+  }
+  .print-sheet__rule:nth-of-type(2) .print-sheet__rule-icon { color: #77c68b; }
+  .print-sheet__rule:nth-of-type(3) .print-sheet__rule-icon { color: #ff7778; }
+  .print-sheet__rule:nth-of-type(4) .print-sheet__rule-icon { color: #d0a9e0; }
 }

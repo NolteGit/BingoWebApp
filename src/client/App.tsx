@@ -505,7 +505,7 @@ export function App() {
         {message && <p class="room-feedback" role="status">{message}</p>}
       </div>
       {room && player && view === 'game' && (
-        <PrintableCard name={player.name} card={cardFromSnapshot(player.cardId, player.card)} />
+        <PrintableCard card={cardFromSnapshot(player.cardId, player.card)} />
       )}
     </main>
   )
