@@ -1114,3 +1114,54 @@ h1 {
 .new-bingo-dialog p { color: #c5d2dd; line-height: 1.5; }
 .new-bingo-dialog__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .new-bingo-dialog .danger-button:disabled { opacity: .55; cursor: progress; }
+
+/* Mobile: fit the complete 5x5 board on screen without horizontal swiping.
+   Allow longer objectives to wrap vertically instead of shrinking the grid. */
+@media (max-width: 650px) {
+  .page-shell { padding-inline: 6px; }
+  .player-view--compact { padding-inline: 10px; }
+
+  .player-view--compact .play-board-scroll {
+    width: 100%;
+    min-width: 0;
+    overflow-x: visible;
+  }
+
+  .player-view--compact .board-play {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .player-view--compact .play-square {
+    min-width: 0;
+    min-height: 118px;
+    padding: 20px 2px 8px;
+    font-size: clamp(.66rem, 2.65vw, .73rem);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .player-view--compact .play-square__mark {
+    top: 4px;
+    right: 5px;
+    font-size: .92rem;
+  }
+
+  /* Read-only cards and the lobby card preview should also fit a phone. */
+  .lobby-modal--preview .board-preview,
+  .player-overview__detail .compare-board {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .lobby-modal--preview .preview-area { overflow-x: visible; }
+  .player-overview__detail .compare-square {
+    min-width: 0;
+    min-height: 98px;
+    padding: 18px 2px 7px;
+    font-size: clamp(.6rem, 2.4vw, .68rem);
+    line-height: 1.2;
+  }
+}
