@@ -400,9 +400,6 @@ export function App() {
               <span>Raumcode: <strong>{roomCode}</strong></span>
               <div class="room-link-actions">
                 <button class="secondary-button" type="button" onClick={() => void copyLink()}>Link kopieren</button>
-                <button class="secondary-button" type="button" disabled={working || saving || syncBlocked}
-                  title="Zur Startseite wechseln. Der bestehende Spielstand wird nicht gelöscht."
-                  onClick={returnToRoomStart}>Neuen Raum</button>
               </div>
             </div>
             <div class="lobby-layout">
@@ -445,6 +442,11 @@ export function App() {
                   detailId="lobby-player-detail" variant="lobby" />
                 <p class="form-note">{liveConnected ? 'Live verbunden – Änderungen erscheinen sofort.' : 'Aktualisierung alle 5 Sekunden (Fallback).'}</p>
               </aside>
+            </div>
+            <div class="room-navigation-footer">
+              <button class="room-navigation-link" type="button" disabled={working || saving || syncBlocked}
+                title="Zur Startseite wechseln. Der bisherige Raum und Spielstand bleiben gespeichert."
+                onClick={returnToRoomStart}>← Zur Startseite (weiteren Raum erstellen)</button>
             </div>
             <LobbyModal mode={lobbyModal} card={selectedCard}
               onDismiss={() => setLobbyModal(null)}

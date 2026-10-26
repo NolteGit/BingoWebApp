@@ -1046,6 +1046,17 @@ h1 {
 .room-link-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .room-link-actions .secondary-button:disabled { opacity: .5; cursor: not-allowed; }
 
+/* Secondary room navigation: keep the invitation link prominent, not room creation. */
+.room-navigation-footer { display: flex; justify-content: flex-end; margin-top: 14px; }
+.room-navigation-link {
+  appearance: none; border: 0; background: transparent; padding: 6px 0;
+  color: #9fb5c8; font: inherit; font-size: 0.78rem; cursor: pointer;
+  text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px;
+}
+.room-navigation-link:hover:enabled { color: #e0c18f; text-decoration-color: currentColor; }
+.room-navigation-link:focus-visible { outline: 2px solid #f3cb80; outline-offset: 3px; border-radius: 2px; }
+.room-navigation-link:disabled { opacity: 0.45; cursor: not-allowed; }
+
 .card-picker { position: relative; }
 .card-picker__trigger {
   width: 100%; padding: 12px 14px; border: 1px solid #59728a; border-radius: 9px;
