@@ -3,7 +3,7 @@ import { ApiError, type OwnPlayer, type RoomSnapshot } from './room-api'
 import { connectionState, recoverSavedState, saveSquareSafely, type ReliabilityApi } from './reliability'
 
 const own: OwnPlayer = {
-  playerId: 'p1', name: 'Henrik', cardId: 7, cardVersion: 'wvw-v1', checkedIndices: [12],
+  playerId: 'p1', name: 'Alex', cardId: 7, cardVersion: 'wvw-v1', checkedIndices: [12],
   playerRevision: 1, joinedAt: '2026-10-25T00:00:00Z',
 }
 const room: RoomSnapshot = {

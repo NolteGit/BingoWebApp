@@ -2,7 +2,7 @@
 
 > **For actual first-time installation and deployment**, use the current [self-hosting guide](22-self-host-cloudflare.md). This older document explains the project’s original hosting design and historical scaffolding plan.
 
-**Checked against provider docs: 2026-10-25.** These steps describe the planned setup **after** code/configuration has been scaffolded. There is no deployable app in the documentation-first commit.
+**Historical design note (2026-10-25).** The application is now deployable; follow [`22-self-host-cloudflare.md`](22-self-host-cloudflare.md) for current commands. The earlier scaffolding plan below is retained as design history.
 
 ## Hosting choice
 

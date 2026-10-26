@@ -11,17 +11,17 @@ npm run dev:api
 npm run dev
 ```
 
-`vite.config.ts` must have `ws: true` for `/api`. Open `http://localhost:5173` and create a **new** room. Join as Henrik. Copy the `/r/CODE` link and open it in a **private browsing window**, joining as Mira. Both browsers should remain on the same room.
+`vite.config.ts` must have `ws: true` for `/api`. Open `http://localhost:5173` and create a **new** room. Join as Alex. Copy the `/r/CODE` link and open it in a **private browsing window**, joining as Mira. Both browsers should remain on the same room.
 
 ## Checks
 
 1. **Connected:** In both game screens, open **Vergleich**. Confirm the note says `Live verbunden.` and both participants appear. Browser DevTools → Network → WS should show one connection to `/api/rooms/CODE/events` with status 101. If it does not, record errors from the browser console and Wrangler terminal.
-2. **Instant progress:** Check a square in Henrik's browser. Without reloading Mira's window, her lobby/compare should show Henrik's new count and square promptly (normally well before five seconds). Repeat in the opposite direction, including unchecking.
-3. **Online state:** Both joined players should show `online` in the player list while connected. Close Mira's tab, then check that she eventually appears offline in Henrik's view. This presence indicator is **best effort**: an abrupt network loss may take longer to detect. Closing a tab must **never delete its player record**.
+2. **Instant progress:** Check a square in Alex's browser. Without reloading Mira's window, her lobby/compare should show Alex's new count and square promptly (normally well before five seconds). Repeat in the opposite direction, including unchecking.
+3. **Online state:** Both joined players should show `online` in the player list while connected. Close Mira's tab, then check that she eventually appears offline in Alex's view. This presence indicator is **best effort**: an abrupt network loss may take longer to detect. Closing a tab must **never delete its player record**.
 4. **Reconnect:** Reopen Mira's room link in the same private session (without closing the entire private browser). She should resume the same name, card and marks. Watch the live status return.
 5. **Wrangler restart:** Mark an additional square, stop only `npm run dev:api`, and restart it. The UI should show a fallback/disconnected note during interruption. Marks remain visible and are recoverable after reconnect. Check the player's card after refresh as well.
-6. **No cross-player writes:** Opening Henrik's preview from Mira must not allow marking it. Only Mira's own board changes from her clicks.
-7. **Same user in two tabs:** Open the room in two normal tabs sharing Henrik's cookie. Updates in one should appear in the other. If both click at once, conflict handling must preserve SQLite state rather than silently overwriting progress.
+6. **No cross-player writes:** Opening Alex's preview from Mira must not allow marking it. Only Mira's own board changes from her clicks.
+7. **Same user in two tabs:** Open the room in two normal tabs sharing Alex's cookie. Updates in one should appear in the other. If both click at once, conflict handling must preserve SQLite state rather than silently overwriting progress.
 8. **Fallback:** With Wrangler unavailable, the client continues to try reconnecting. Progress cannot be saved until the server returns. Verify the UI blocks unconfirmed writes as before. When backend returns, refresh should recover saved state.
 9. **Late join:** Join a third player after play has begun and verify the other players are not reset. The third player starts with only the free center square.
 

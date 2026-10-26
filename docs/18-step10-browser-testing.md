@@ -18,11 +18,11 @@ Open `http://localhost:5173/` in Browser A (regular window). Click **Neuen Raum 
 
 ## Acceptance checks
 
-1. **Join A:** Pick name `Henrik` and Karte 7; start. The lobby lists Henrik and the personal board begins with the permanent Bonusfeld only (1/25).
-2. **Join B late:** In the private browser, choose name `Mira` and Karte 3. Browser A should show Mira within approximately 5 seconds without resetting Henrik's progress. Selecting Mira previews Karte 3 read-only.
-3. **Marking and polling:** In Browser A mark fields 0 and 1. Wait up to 5 seconds in Browser B and inspect Henrik in **Vergleich**. Expect 3/25 and the matching two squares (including the free center). Browser B cannot edit A's card.
-4. **Session refresh:** Refresh Browser A. It should resume Henrik/Karte 7 automatically with fields `[0, 1, 12]`. No duplicate Henrik entry should be created.
-5. **Navigate safely:** Click **Zur Lobby**, verify the lobby shows Henrik and a **Bingo fortsetzen** button. Use it to resume the same board; the marks must remain unchanged.
+1. **Join A:** Pick name `Alex` and Karte 7; start. The lobby lists Alex and the personal board begins with the permanent Bonusfeld only (1/25).
+2. **Join B late:** In the private browser, choose name `Mira` and Karte 3. Browser A should show Mira within approximately 5 seconds without resetting Alex's progress. Selecting Mira previews Karte 3 read-only.
+3. **Marking and polling:** In Browser A mark fields 0 and 1. Wait up to 5 seconds in Browser B and inspect Alex in **Vergleich**. Expect 3/25 and the matching two squares (including the free center). Browser B cannot edit A's card.
+4. **Session refresh:** Refresh Browser A. It should resume Alex/Karte 7 automatically with fields `[0, 1, 12]`. No duplicate Alex entry should be created.
+5. **Navigate safely:** Click **Zur Lobby**, verify the lobby shows Alex and a **Bingo fortsetzen** button. Use it to resume the same board; the marks must remain unchanged.
 6. **Worker restart:** Keep both browsers open, stop and restart only `npm run dev:api`, then refresh Browser A. Verify same player/card/marks after reconnection.
 7. **Undo:** Click field 1 again, verify saved count 2/25; refresh to verify it remains unchecked.
 8. **Conflict/second tab:** Open the same room URL in another tab of Browser A (same cookie jar). Mark a square in tab 1, then attempt a different square in tab 2 without refreshing. Tab 2 must reload the current saved state on a revision conflict and ask the player to click again. No prior check may silently disappear.

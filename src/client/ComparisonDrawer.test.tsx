@@ -9,7 +9,7 @@ import { ReadOnlyBoard } from './ReadOnlyBoard'
 import { getComparisonEntries } from './comparison'
 
 const noop = () => undefined
-const entries = getComparisonEntries({ name: 'Henrik', cardId: 2 }, createInitialCheckedMask())
+const entries = getComparisonEntries({ name: 'Alex', cardId: 2 }, createInitialCheckedMask())
 
 describe('reusable player overview and previews', () => {
   it('collapses the selected player and switches directly to another player', () => {

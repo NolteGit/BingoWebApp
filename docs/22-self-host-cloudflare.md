@@ -21,6 +21,8 @@ git --version
 npm --version
 ```
 
+For safe repository/ZIP sharing and Git author identity considerations, see [sharing & privacy](25-sharing-and-privacy.md).
+
 ## 2. Download the source code
 
 If you have **not** downloaded the repository:
@@ -32,13 +34,13 @@ cd BingoWebApp
 
 If you already cloned it, open the existing repository folder in VS Code; do not clone inside it again. To fetch new commits before a future deployment, see **Updating the app** below.
 
-Install dependencies in the repository root:
+Install reproducible dependencies from the committed lockfile:
 
 ```powershell
-npm install
+npm ci
 ```
 
-If this repository has a committed, up-to-date `package-lock.json`, you can use `npm ci` instead to reproduce the lockfile exactly. If npm reports a dependency conflict, fix compatible package versions rather than using `--force` or `--legacy-peer-deps`.
+Use `npm install` when intentionally updating dependencies or the lockfile. If npm reports a dependency conflict, fix compatible package versions rather than using `--force` or `--legacy-peer-deps`.
 
 ## 3. Optional: choose your own Worker name *before the first deployment*
 
@@ -128,7 +130,7 @@ If you maintain your own clone and have no uncommitted edits:
 
 ```powershell
 git pull
-npm install
+npm ci
 npm run typecheck
 npm test
 npm run deploy

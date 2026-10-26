@@ -10,7 +10,7 @@ In terminal 1: `npm run dev:api`. In terminal 2: `npm run dev`. In a third Power
 $base = 'http://localhost:5173'
 $room = Invoke-RestMethod -Method Post -Uri "$base/api/rooms"
 $code = $room.roomCode
-$body = @{ name = 'Henrik'; cardId = 7 } | ConvertTo-Json
+$body = @{ name = 'Alex'; cardId = 7 } | ConvertTo-Json
 $joined = Invoke-RestMethod -Method Post -Uri "$base/api/rooms/$code/join" -ContentType 'application/json' -Body $body -SessionVariable bingoSession
 $me = Invoke-RestMethod -Uri "$base/api/rooms/$code/me" -WebSession $bingoSession
 $me.player | ConvertTo-Json -Depth 5
@@ -59,7 +59,7 @@ $result | ConvertTo-Json -Depth 5
 Invoke-RestMethod -Uri "$base/api/rooms/$code" | ConvertTo-Json -Depth 6
 ```
 
-Expect `completedLines >= 1`, `hasBingo: true`, and `firstBingo.name: Henrik` in both the PUT result and the public room snapshot. The Bonusfeld (index 12) must remain checked.
+Expect `completedLines >= 1`, `hasBingo: true`, and `firstBingo.name: Alex` in both the PUT result and the public room snapshot. The Bonusfeld (index 12) must remain checked.
 
 ## 5. Restart and recover
 

@@ -41,7 +41,7 @@ describe('room integration', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'updated', checkedIndices: [0, 12], playerRevision: 1 }) })
     vi.stubGlobal('fetch', fetchMock)
     await createRoom()
-    await joinRoom('9NC3L2P8', 'Henrik', 7)
+    await joinRoom('9NC3L2P8', 'Alex', 7)
     await getOwnSession('9NC3L2P8')
     await saveSquare('9NC3L2P8', 0, true, 0)
     expect(fetchMock).toHaveBeenCalledTimes(4)

@@ -11,7 +11,7 @@ $room = Invoke-RestMethod -Method Post -Uri "$base/api/rooms"
 $code = $room.roomCode
 $code
 
-$body = @{ name = 'Henrik'; cardId = 7 } | ConvertTo-Json
+$body = @{ name = 'Alex'; cardId = 7 } | ConvertTo-Json
 $joined = Invoke-RestMethod -Method Post -Uri "$base/api/rooms/$code/join" `
   -ContentType 'application/json' -Body $body -SessionVariable bingoSession
 $joined

@@ -1,6 +1,8 @@
-# 11 — Roadmap and milestone acceptance
+# 11 — Original roadmap and milestone acceptance
 
-The goals below are ordered to keep each stage demonstrable, not to estimate fixed time. Each milestone must update `PROJECT_STATUS.md` with real test evidence.
+> **Historical plan:** This checklist dates from the initial design. M1–M4 have been implemented and a Cloudflare deployment has been demonstrated. The unchecked boxes below are not current work items. Use [`../TASKS.md`](../TASKS.md) and [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) for current status and verification.
+
+The goals below document the original acceptance intent and are preserved for reference.
 
 ## M0 — Documentation baseline (this package)
 

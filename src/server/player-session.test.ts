@@ -6,7 +6,7 @@ import {
 
 describe('player input and private cookies', () => {
   it('normalizes names and enforces length and control-character rules', () => {
-    expect(parsePlayerName('  Mira   Nolte ')).toEqual({ name: 'Mira Nolte', nameKey: 'mira nolte' })
+    expect(parsePlayerName('  Mira   Beispiel ')).toEqual({ name: 'Mira Beispiel', nameKey: 'mira beispiel' })
     expect(parsePlayerName('M')).toBeNull()
     expect(parsePlayerName('x'.repeat(25))).toBeNull()
     expect(parsePlayerName('Mi\u0000ra')).toBeNull()

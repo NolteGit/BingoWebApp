@@ -1,6 +1,6 @@
-# 06 — HTTP and realtime contract (proposed v1)
+# 06 — HTTP and realtime API (current)
 
-**Status: Steps 7–10 confirmed through local Windows development. Step 11 WebSocket implementation added; two-browser live verification pending.** `POST /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/:code/join`, and `GET /api/rooms/:code/me` are implemented. Square updates have a backend implementation. Leave remains unimplemented. Frontend room URLs are active. WebSocket code is prepared but must be tested under local Wrangler.
+**Status (2026-10-26): Implemented HTTP and WebSocket routes are described below. Older examples are retained for integration tests; code in `src/server/api.ts` is authoritative.**
 
 ## General conventions
 
@@ -18,11 +18,11 @@
 | --- | --- | --- | --- |
 | `POST` | `/api/rooms` | None | Create and initialize room; return code and link. |
 | `GET` | `/api/rooms/:code` | Room link | Get public room snapshot/metadata. |
-| `GET` | `/api/cards` | None | Return predefined card metadata and optional preview (could be static). |
+| — | `/api/cards` | — | **Not implemented.** Card presets are bundled in `data/cards.json`. |
 | `POST` | `/api/rooms/:code/join` | None or existing cookie | Join with name and card, or resume; issues session cookie for new players. |
 | `GET` | `/api/rooms/:code/me` | Session cookie | Identify own persistent player; includes own card ID and checked indices. |
 | `PUT` | `/api/rooms/:code/me/squares/:index` | Session cookie | Set desired boolean checked state. |
-| `POST` | `/api/rooms/:code/me/leave` | Session cookie | Delete own active player and revoke session. |
+| `DELETE` | `/api/rooms/:code/me` | Session cookie | Confirmed personal restart/leave: delete own player and revoke session; room stays. |
 | `GET` (upgrade) | `/api/rooms/:code/events` | Valid room-scoped session cookie | Hibernatable, read-only room WebSocket. |
 
 ### Create response
@@ -83,7 +83,7 @@ The response is the **authoritative persisted** state, not a frontend guess:
 - `checked` must be an actual boolean, `expectedPlayerRevision` a nonnegative safe integer, `index` a canonical decimal in 0–24. The center (12) cannot be unchecked. All writes require the correct room-scoped session cookie and allowed Origin.
 - `GET /api/rooms/:code/me` now returns `player.playerRevision`. Public player snapshots also include `playerRevision`. Existing rooms are migrated additively without clearing any masks.
 - The first transition to one or more completed lines is stored in SQLite as `firstBingo:{playerId,name,at}`. It is retained if the winner later unchecks a field. Other players' completed lines still count.
-- **Frontend hookup is not part of this step.** The next frontend should queue mutations using the latest `playerRevision`, show pending/saved/error states, and resolve 409 conflicts before sending another write.
+- **Current frontend:** queues server-confirmed writes, shows save/connection state and reconciles uncertain results before allowing another click.
 
 ### Room snapshot response
 

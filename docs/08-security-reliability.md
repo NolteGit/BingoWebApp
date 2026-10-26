@@ -74,12 +74,12 @@ Only display names and game interaction data are needed. Do not require Discord 
 - Verify no secret/session ID appears in logs, error responses, room broadcasts or URLs.
 - Verify reconnect, fast double-click, two-tab state, and first-winner concurrency.
 
-## Step 8 cookie security
+## Step 8 cookie security (historical milestone)
 
-Per-player sessions use 32 random bytes encoded as hex. Only their SHA-256 hashes are stored in SQLite. Room-scoped session cookies are HttpOnly, SameSite=Lax, and Secure for HTTPS requests. Origin checks reject cross-site join attempts from browsers and explicitly allow the local Vite proxy. A valid cookie always resumes its existing player without changing that player’s selected card, and names must be unique per room. No endpoint deletes a player or their progress in this milestone. Future mutation endpoints must authenticate using the same room cookie, enforce Origin, and never accept client-supplied player IDs as authorization.
+Per-player sessions use 32 random bytes encoded as hex. Only their SHA-256 hashes are stored in SQLite. Room-scoped session cookies are HttpOnly, SameSite=Lax, and Secure for HTTPS requests. Origin checks reject cross-site join attempts from browsers and explicitly allow the local Vite proxy. A valid cookie always resumes its existing player without changing that player’s selected card, and names must be unique per room. Personal deletion was added later through authenticated `DELETE /api/rooms/:code/me`. Future mutation endpoints must authenticate using the same room cookie, enforce Origin, and never accept client-supplied player IDs as authorization.
 
 
-## Step 9 mutation protection
+## Step 9 mutation protection (historical milestone)
 
 - Backend mutations identify the player exclusively from a hashed room session cookie, enforce same-origin requests, validate the desired state and expected per-player revision, and modify only that row.
 - The server uses a transaction to commit the checked mask, revisions, and first winner together. On a stale revision it returns a `409` with current progress but performs **no** mutation.
