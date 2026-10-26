@@ -60,3 +60,5 @@ A short, ordered list of implementation steps. Work **top to bottom**, keeping e
 ### Nach dem öffentlichen Start: Eigenes Bingo zurücksetzen
 - [ ] In der Lobby ein neues Bingo nur nach expliziter Bestätigung starten; eigene Sitzung, Karte und Häkchen serverseitig entfernen und alte Live-Verbindungen schließen.
 - [ ] Mit zwei Browsern testen: Abbrechen, Namenswiederverwendung, andere Spieler unverändert, Restart-Persistenz.
+
+- [ ] **Step 14.1 — Raum verlassen:** Confirmed personal removal from lobby and game, return to start after server acknowledgement; test no effect on other players, cancel, failed deletion and name reuse (`docs/24-leave-room.md`).

@@ -220,3 +220,8 @@ Run typecheck, tests and build on Windows; verify the compact game screen, confi
 - Nach serverseitiger Bestätigung: Name/Karte neu wählen. Abbruch und Netzwerkfehler löschen nichts im UI.
 - Entfernte Erst-Bingo-Referenzen werden bereinigt; andere Spieler bleiben unverändert.
 - Full-Typecheck, Browserprüfung und Cloudflare-Deployment stehen noch aus.
+
+### Step 14.1 — Explicit room leave (pending verification)
+- Added **Raum verlassen** in game and returning-player lobby with a short confirmation.
+- Reuses existing authenticated player deletion, does not delete the room or other participants.
+- Full Windows build, two-browser testing and production deployment not yet verified. See `docs/24-leave-room.md`.

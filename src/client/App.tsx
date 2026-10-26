@@ -41,12 +41,14 @@ export function App() {
   const [draftName, setDraftName] = useState('')
   const [selectedCardId, setSelectedCardId] = useState(1)
   const [lobbyModal, setLobbyModal] = useState<LobbyModalMode>(null)
-  const [newBingoOpen, setNewBingoOpen] = useState(false)
+  const [playerAction, setPlayerAction] = useState<'restart' | 'leave' | null>(null)
   const [comparisonOpen, setComparisonOpen] = useState(false)
   const [selectedComparisonId, setSelectedComparisonId] = useState<string | null>(null)
   const [lobbyPreviewId, setLobbyPreviewId] = useState<string | null>(null)
   const rulesButtonRef = useRef<HTMLButtonElement>(null)
   const newBingoButtonRef = useRef<HTMLButtonElement>(null)
+  const leaveRoomButtonRef = useRef<HTMLButtonElement>(null)
+  const playerDialogTriggerRef = useRef<HTMLButtonElement | null>(null)
   const lastLobbyTriggerRef = useRef<HTMLButtonElement | null>(null)
   const compareButtonRef = useRef<HTMLButtonElement>(null)
   // Mutable guards close the gap before Preact has rendered the new disabled state.
@@ -192,9 +194,9 @@ export function App() {
     finally { setWorking(false) }
   }
 
-  /** Delete this player's record only after explicit confirmation and a successful API response. */
-  async function startFreshBingo() {
-    if (!roomCode || !player || working || saving || syncBlocked || recovering || writeBusyRef.current) return
+  /** Both actions delete only the authenticated player's record; never the room. */
+  async function removeOwnPlayer(action: 'restart' | 'leave' | null) {
+    if (!action || !roomCode || !player || working || saving || syncBlocked || recovering || writeBusyRef.current) return
     const oldRoomCode = roomCode
     const oldPlayerId = player.playerId
     setWorking(true)
@@ -206,17 +208,28 @@ export function App() {
         response.room?.roomCode !== oldRoomCode) {
         throw new Error('Löschung konnte nicht bestätigt werden. Bitte erneut versuchen.')
       }
+      const confirmedRoom = assertRoomSnapshot(response.room)
       setPlayer(null)
-      setRoom(assertRoomSnapshot(response.room))
       setDraftName('')
       setSelectedCardId(1)
       setLobbyPreviewId(null)
-      setNewBingoOpen(false)
+      setPlayerAction(null)
+      setComparisonOpen(false)
+      setSelectedComparisonId(null)
       setView('lobby')
-      setMessage('Altes Bingo gelöscht. Du kannst jetzt neu starten.')
+      if (action === 'leave') {
+        // Navigate only after successful deletion; room and other players remain intact.
+        window.history.pushState({}, '', '/')
+        setRoomCode(null)
+        setRoom(null)
+        setMessage('Du hast den Raum verlassen.')
+      } else {
+        setRoom(confirmedRoom)
+        setMessage('Altes Bingo gelöscht. Du kannst jetzt neu starten.')
+      }
     } catch (error) {
-      // Never discard the last confirmed local state after an unverified deletion.
-      setMessage(`Neustart nicht bestätigt: ${errorMessage(error)} Bitte ggf. Seite neu laden.`)
+      // A lost response must not silently discard the local confirmed state.
+      setMessage(`Löschung nicht bestätigt: ${errorMessage(error)} Bitte ggf. Seite neu laden.`)
     } finally { setWorking(false) }
   }
 
@@ -402,7 +415,10 @@ export function App() {
                       <button class="primary-button" type="button" onClick={() => { setMessage(''); setView('game') }}>Bingo fortsetzen</button>
                       <button ref={newBingoButtonRef} class="secondary-button" type="button"
                         disabled={working || saving || recovering || syncBlocked}
-                        onClick={() => setNewBingoOpen(true)}>Neues Bingo starten</button>
+                        onClick={() => { playerDialogTriggerRef.current = newBingoButtonRef.current; setPlayerAction('restart') }}>Neues Bingo starten</button>
+                      <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
+                        disabled={working || saving || recovering || syncBlocked}
+                        onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>Raum verlassen</button>
                     </div>
                     <p class="form-note">Dein Fortschritt bleibt beim Wechsel zur Lobby gespeichert.</p>
                   </>
@@ -430,9 +446,6 @@ export function App() {
                 <p class="form-note">{liveConnected ? 'Live verbunden – Änderungen erscheinen sofort.' : 'Aktualisierung alle 5 Sekunden (Fallback).'}</p>
               </aside>
             </div>
-            <NewBingoDialog open={newBingoOpen} busy={working}
-              onCancel={() => setNewBingoOpen(false)} onConfirm={() => void startFreshBingo()}
-              onAfterClose={() => newBingoButtonRef.current?.focus()} />
             <LobbyModal mode={lobbyModal} card={selectedCard}
               onDismiss={() => setLobbyModal(null)}
               onAfterClose={() => lastLobbyTriggerRef.current?.focus()} />
@@ -449,6 +462,9 @@ export function App() {
                   onClick={() => { setSelectedComparisonId(null); setComparisonOpen(true) }}>Vergleich</button>
                 <button class="secondary-button" type="button" disabled={saving}
                   onClick={() => { setComparisonOpen(false); setView('lobby'); setMessage('') }}>Zur Lobby</button>
+                <button ref={leaveRoomButtonRef} class="secondary-button" type="button"
+                  disabled={working || saving || recovering || syncBlocked}
+                  onClick={() => { playerDialogTriggerRef.current = leaveRoomButtonRef.current; setPlayerAction('leave') }}>Raum verlassen</button>
               </div>
             </div>
             <div class={`save-status save-status--${connection}`} role="status" aria-live="polite">
@@ -465,6 +481,9 @@ export function App() {
               note={liveConnected ? 'Live verbunden. Die Vorschau ist schreibgeschützt.' : 'Verbindung wird wiederhergestellt. Bis dahin Aktualisierung alle 5 Sekunden.'} />
           </section>
         )}
+        <NewBingoDialog open={playerAction !== null} mode={playerAction ?? 'restart'} busy={working}
+          onCancel={() => setPlayerAction(null)} onConfirm={() => void removeOwnPlayer(playerAction)}
+          onAfterClose={() => playerDialogTriggerRef.current?.focus()} />
         {message && <p class="room-feedback" role="status">{message}</p>}
       </div>
     </main>

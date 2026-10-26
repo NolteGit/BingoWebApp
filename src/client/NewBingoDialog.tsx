@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'preact/hooks'
 
+type PlayerAction = 'restart' | 'leave'
+
 interface NewBingoDialogProps {
+  mode?: PlayerAction
   open: boolean
   busy: boolean
   onCancel: () => void
@@ -9,7 +12,7 @@ interface NewBingoDialogProps {
 }
 
 /** No destructive action occurs until the user explicitly confirms. */
-export function NewBingoDialog({ open, busy, onCancel, onConfirm, onAfterClose }: NewBingoDialogProps) {
+export function NewBingoDialog({ mode = 'restart', open, busy, onCancel, onConfirm, onAfterClose }: NewBingoDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -24,12 +27,14 @@ export function NewBingoDialog({ open, busy, onCancel, onConfirm, onAfterClose }
       aria-describedby="new-bingo-description"
       onCancel={event => { event.preventDefault(); if (!busy) onCancel() }}
       onClose={onAfterClose}>
-      <h2 id="new-bingo-title">Neues Bingo starten?</h2>
-      <p id="new-bingo-description">Deine bisherige Karte und alle Häkchen werden gelöscht.</p>
+      <h2 id="new-bingo-title">{mode === 'leave' ? 'Raum verlassen?' : 'Neues Bingo starten?'}</h2>
+      <p id="new-bingo-description">{mode === 'leave'
+        ? 'Deine Karte und dein Fortschritt werden gelöscht.'
+        : 'Deine bisherige Karte und alle Häkchen werden gelöscht.'}</p>
       <div class="new-bingo-dialog__actions">
         <button class="secondary-button" type="button" onClick={onCancel} disabled={busy} autoFocus>Abbrechen</button>
         <button class="danger-button" type="button" onClick={onConfirm} disabled={busy}>
-          {busy ? 'Wird gelöscht…' : 'Löschen & neu starten'}
+          {busy ? 'Wird gelöscht…' : mode === 'leave' ? 'Verlassen & löschen' : 'Löschen & neu starten'}
         </button>
       </div>
     </dialog>
